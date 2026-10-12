@@ -376,6 +376,8 @@ def paper_open(st, p, cfg, now_ms):
     price = float(p.get("priceUsd") or 0)
     if not price or addr in pp["open"] or pp["balance"] < cfg["stake"]:
         return
+    if now_ms - pp.get("closed", {}).get(addr, 0) < cfg["cooldown_h"] * 3_600_000:
+        return  # jangan langsung beli lagi coin yang baru ditutup
     pp["balance"] -= cfg["stake"]
     pp["open"][addr] = {
         "sym": (p.get("baseToken") or {}).get("symbol", "?"),
@@ -437,8 +439,10 @@ def paper_update(st, cfg, now_ms):
         pp["balance"] += net
         pp["wins" if pnl > 0 else "losses"] += 1
         del pp["open"][addr]
+        pp.setdefault("closed", {})[addr] = now_ms
         msgs.append(f"{'✅' if pnl > 0 else '❌'} {html.escape(pos['sym'])} ditutup ({reason}): "
-                    f"{pnl:+.2f} USD ({pnl / pos['usd']:+.0%})")
+                    f"harga {price / pos['entry'] - 1:+.0%}, bersih setelah biaya {pnl:+.2f} USD "
+                    f"({pnl / pos['usd']:+.0%})")
     return msgs
 
 
