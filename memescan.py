@@ -276,7 +276,10 @@ def fmt_usd(x):
 
 
 def fmt_price(x):
-    return f"${x:.3g}" if x >= 0.001 else f"${x:.2e}"
+    if x >= 1:
+        return f"${x:,.2f}"
+    from decimal import Decimal
+    return "$" + format(Decimal(f"{x:.3g}"), "f")
 
 
 def render(items, chain, cfg=None, footer=""):
