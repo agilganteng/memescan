@@ -1,0 +1,42 @@
+name: memescan
+
+on:
+  schedule:
+    # Tiap 15 menit. GitHub sering telat 5-20 menit kalau server lagi ramai.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}  # tombol "Run workflow" buat tes manual
+
+concurrency:
+  group: memescan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # seen.json (daftar coin yang sudah dikirim) disimpan di cache antar run,
+      # supaya coin yang sama tidak dikirim berulang tiap 15 menit.
+      - uses: actions/cache/restore@v4
+        with:
+          path: seen.json
+          key: memescan-seen-${{ github.run_id }}
+          restore-keys: memescan-seen-
+
+      - name: Scan
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 memescan.py --state seen.json
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: seen.json
+          key: memescan-seen-${{ github.run_id }}
