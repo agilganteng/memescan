@@ -46,3 +46,15 @@ Chain lain: `base`, `bsc`, `ethereum` (RugCheck hanya untuk Solana).
 ## Penting
 
 Ini **sinyal, bukan saran beli**. Skor tinggi artinya "lagi ramai dan tidak ada red flag yang kelihatan", bukan "pasti naik". Mayoritas memecoin baru jatuh ke nol, dan rug pull bisa lolos semua cek otomatis. Pakai uang yang siap hilang.
+
+## Jalan di HP Android (scan tiap 1 menit)
+
+1. Install **Termux** dari F-Droid (versi Play Store sudah lama tidak diupdate).
+2. Buka Termux, jalankan:
+   ```
+   curl -sL https://raw.githubusercontent.com/agilganteng/memescan/main/termux-setup.sh | bash
+   ```
+3. Tempel token Telegram saat diminta.
+4. Di pengaturan Android, matikan optimasi baterai untuk Termux, dan biarkan HP dicolok charger + WiFi.
+
+Kalau sudah jalan di HP, matikan jadwal di GitHub (tab Actions → memescan → ⋯ → Disable workflow) supaya sinyal tidak dobel. Saldo paper di HP mulai dari awal lagi.
