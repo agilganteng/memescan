@@ -315,6 +315,9 @@ def find_chat(token):
     pernah dicari ulang, jadi orang lain yang /start belakangan diabaikan."""
     try:
         d = get_json(f"https://api.telegram.org/bot{token}/getUpdates")
+    except urllib.error.HTTPError as e:
+        print(f"[warn] telegram: token ditolak ({e.code}), cek lagi TELEGRAM_BOT_TOKEN", file=sys.stderr)
+        return None
     except (urllib.error.URLError, TimeoutError, ValueError):
         return None
     for u in d.get("result") or []:  # chat pertama yang pernah /start, bukan yang terakhir
