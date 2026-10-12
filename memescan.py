@@ -321,6 +321,11 @@ def find_chat(token):
     except (urllib.error.URLError, TimeoutError, ValueError) as e:
         print(f"[warn] telegram getUpdates gagal: {e!r}", file=sys.stderr)
         return None
+    try:
+        me = get_json(f"https://api.telegram.org/bot{token}/getMe").get("result") or {}
+        print(f"[info] telegram: token ini milik bot @{me.get('username')}", file=sys.stderr)
+    except (urllib.error.URLError, TimeoutError, ValueError):
+        pass
     kinds = [c.get("type") for u in d.get("result") or [] for c in [(u.get("message") or {}).get("chat") or {}]]
     print(f"[info] telegram: {len(kinds)} pesan masuk ke bot, tipe chat {kinds}", file=sys.stderr)
     for u in d.get("result") or []:  # chat pertama yang pernah /start, bukan yang terakhir
