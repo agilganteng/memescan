@@ -318,8 +318,11 @@ def find_chat(token):
     except urllib.error.HTTPError as e:
         print(f"[warn] telegram: token ditolak ({e.code}), cek lagi TELEGRAM_BOT_TOKEN", file=sys.stderr)
         return None
-    except (urllib.error.URLError, TimeoutError, ValueError):
+    except (urllib.error.URLError, TimeoutError, ValueError) as e:
+        print(f"[warn] telegram getUpdates gagal: {e!r}", file=sys.stderr)
         return None
+    kinds = [c.get("type") for u in d.get("result") or [] for c in [(u.get("message") or {}).get("chat") or {}]]
+    print(f"[info] telegram: {len(kinds)} pesan masuk ke bot, tipe chat {kinds}", file=sys.stderr)
     for u in d.get("result") or []:  # chat pertama yang pernah /start, bukan yang terakhir
         chat = (u.get("message") or {}).get("chat") or {}
         if chat.get("type") == "private":
@@ -329,7 +332,7 @@ def find_chat(token):
 
 def send_telegram(text):
     global _CHAT
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    token = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()  # spasi/enter ikut ter-paste
     if not token:
         return False
     if not _CHAT:
