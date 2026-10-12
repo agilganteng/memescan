@@ -535,6 +535,13 @@ def main():
     state = load_state(a.state, cfg)
     global _CHAT
     _CHAT = os.getenv("TELEGRAM_CHAT_ID") or state.get("tg_chat")
+    if os.getenv("TELEGRAM_BOT_TOKEN") and not _CHAT:
+        # Run pertama setelah token dipasang: langsung sapa, jangan tunggu ada sinyal.
+        send_telegram("👋 memescan aktif. Sinyal dan update paper trade akan masuk ke sini.\n\n"
+                      + paper_summary(state))
+        if _CHAT:
+            state["tg_chat"] = _CHAT
+            save_state(a.state, state)
     while True:
         try:
             state = scan(cfg, state, not a.no_rugcheck, not a.no_ta)
