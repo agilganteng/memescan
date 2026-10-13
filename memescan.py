@@ -27,6 +27,7 @@ Butuh: Python 3.9+ dan `pip install websockets`.
 import argparse
 import asyncio
 import base64
+import collections
 import html
 import json
 import math
@@ -64,7 +65,7 @@ DEFAULTS = {
     "SCORE_ALLIN_MIN": None, "SCORE_HALF_MIN": None,
     # lain-lain
     "BUNDLE_WINDOW": 1.0, "PRUNE_AGE": 120.0, "PRUNE_INFLOW": 0.5, "IDLE_DROP": 300.0,
-    "MAX_TRACKED": 800, "SUMMARY_EVERY_H": 6.0, "NOTIFY_CANDIDATES": 1, "NOTIFY_MAX_PER_H": 30,
+    "MAX_TRACKED": 800, "SUMMARY_EVERY_H": 6.0, "NOTIFY_CANDIDATES": 1, "NOTIFY_MAX_PER_H": 10,
 }
 
 
@@ -148,7 +149,7 @@ class Token:
         self.bal = {self.creator: dev_tok} if dev_tok else {}
         self.dev_max = dev_tok
         self.dev_sold_flag = False
-        self.inflow = float(ev.get("solAmount") or 0)   # bersih, termasuk dev
+        self.inflow = self.liq   # SOL bersih yang masuk kurva (dari cadangan, tetap benar walau ada event terlewat)
         self.buyers = set()
         self.n_buys = self.n_sells = 0
         self.bundle = 0
@@ -186,19 +187,18 @@ class Token:
             self.v_tok = self.v_sol / (self.mcap / SUPPLY)
         self.pool = ev.get("pool") or self.pool
         if side == "buy":
-            self.inflow += sol
             self.n_buys += 1
             if trader != self.creator:
                 self.buyers.add(trader)
                 if now - self.t0 <= self.bundle_window:
                     self.bundle += 1
         elif side == "sell":
-            self.inflow -= sol
             self.n_sells += 1
         if ev.get("newTokenBalance") is not None and trader:
             self.bal[trader] = float(ev["newTokenBalance"])
             if trader == self.creator:
                 self.dev_max = max(self.dev_max, self.bal[trader])
+        self.inflow = self.liq
         self.peak = max(self.peak, self.price)
         self.last_trade = now
         self.hist.append((now, self.price, self.inflow))
@@ -394,6 +394,7 @@ class Engine:
         self.last_summary = st.get("last_summary", time.time())
         self.last_welcome = st.get("last_welcome", 0)
         self.notified = set()
+        self.orphans, self.orphan_q = {}, collections.deque()
         self.sample = set()        # id kandidat yang dikirim ke Telegram
         self.hour_start, self.n_hour, self.suppressed = time.time(), 0, 0
 
@@ -485,6 +486,8 @@ class Engine:
                     ok, why = self.holder_ok(tok)
                     gate = tok.recheck_gate
                     tok.recheck_at = tok.recheck_gate = None
+                    # harga/drawdown juga harus masih lolos, bukan cuma holder
+                    ok = ok and (self.fast_ok(tok) if gate == "cepat" else self.slow_ok(tok, now))
                     if ok:
                         self.candidate(tok, now, gate)
                     else:
@@ -770,9 +773,22 @@ def feed_tx(engine, logs, now):
     for c in created.values():
         c["marketCapSol"] = c["vSolInBondingCurve"] / c["vTokensInBondingCurve"] * SUPPLY
         engine.on_create(c, now)
+    for m in created:
+        for ev in engine.orphans.pop(m, []):          # trade yang datang sebelum create-nya
+            pending.insert(0, ev)
+    while engine.orphan_q and engine.orphan_q[0][0] < now - 5:
+        _, m = engine.orphan_q.popleft()
+        lst = engine.orphans.get(m)
+        if lst:
+            lst.pop(0)
+            if not lst:
+                del engine.orphans[m]
     for ev in pending:
         tok = engine.tokens.get(ev["mint"])
         if not tok:
+            if ev["mint"] not in engine.seen and len(engine.orphan_q) < 5000:
+                engine.orphans.setdefault(ev["mint"], []).append(ev)
+                engine.orphan_q.append((now, ev["mint"]))
             continue
         prev = tok.bal.get(ev["user"], 0.0)
         engine.on_trade({"txType": "buy" if ev["buy"] else "sell", "mint": ev["mint"],
