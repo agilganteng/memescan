@@ -96,6 +96,39 @@ def load_config(data_dir):
     return cfg
 
 
+# ---------------------------------------------------------------- format
+
+def fmt_usd(x):
+    for div, suf in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
+        if x >= div:
+            return f"${x / div:.1f}{suf}"
+    return f"${x:.0f}"
+
+
+def fmt_price(x, cur="$"):
+    if x >= 1:
+        return f"{cur}{x:,.2f}"
+    from decimal import Decimal
+    return cur + format(Decimal(f"{x:.3g}"), "f")
+
+
+def fetch_sol_usd():
+    """Harga SOL dalam USD (CoinGecko, cadangan Kraken). None kalau gagal."""
+    for url, pick in (("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
+                       lambda d: d["solana"]["usd"]),
+                      ("https://api.kraken.com/0/public/Ticker?pair=SOLUSD",
+                       lambda d: next(iter(d["result"].values()))["c"][0])):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "memescan"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                v = float(pick(json.load(r)))
+            if v > 0:
+                return v
+        except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, StopIteration):
+            continue
+    return None
+
+
 # ---------------------------------------------------------------- statistik
 
 def wilson(k, n, z=1.96):
@@ -395,6 +428,7 @@ class Engine:
         self.last_welcome = st.get("last_welcome", 0)
         self.tg_chat = st.get("tg_chat", "")
         self.notified = set()
+        self.sol_usd = None
         self.orphans, self.orphan_q = {}, collections.deque()
         self.sample = set()        # id kandidat yang dikirim ke Telegram
         self.hour_start, self.n_hour, self.suppressed = time.time(), 0, 0
@@ -564,15 +598,51 @@ class Engine:
         elif self.cfg["NOTIFY_CANDIDATES"]:
             self.n_hour += 1
             self.notified.add(self.n_cand)
-            e = html.escape
-            sc = f"{s:.0%}" if s is not None else "belum dikalibrasi"
-            self.outbox.append(
-                f"🎯 <b>Kandidat #{self.n_cand} {e(tok.sym)}</b> · gate {gate} · skor {sc}\n"
-                f"Umur {tok.age(now):.0f}s · MC {tok.mcap:.0f} SOL · inflow {tok.inflow:.2f} SOL · "
-                f"{len(tok.buyers)} pembeli · top10 {tok.top_pct(10):.0%} · dev {tok.dev_pct():.0%}"
-                f"{' · bundle ' + str(tok.bundle) if tok.bundle else ''}\n"
-                f"Paper: {e(why)}\n"
-                f"<code>{e(tok.mint)}</code>\nhttps://pump.fun/coin/{e(tok.mint)}")
+            self.outbox.append(self.signal_msg(tok, now, gate, s, why, feats))
+
+    def usd(self, sol):
+        return sol * self.sol_usd if self.sol_usd else None
+
+    def money(self, sol):
+        """Nilai SOL ditampilkan dalam USD kalau harga SOL tersedia."""
+        u = self.usd(sol)
+        return fmt_usd(u) if u is not None else f"{sol:.1f} SOL"
+
+    def px(self, price_sol):
+        u = self.usd(price_sol)
+        return fmt_price(u) if u is not None else fmt_price(price_sol, "") + " SOL"
+
+    def signal_msg(self, tok, now, gate, s, why, feats):
+        e, c = html.escape, self.cfg
+        sc = f"{s:.0%}" if s is not None else "belum dikalibrasi"
+        good = [f"{len(tok.buyers)} pembeli", f"{len(tok.holders())} holder",
+                f"top10 {tok.top_pct(10):.0%}", f"dev pegang {tok.dev_pct():.0%}"]
+        flags = []
+        if tok.bundle >= 3:
+            flags.append(f"{tok.bundle} beli bareng di detik pertama (bundle)")
+        if feats["dev_sold_any"]:
+            flags.append("dev sudah jual sebagian")
+        if feats["creator_prev_rugs"]:
+            flags.append(f"pembuat pernah dump {feats['creator_prev_rugs']}x")
+        if feats["drawdown"] >= 0.10:
+            flags.append(f"turun {feats['drawdown']:.0%} dari puncak")
+        p = tok.price
+        lines = [f"📡 <b>memescan</b> · pump.fun · sinyal #{self.n_cand} (gate {gate})", "",
+                 f"<b>{e(tok.sym)}</b>{' ' + e(tok.name) if tok.name and tok.name != tok.sym else ''} — skor {sc}",
+                 f"MC {self.money(tok.mcap)} · Liq {self.money(tok.liq)} · umur {tok.age(now):.0f} detik · "
+                 f"naik {feats['growth'] - 1:+.0%} sejak launch",
+                 "✅ " + e(", ".join(good))]
+        if flags:
+            lines.append("🚩 " + e(", ".join(flags)))
+        lines += [f"🎯 Entry ~{self.px(p)} · TP {self.px(p * c['TP1_X'])} (+{c['TP1_X'] - 1:.0%}, jual "
+                  f"{c['TP1_FRAC']:.0%}) · SL {self.px(p * (1 - c['SL']))} (-{c['SL']:.0%})",
+                  f"   Sisanya trailing {c['TRAIL']:.0%} dari puncak. Keluar kalau {c['TIME_STOP_S'] / 60:.0f} "
+                  f"menit belum +{c['TIME_STOP_X'] - 1:.0%}.",
+                  f"💼 Paper: {e(why)}",
+                  f"<code>{e(tok.mint)}</code>",
+                  f"https://pump.fun/coin/{e(tok.mint)}", "",
+                  "<i>Sinyal otomatis, bukan saran beli. Hasil uji sejauh ini rugi. Pakai uang yang siap hilang.</i>"]
+        return "\n".join(lines)
 
     def sizing(self, s):
         c, p = self.cfg, self.port
@@ -609,12 +679,15 @@ class Engine:
         if pos.kind == "portfolio" or pos.id in self.notified:
             if pos.kind == "shadow":
                 self.notified.discard(pos.id)
-            tag = "Paper" if pos.kind == "portfolio" else "Shadow"
+            tag = "Paper" if pos.kind == "portfolio" else f"Shadow {pos.size:g} SOL"
+            pnl = pos.out - pos.cost
+            why = {"sl": "🛑 SL", "trailing": "📉 trailing stop", "time_stop": "⏱ time stop",
+                   "basi": "💤 koin sepi"}.get(pos.reason, pos.reason)
+            tail = f"\n💼 Saldo paper {self.port['balance']:.3f} SOL" if pos.kind == "portfolio" else ""
             self.outbox.append(
-                f"{'✅' if pos.multiple > 1 else '❌'} {tag} #{pos.id} {e(pos.sym)}: {pos.multiple:.2f}x "
-                f"({pos.reason}, puncak {pos.peak_x:.1f}x, {(now - pos.opened) / 60:.0f} menit)"
-                f"{' · TP 2x tercapai' if pos.won else ''}"
-                f"{' · saldo %.3f SOL' % self.port['balance'] if pos.kind == 'portfolio' else ''}")
+                f"{'✅' if pnl > 0 else '❌'} <b>{e(pos.sym)}</b> #{pos.id} ditutup ({why}): "
+                f"bersih setelah biaya {pnl:+.3f} SOL ({pos.multiple - 1:+.0%}) · puncak {pos.peak_x:.1f}x · "
+                f"{(now - pos.opened) / 60:.0f} menit{' · TP 2x kena' if pos.won else ''} [{tag}]{tail}")
 
     def results(self, kind="shadow"):
         outs = []
@@ -888,8 +961,15 @@ async def ticker(ws, engine, stop_at):
 
 
 async def telegram_sender(engine):
-    """Kirim pesan di task terpisah supaya Telegram lambat tidak menunda simulasi."""
+    """Kirim pesan di task terpisah supaya Telegram lambat tidak menunda simulasi.
+    Sekalian perbarui harga SOL/USD tiap 10 menit."""
+    loop = asyncio.get_running_loop()
+    next_px = 0.0
     while True:
+        if time.time() >= next_px:
+            next_px = time.time() + 600
+            v = await loop.run_in_executor(None, fetch_sol_usd)
+            engine.sol_usd = v or engine.sol_usd
         while engine.outbox:
             await engine.tg.asend(engine.outbox.pop(0))
         await asyncio.sleep(0.5)

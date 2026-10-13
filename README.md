@@ -2,6 +2,13 @@
 
 Sniper memecoin pump.fun (Solana) dengan aturan yang sama seperti MemeSniper. **Mode paper saja**: tidak ada private key, tidak ada transaksi asli. Notifikasi ke Telegram.
 
+## Jalan sekarang: GitHub Actions
+
+Workflow `memescan` jalan sendiri 24 jam, dalam run ~6 jam yang bersambung. Tiap run mengantrekan run berikutnya, dan jadwal tiap 30 menit jadi cadangan. Saldo paper dan data kandidat dibawa antar run lewat cache. Notif dikirim ke Telegram (secret `TELEGRAM_BOT_TOKEN`; chat diambil dari chat yang sudah terkunci).
+
+- Matikan: tab **Actions → memescan → ⋯ → Disable workflow**.
+- Catatan: GitHub tidak dibuat untuk bot 24 jam. Kalau nanti punya VPS atau HP bekas, pindah ke cara di bawah.
+
 ## Pasang di VPS (jalan 24 jam)
 
 Login ke VPS sebagai root, lalu:
