@@ -61,11 +61,11 @@ DEFAULTS = {
     "TP1_X": 2.0, "TP1_FRAC": 0.5, "TRAIL": 0.45, "TRAIL_TIGHT_X": 6.0, "TRAIL_TIGHT": 0.35,
     "SL": 0.35, "TIME_STOP_S": 600.0, "TIME_STOP_X": 1.3, "STALE_S": 1200.0,
     # modal & ukuran posisi
-    "START_SOL": 0.5, "MIN_BALANCE": 0.1, "SHADOW_SOL": 0.5,
+    "START_SOL": 0.5, "MIN_BALANCE": 0.1, "SHADOW_SOL": 0.5, "PAPER_STAKE_SOL": 0.05,
     "SCORE_ALLIN_MIN": None, "SCORE_HALF_MIN": None,
     # lain-lain
     "BUNDLE_WINDOW": 1.0, "PRUNE_AGE": 120.0, "PRUNE_INFLOW": 0.5, "IDLE_DROP": 300.0,
-    "MAX_TRACKED": 800, "SUMMARY_EVERY_H": 6.0, "NOTIFY_CANDIDATES": 1, "NOTIFY_MAX_PER_H": 10,
+    "MAX_TRACKED": 800, "SUMMARY_EVERY_H": 1.0, "NOTIFY_CANDIDATES": 0, "NOTIFY_MAX_PER_H": 10,
 }
 
 
@@ -550,7 +550,13 @@ class Engine:
 
         for pos in list(self.positions):
             tok = self.tokens.get(pos.mint)
-            if tok and pos.step(tok, now):
+            if not tok:
+                continue
+            done = pos.step(tok, now)
+            if pos.kind == "portfolio" and pos.entry_px and not getattr(pos, "announced", False):
+                pos.announced = True
+                self.outbox.append(self.entry_msg(pos, tok, now))
+            if done:
                 self.positions.remove(pos)
                 self.close(pos, now)
 
@@ -558,6 +564,19 @@ class Engine:
         if now - self.last_summary >= c["SUMMARY_EVERY_H"] * 3600:
             self.last_summary = now
             self.outbox.append(self.summary())
+
+    def flush(self, now):
+        """Bot berhenti (misal ganti run GitHub): posisi paper yang masih terbuka dijual di
+        harga saat itu supaya saldo tidak hilang; order beli yang belum terisi dibatalkan."""
+        for pos in [p for p in self.positions if p.kind == "portfolio"]:
+            tok = self.tokens.get(pos.mint)
+            self.positions.remove(pos)
+            if pos.entry_px is None or not tok:
+                self.port["balance"] += pos.size if pos.entry_px is None else 0.0
+                continue
+            pos._fill(tok, "sell", 1.0)
+            pos.closed, pos.reason = True, "bot berhenti"
+            self.close(pos, now)
 
     def prune(self, now):
         c = self.cfg
@@ -590,7 +609,10 @@ class Engine:
         self.positions.append(Position(self.n_cand, tok, self.cfg["SHADOW_SOL"], "shadow", now, self.cfg))
         size, why = self.sizing(s)
         if size:
-            self.positions.append(Position(self.n_cand, tok, size, "portfolio", now, self.cfg))
+            pos = Position(self.n_cand, tok, size, "portfolio", now, self.cfg)
+            pos.signal = (gate, s, feats)
+            self.positions.append(pos)
+            return              # pesan dikirim waktu order beli terisi
         if now - self.hour_start >= 3600:
             self.hour_start, self.n_hour = now, 0
         if self.cfg["NOTIFY_CANDIDATES"] and self.n_hour >= self.cfg["NOTIFY_MAX_PER_H"]:
@@ -611,6 +633,30 @@ class Engine:
     def px(self, price_sol):
         u = self.usd(price_sol)
         return fmt_price(u) if u is not None else fmt_price(price_sol, "") + " SOL"
+
+    def entry_msg(self, pos, tok, now):
+        e, c = html.escape, self.cfg
+        gate, s, feats = pos.signal
+        p = pos.entry_px                    # harga rata-rata isi, termasuk fee & slippage
+        sc = f"{s:.0%}" if s is not None else "belum dikalibrasi"
+        flags = []
+        if tok.bundle >= 3:
+            flags.append(f"bundle {tok.bundle}")
+        if feats["dev_sold_any"]:
+            flags.append("dev sudah jual sebagian")
+        if feats["creator_prev_rugs"]:
+            flags.append(f"pembuat pernah dump {feats['creator_prev_rugs']}x")
+        lines = [f"🟢 <b>BELI (paper) {e(tok.sym)}</b> #{pos.id} · gate {gate} · skor {sc}",
+                 f"Masuk {pos.size:g} SOL ({self.money(pos.size)}) @ {self.px(p)} · MC {self.money(tok.mcap)} · "
+                 f"umur {tok.age(now):.0f} detik",
+                 f"✅ {len(tok.buyers)} pembeli, top10 {tok.top_pct(10):.0%}, dev {tok.dev_pct():.0%}"]
+        if flags:
+            lines.append("🚩 " + e(", ".join(flags)))
+        lines += [f"🎯 TP {self.px(p * c['TP1_X'])} (+{c['TP1_X'] - 1:.0%}, jual {c['TP1_FRAC']:.0%}) · "
+                  f"SL {self.px(p * (1 - c['SL']))} (-{c['SL']:.0%}) · sisanya trailing {c['TRAIL']:.0%}",
+                  f"💼 Sisa saldo: {self.port['balance']:.3f} SOL ({self.money(self.port['balance'])})",
+                  f"https://pump.fun/coin/{e(tok.mint)}"]
+        return "\n".join(lines)
 
     def signal_msg(self, tok, now, gate, s, why, feats):
         e, c = html.escape, self.cfg
@@ -648,12 +694,17 @@ class Engine:
         c, p = self.cfg, self.port
         if p["stopped"]:
             return 0, "auto-stop aktif (saldo di bawah minimum)"
-        if c["SCORE_ALLIN_MIN"] is None and c["SCORE_HALF_MIN"] is None:
-            return 0, "cuma dicatat, ambang skor belum terbukti"
-        if s is None:
-            return 0, "skip, model skor belum ada"
         if any(x.kind == "portfolio" for x in self.positions):
             return 0, "skip, masih ada posisi terbuka (rotasi 1 posisi)"
+        if c["SCORE_ALLIN_MIN"] is None and c["SCORE_HALF_MIN"] is None:
+            # skor belum terbukti: paper trading tetap jalan dengan ukuran kecil tetap
+            size = min(c["PAPER_STAKE_SOL"], p["balance"])
+            if size <= c["PRIORITY_FEE"] * 2:
+                return 0, "saldo paper habis"
+            p["balance"] -= size
+            return size, f"beli paper {size:g} SOL (ukuran tetap, skor belum terbukti)"
+        if s is None:
+            return 0, "skip, model skor belum ada"
         if c["SCORE_ALLIN_MIN"] is not None and s >= c["SCORE_ALLIN_MIN"]:
             size, why = p["balance"], "ALL-IN"
         elif c["SCORE_HALF_MIN"] is not None and s >= c["SCORE_HALF_MIN"]:
@@ -682,8 +733,9 @@ class Engine:
             tag = "Paper" if pos.kind == "portfolio" else f"Shadow {pos.size:g} SOL"
             pnl = pos.out - pos.cost
             why = {"sl": "🛑 SL", "trailing": "📉 trailing stop", "time_stop": "⏱ time stop",
-                   "basi": "💤 koin sepi"}.get(pos.reason, pos.reason)
-            tail = f"\n💼 Saldo paper {self.port['balance']:.3f} SOL" if pos.kind == "portfolio" else ""
+                   "basi": "💤 koin sepi", "bot berhenti": "🔁 bot ganti run, dijual di harga pasar"}.get(pos.reason, pos.reason)
+            tail = (f"\n💼 Sisa saldo {self.port['balance']:.3f} SOL ({self.money(self.port['balance'])})"
+                    if pos.kind == "portfolio" else "")
             self.outbox.append(
                 f"{'✅' if pnl > 0 else '❌'} <b>{e(pos.sym)}</b> #{pos.id} ditutup ({why}): "
                 f"bersih setelah biaya {pnl:+.3f} SOL ({pos.multiple - 1:+.0%}) · puncak {pos.peak_x:.1f}x · "
@@ -707,18 +759,27 @@ class Engine:
         k = sum(o["won"] for o in outs)
         lo, hi = wilson(k, n)
         m, mlo, mhi = mean_ci([o["multiple"] for o in outs]) if outs else (0, 0, 0)
-        lines = [f"📊 <b>memescan</b> · {self.n_cand} kandidat · {n} shadow trade selesai"]
+        lines = [f"📊 <b>memescan</b> · {self.n_cand} koin lolos filter · {n} diuji (shadow)"]
         if n:
-            lines.append(f"Winrate (kena TP 2x): {k}/{n} = {k / n:.0%} (CI 95% {lo:.0%}–{hi:.0%})")
-            lines.append(f"Rata-rata hasil: {m:.2f}x per trade")
+            lines.append(f"Uji semua sinyal: kena TP 2x {k}/{n} = {k / n:.0%} (CI 95% {lo:.0%}–{hi:.0%}), "
+                         f"rata-rata {m:.2f}x per trade")
         if n < 30:
             lines.append("<i>Belum 30 trade, belum bisa disimpulkan apa-apa.</i>")
         if self.suppressed:
             lines.append(f"({self.suppressed} kandidat tidak dikirim karena batas "
                          f"{self.cfg['NOTIFY_MAX_PER_H']} pesan/jam, tetap dicatat)")
             self.suppressed = 0
-        lines.append(f"💼 Saldo paper: {self.port['balance']:.3f} SOL (awal {self.cfg['START_SOL']} SOL)"
+        pf = self.results("portfolio")
+        held = sum(x.size for x in self.positions if x.kind == "portfolio")
+        total = self.port["balance"] + held
+        start = self.cfg["START_SOL"]
+        w = sum(o["multiple"] > 1 for o in pf)
+        lines.append(f"💼 <b>Paper</b>: sisa saldo {self.port['balance']:.3f} SOL ({self.money(self.port['balance'])})"
+                     f"{f' + {held:.3f} SOL di posisi terbuka' if held else ''}"
                      f"{' · AUTO-STOP' if self.port['stopped'] else ''}")
+        lines.append(f"Modal awal {start:g} SOL · total {total:.3f} SOL ({total / start - 1:+.0%}) · "
+                     f"menang {w} / kalah {len(pf) - w}"
+                     f"{f' · winrate {w / len(pf):.0%}' if pf else ''}")
         return "\n".join(lines)
 
 
@@ -910,6 +971,7 @@ async def run(engine, duration=0):
                 await asyncio.sleep(backoff)
                 backoff = min(backoff * 2, 60)
     finally:
+        engine.flush(time.time())
         engine.save()
         # kirim sisa pesan sebelum berhenti
         await asyncio.sleep(0)
