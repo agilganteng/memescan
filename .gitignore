@@ -1,3 +1,7 @@
+data/
+venv/
+.env
+__pycache__/
 seen.json
 seen.json.tmp
-__pycache__/
+*.log

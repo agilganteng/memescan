@@ -1,42 +1,38 @@
-name: memescan
+name: memescan smoke test
+
+# Bukan tempat jalan 24 jam (GitHub tidak dibuat untuk bot dan jadwalnya molor berjam-jam).
+# Bot aslinya jalan di VPS lewat install-vps.sh. Workflow ini cuma tes manual:
+# sambung ke PumpPortal beberapa menit, lalu tampilkan kandidat yang tercatat.
+# Telegram sengaja tidak dipakai di sini supaya chat tidak kena pesan tes.
 
 on:
-  schedule:
-    # Tiap 15 menit. GitHub sering telat 5-20 menit kalau server lagi ramai.
-    - cron: "*/15 * * * *"
-  workflow_dispatch: {}  # tombol "Run workflow" buat tes manual
-
-concurrency:
-  group: memescan
-  cancel-in-progress: false
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Berapa menit"
+        default: "10"
 
 jobs:
-  scan:
+  smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      # seen.json (daftar coin yang sudah dikirim) disimpan di cache antar run,
-      # supaya coin yang sama tidak dikirim berulang tiap 15 menit.
-      - uses: actions/cache/restore@v4
-        with:
-          path: seen.json
-          key: memescan-seen-${{ github.run_id }}
-          restore-keys: memescan-seen-
-
-      - name: Scan
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python3 memescan.py --state seen.json
-
-      - uses: actions/cache/save@v4
+      - run: pip install -q "websockets>=10"
+      - name: Jalan
+        run: python3 -u memescan.py --data /tmp/ms --duration $(( ${{ github.event.inputs.minutes }} * 60 ))
+      - name: Hasil
+        if: always()
+        run: |
+          python3 memescan.py status --data /tmp/ms
+          echo "--- candidates.jsonl"
+          cat /tmp/ms/candidates.jsonl 2>/dev/null | head -c 20000 || echo "(kosong)"
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          path: seen.json
-          key: memescan-seen-${{ github.run_id }}
+          name: memescan-data
+          path: /tmp/ms/candidates.jsonl
+          if-no-files-found: ignore

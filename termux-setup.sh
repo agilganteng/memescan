@@ -1,44 +1,42 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Pasang memescan di HP Android (Termux), scan tiap 60 detik.
-# Jalankan di Termux:
+# Pasang memescan (sniper pump.fun, mode paper) di HP Android lewat Termux.
 #   curl -sL https://raw.githubusercontent.com/agilganteng/memescan/main/termux-setup.sh | bash
+# Jalankan ulang untuk update. Data & .env di ~/memescan/data tidak dihapus.
 set -e
 
 pkg update -y >/dev/null
 pkg install -y python git >/dev/null
+pip install -q "websockets>=10"
 
-if [ -d "$HOME/memescan" ]; then
-  git -C "$HOME/memescan" pull -q
+if [ -d "$HOME/memescan/.git" ]; then
+  git -C "$HOME/memescan" pull -q --ff-only
 else
   git clone -q https://github.com/agilganteng/memescan "$HOME/memescan"
 fi
+mkdir -p "$HOME/memescan/data"
 
-ENV="$HOME/memescan/.env"
-if [ ! -f "$ENV" ]; then
-  printf "Tempel TELEGRAM_BOT_TOKEN dari BotFather lalu Enter: "
-  read -r TOKEN < /dev/tty
-  echo "export TELEGRAM_BOT_TOKEN='$TOKEN'" > "$ENV"
-  chmod 600 "$ENV"
+if ! grep -qs '^TELEGRAM_BOT_TOKEN=.' "$HOME/memescan/data/.env" || ! grep -qs '^TELEGRAM_CHAT_ID=.' "$HOME/memescan/data/.env"; then
+  python3 "$HOME/memescan/memescan.py" setup-telegram </dev/tty
 fi
 
-cat > "$HOME/memescan/run.sh" <<'EOF'
+cat > "$HOME/memescan/run.sh" <<'RUN'
 #!/data/data/com.termux/files/usr/bin/bash
 # Biar Android tidak "menidurkan" Termux saat layar mati.
 termux-wake-lock 2>/dev/null || true
 cd "$HOME/memescan"
-. ./.env
 while true; do
-  python3 memescan.py --loop 60 --state seen.json >> scan.log 2>&1 || true
+  python3 -u memescan.py >> data/memescan.log 2>&1 || true
   sleep 10  # kalau crash, nyala lagi sendiri
 done
-EOF
+RUN
 chmod +x "$HOME/memescan/run.sh"
 
 pkill -f "memescan/run.sh" 2>/dev/null || true
+pkill -f "memescan.py" 2>/dev/null || true
 nohup "$HOME/memescan/run.sh" >/dev/null 2>&1 &
 
 echo
-echo "memescan jalan di background, scan tiap 60 detik."
-echo "Lihat log:   tail -f ~/memescan/scan.log"
-echo "Matikan:     pkill -f memescan/run.sh"
-echo "Nyalakan:    nohup ~/memescan/run.sh >/dev/null 2>&1 &"
+echo "memescan jalan di background (mode paper)."
+echo "Log:        tail -f ~/memescan/data/memescan.log"
+echo "Ringkasan:  python3 ~/memescan/memescan.py status"
+echo "Matikan:    pkill -f memescan/run.sh; pkill -f memescan.py"

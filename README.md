@@ -1,60 +1,66 @@
 # memescan
 
-Screener memecoin yang scan coin trending/baru di DexScreener tiap beberapa menit, kasih skor momentum + red flag risiko, lalu kirim **beberapa** kandidat sekaligus ke Telegram.
+Sniper memecoin pump.fun (Solana) dengan aturan yang sama seperti MemeSniper. **Mode paper saja**: tidak ada private key, tidak ada transaksi asli. Notifikasi ke Telegram.
 
-## Cara jalan
+## Pasang di VPS (jalan 24 jam)
 
-1. Butuh Python 3.9+ saja, tidak perlu install library.
-2. Coba sekali dulu: `python3 memescan.py`
-3. Untuk notifikasi Telegram:
-   - Chat ke **@BotFather** di Telegram, ketik `/newbot`, simpan token-nya.
-   - Kirim pesan apa saja ke bot kamu, lalu buka `https://api.telegram.org/bot<TOKEN>/getUpdates` dan ambil angka `chat.id`.
-   - Jalankan:
-     ```
-     export TELEGRAM_BOT_TOKEN=123:abc
-     export TELEGRAM_CHAT_ID=123456789
-     python3 memescan.py --loop 300
-     ```
+Login ke VPS sebagai root, lalu:
 
-## Yang dicek
+```
+curl -sL https://raw.githubusercontent.com/agilganteng/memescan/main/install-vps.sh | sudo bash
+```
 
-| Sinyal positif | Red flag / ditolak |
+Script akan minta token bot Telegram (dari @BotFather → /mybots → pilih bot → API Token). Token tidak tampil di layar dan disimpan di `/root/memescan/data/.env` (chmod 600, tidak pernah di-commit). Chat ID dicari otomatis dari /start ke bot. Bisa juga diisi langsung: `curl ... | sudo TELEGRAM_CHAT_ID=123 bash`.
+
+Hasilnya service systemd `memescan`, terpisah dari `memesniper`.
+
+| Perintah | Fungsi |
 |---|---|
-| Harga naik 5m & 1j | Likuiditas < $15K (ditolak) |
-| Volume 1j tinggi dibanding likuiditas | Volume 1j < $20K (ditolak) |
-| Mayoritas transaksi beli | Umur > 72 jam (ditolak) |
-| Umur 1–24 jam | Mint/freeze authority masih aktif di RugCheck (ditolak) |
-| Likuiditas sehat vs market cap | Lagi dump, jual mendominasi, sudah naik >1000% (risiko pucuk) |
+| `journalctl -u memescan -f` | log langsung |
+| `/root/memescan/venv/bin/python3 /root/memescan/memescan.py status` | ringkasan winrate & saldo paper |
+| `/root/memescan/venv/bin/python3 /root/memescan/memescan.py calibrate` | latih skor + uji ambang |
+| `systemctl stop memescan` / `start` | matikan / nyalakan |
 
-Untuk kandidat teratas, script juga ambil candle 5 menit dari GeckoTerminal dan cek EMA9 vs EMA21 (tren), RSI 14 (overbought di atas 85), dan lonjakan volume candle terakhir. Matikan dengan `--no-ta`.
+Update: jalankan ulang perintah `curl` di atas.
 
-Coin yang sudah dikirim tidak dikirim ulang selama 6 jam (`seen.json`).
+HP Android (Termux): `curl -sL https://raw.githubusercontent.com/agilganteng/memescan/main/termux-setup.sh | bash`.
 
-## Paper trading (uang bohongan)
+## Cara kerja
 
-Setiap sinyal otomatis "dibeli" $10 dari saldo bohongan $100, dengan TP +50% dan SL -25%. Tiap scan, posisi dicek pakai high/low candle 5 menit sejak scan terakhir (jadi TP/SL yang kesentuh di antara dua scan tetap tercatat; kalau dua-duanya kena di candle yang sama, dianggap SL) dan ditutup kalau kena TP, SL, lewat 24 jam, atau likuiditasnya ditarik (dianggap rug, -100%). Biaya + slippage diasumsikan 3% per sisi. Hasil menang/kalah dan saldo dikirim ke Telegram. Saldo dan posisi terbuka disimpan di `seen.json`, yang di GitHub Actions dibawa antar run lewat cache.
+1. Dengar semua koin baru pump.fun lewat websocket PumpPortal (gratis), lalu ikuti trade-nya.
+2. **Gate cepat**, umur 6–60 detik, cek tiap 1,5 detik: inflow ≥1 SOL, harga ≥1,05x dari awal, market cap ≤150 SOL, turun dari puncak ≤20%.
+3. **Gate lambat** untuk koin yang naik pelan, cek tiap 15 detik sampai umur 30 menit: dalam 180 detik terakhir harga ≥1,5x dan inflow ≥2,5 SOL, likuiditas ≥12 SOL, turun dari puncak ≤10%.
+4. **Filter holder**, dicek lagi 5 detik kemudian: ≥5 holder, top10 ≤35%, top20 ≤50%, dev ≤10%. Kalau dev sudah jual semua, ditolak.
+5. Lolos semua → **kandidat**: dicatat dengan 18 fitur, dikirim ke Telegram, dan diberi *shadow trade* 0,5 SOL untuk mengukur hasilnya.
+6. **Aturan jual**: 50% dijual di 2x, sisanya trailing 45% dari puncak (35% setelah 6x). SL −35%. Time stop 10 menit kalau belum pernah 1,3x. Koin tanpa trade 20 menit dianggap basi.
+7. **Simulasi realistis**: setiap order diisi 3 detik setelah keputusan, di harga kurva bonding saat itu, plus slippage 2%, fee pump.fun 1,25%, dan priority fee 0,0005 SOL.
 
-Tujuannya buat buktiin dulu sinyal ini menghasilkan atau tidak, sebelum pakai uang asli. Ubah dengan `--stake`, `--paper-start`, `--tp-pct`, `--sl-pct`, `--max-hold-h`, `--cost-pct`, atau matikan dengan `--no-paper`.
+## Skor dan ukuran posisi
 
-## Atur ambang
+- Skor 0–100% adalah peluang kena TP 2x, dari regresi logistik yang dilatih dengan `calibrate`. Butuh ≥100 kandidat berlabel.
+- Data dibagi berdasarkan waktu: 70% paling lama untuk melatih, 30% terbaru untuk menguji (hold-out).
+- Ambang mengikuti spesifikasi: skor ≥60% all-in, 50–60% setengah saldo, di bawah itu skip. Ambang **hanya aktif kalau terbukti di hold-out**: ≥30 trade di rentang itu dan batas bawah CI 95% rata-rata hasil > 1,00x.
+- Selama belum terbukti (`SCORE_ALLIN_MIN` / `SCORE_HALF_MIN` kosong), saldo paper tidak dipakai. Kandidat cuma dicatat + shadow trade.
+- Satu posisi sekaligus, koin yang sama tidak pernah dibeli ulang. Saldo paper mulai 0,5 SOL. Auto-stop di bawah 0,1 SOL, lanjutkan dengan `--resume`.
+- `calibrate` juga membuat simulasi modal $200 di data hold-out (PnL + winrate). Data sebelum memescan jalan tidak ada, jadi periode Jan 2026 – sekarang tidak bisa disimulasikan.
 
-```
-python3 memescan.py --loop 300 --min-liq 30000 --min-score 60 --top 3 --chain solana
-```
-Chain lain: `base`, `bsc`, `ethereum` (RugCheck hanya untuk Solana).
+## Telegram
 
-## Penting
+- 🎯 kandidat baru (maksimal 30 per jam, sisanya tetap dicatat)
+- ✅/❌ hasil shadow trade dan trade paper
+- 📊 ringkasan tiap 6 jam: jumlah trade, winrate dengan CI 95%, rata-rata hasil, saldo paper
 
-Ini **sinyal, bukan saran beli**. Skor tinggi artinya "lagi ramai dan tidak ada red flag yang kelihatan", bukan "pasti naik". Mayoritas memecoin baru jatuh ke nol, dan rug pull bisa lolos semua cek otomatis. Pakai uang yang siap hilang.
+## Atur angka
 
-## Jalan di HP Android (scan tiap 1 menit)
+Semua angka bisa diubah di `data/.env` (nama variabel lihat `DEFAULTS` di `memescan.py`), lalu `systemctl restart memescan`. Jangan isi `SCORE_ALLIN_MIN` manual: biarkan `calibrate` yang mengisi kalau terbukti.
 
-1. Install **Termux** dari F-Droid (versi Play Store sudah lama tidak diupdate).
-2. Buka Termux, jalankan:
-   ```
-   curl -sL https://raw.githubusercontent.com/agilganteng/memescan/main/termux-setup.sh | bash
-   ```
-3. Tempel token Telegram saat diminta.
-4. Di pengaturan Android, matikan optimasi baterai untuk Termux, dan biarkan HP dicolok charger + WiFi.
+## Batasan yang perlu diketahui
 
-Kalau sudah jalan di HP, matikan jadwal di GitHub (tab Actions → memescan → ⋯ → Disable workflow) supaya sinyal tidak dobel. Saldo paper di HP mulai dari awal lagi.
+- Data holder hanya dari trade yang terlihat sejak bot subscribe (beberapa ratus milidetik setelah koin dibuat). Pembeli di blok yang sama dengan pembuatan koin bisa terlewat, jadi konsentrasi holder bisa sedikit lebih kecil dari kenyataan.
+- Riwayat dev (berapa koin dan rug sebelumnya) hanya sejak bot pertama jalan.
+- Mint/freeze authority tidak dicek karena selalu dicabut untuk koin di kurva bonding pump.fun.
+- Ini sinyal untuk riset, bukan saran beli. Riset MemeSniper sebelumnya menemukan semua strategi yang diuji rugi di data out-of-sample.
+
+## Versi lama
+
+Screener DexScreener yang lama ada di `legacy/screener.py` (tidak dipakai lagi).
