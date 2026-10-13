@@ -1,38 +1,79 @@
-name: memescan smoke test
+name: memescan
 
-# Bukan tempat jalan 24 jam (GitHub tidak dibuat untuk bot dan jadwalnya molor berjam-jam).
-# Bot aslinya jalan di VPS lewat install-vps.sh. Workflow ini cuma tes manual:
-# sambung ke RPC publik Solana beberapa menit, lalu tampilkan kandidat yang tercatat.
-# Telegram sengaja tidak dipakai di sini supaya chat tidak kena pesan tes.
+# memescan paper trading di GitHub Actions, notif ke Telegram.
+# Satu run jalan ~5 jam 50 menit (batas GitHub 6 jam). Begitu mulai, run ini langsung
+# mengantrekan run berikutnya, jadi begitu selesai yang baru langsung jalan (jeda ~1 menit).
+# Jadwal tiap 30 menit cuma cadangan kalau rantainya putus.
+# Data (saldo paper, kandidat, hasil) dibawa antar run lewat cache.
 
 on:
+  schedule:
+    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
       minutes:
-        description: "Berapa menit"
-        default: "10"
+        description: "Berapa menit per run"
+        default: "350"
+      notify:
+        description: "Kirim ke Telegram (1/0)"
+        default: "1"
+      chain:
+        description: "Antrekan run berikutnya (1/0)"
+        default: "1"
+
+concurrency:
+  group: memescan
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
 
 jobs:
-  smoke:
+  run:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 358
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install -q "websockets>=10"
+
+      - name: Antrekan run berikutnya
+        if: github.event_name == 'schedule' || github.event.inputs.chain != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run memescan.yml --ref "${{ github.ref_name }}" || true
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-${{ github.run_id }}
+          restore-keys: memescan-data-
+
+      # chat Telegram yang dulu sudah terkunci di screener lama
+      - uses: actions/cache/restore@v4
+        with:
+          path: seen.json
+          key: memescan-seen-none
+          restore-keys: memescan-seen-
+      - run: mkdir -p data && [ -f seen.json ] && cp seen.json data/seen.json || true
+
       - name: Jalan
-        run: python3 -u memescan.py --data /tmp/ms --duration $(( ${{ github.event.inputs.minutes }} * 60 ))
-      - name: Hasil
-        if: always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ github.event.inputs.notify != '0' && secrets.TELEGRAM_BOT_TOKEN || '' }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python3 memescan.py status --data /tmp/ms
-          echo "--- candidates.jsonl"
-          cat /tmp/ms/candidates.jsonl 2>/dev/null | head -c 20000 || echo "(kosong)"
-      - uses: actions/upload-artifact@v4
+          MIN="${{ github.event.inputs.minutes }}"
+          python3 -u memescan.py --data data --duration $(( ${MIN:-350} * 60 ))
+
+      - name: Ringkasan
+        if: always()
+        run: python3 memescan.py status --data data || true
+
+      - uses: actions/cache/save@v4
         if: always()
         with:
-          name: memescan-data
-          path: /tmp/ms/candidates.jsonl
-          if-no-files-found: ignore
+          path: data
+          key: memescan-data-${{ github.run_id }}

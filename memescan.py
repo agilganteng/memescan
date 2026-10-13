@@ -393,6 +393,7 @@ class Engine:
         self.n_cand = st.get("n_cand", 0)
         self.last_summary = st.get("last_summary", time.time())
         self.last_welcome = st.get("last_welcome", 0)
+        self.tg_chat = st.get("tg_chat", "")
         self.notified = set()
         self.orphans, self.orphan_q = {}, collections.deque()
         self.sample = set()        # id kandidat yang dikirim ke Telegram
@@ -415,7 +416,7 @@ class Engine:
     def save(self):
         self._save("state.json", {"seen": list(self.seen)[-50000:], "portfolio": self.port,
                                   "n_cand": self.n_cand, "last_summary": self.last_summary,
-                                  "last_welcome": self.last_welcome})
+                                  "last_welcome": self.last_welcome, "tg_chat": self.tg_chat})
         if len(self.creators) > 200000:
             self.creators = dict(list(self.creators.items())[-100000:])
         self._save("creators.json", self.creators)
@@ -1087,6 +1088,29 @@ def setup(data_dir):
 
 # ---------------------------------------------------------------- main
 
+def find_chat(data_dir, token):
+    """Chat Telegram kalau TELEGRAM_CHAT_ID kosong (misal di GitHub Actions): yang sudah
+    terkunci di state.json, lalu seen.json versi lama, lalu /start pertama ke bot."""
+    for name in ("state.json", "seen.json"):
+        try:
+            with open(os.path.join(data_dir, name)) as f:
+                c = str(json.load(f).get("tg_chat") or "")
+            if c:
+                return c
+        except (OSError, ValueError, AttributeError):
+            pass
+    try:
+        ups = _tg_api(token, "getUpdates").get("result") or []
+    except (urllib.error.URLError, OSError, ValueError):
+        return ""
+    for u in ups:
+        c = (u.get("message") or {}).get("chat") or {}
+        if c.get("type") == "private":
+            return str(c["id"])
+    print("[warn] telegram: chat belum ketemu, kirim /start ke bot kamu", file=sys.stderr)
+    return ""
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "setup"])
@@ -1101,6 +1125,8 @@ def main():
         return
     cfg = load_config(a.data)
     tg = Telegram(cfg)
+    if tg.token and not tg.chat:
+        tg.chat = find_chat(a.data, tg.token)
     if not (tg.token and tg.chat):
         print("[warn] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID kosong, pesan cuma dicetak di log. "
               "Jalankan: memescan.py setup", file=sys.stderr)
@@ -1121,6 +1147,9 @@ def main():
             if cfg[k] is None:          # .env menang; kalau kosong pakai hasil kalibrasi
                 cfg[k] = model.get(k)
     eng = Engine(cfg, a.data, tg, model)
+    if tg.chat and not eng.tg_chat:
+        eng.tg_chat = tg.chat
+        eng.save()
 
     if a.cmd == "status":
         print(eng.summary())
@@ -1129,7 +1158,7 @@ def main():
         eng.port["stopped"] = False
         eng.save()
 
-    if time.time() - eng.last_welcome > 1800:   # jangan spam kalau systemd restart berulang
+    if time.time() - eng.last_welcome > 12 * 3600:   # jangan spam kalau sering restart
         eng.last_welcome = time.time()
         tg.send("👋 <b>memescan</b> (sniper pump.fun, mode paper) aktif.\n" + eng.summary())
     try:
