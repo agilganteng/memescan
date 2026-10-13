@@ -61,7 +61,8 @@ DEFAULTS = {
     "TP1_X": 2.0, "TP1_FRAC": 0.5, "TRAIL": 0.45, "TRAIL_TIGHT_X": 6.0, "TRAIL_TIGHT": 0.35,
     "SL": 0.35, "TIME_STOP_S": 600.0, "TIME_STOP_X": 1.3, "STALE_S": 1200.0,
     # modal & ukuran posisi
-    "START_SOL": 0.5, "MIN_BALANCE": 0.1, "SHADOW_SOL": 0.5, "PAPER_STAKE_SOL": 0.05,
+    # saldo paper dalam USD; tiap beli ditukar ke SOL di harga SOL saat itu
+    "START_USD": 100.0, "MIN_BALANCE_USD": 20.0, "PAPER_STAKE_USD": 10.0, "SHADOW_SOL": 0.5,
     "SCORE_ALLIN_MIN": None, "SCORE_HALF_MIN": None,
     # lain-lain
     "BUNDLE_WINDOW": 1.0, "PRUNE_AGE": 120.0, "PRUNE_INFLOW": 0.5, "IDLE_DROP": 300.0,
@@ -97,6 +98,11 @@ def load_config(data_dir):
 
 
 # ---------------------------------------------------------------- format
+
+def fmt_bal(x):
+    """Saldo/PnL dalam dolar dengan sen."""
+    return f"-${-x:,.2f}" if x < 0 else f"${x:,.2f}"
+
 
 def fmt_usd(x):
     for div, suf in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
@@ -319,6 +325,7 @@ class Position:
         self.pending = [("buy", now + cfg["EXEC_DELAY"], 1.0, "entry")]
         self.closed = False
         self.reason = ""
+        self.cost_usd, self.sol_usd = 0.0, None   # khusus posisi paper
 
     def x(self, tok):
         return tok.price / self.entry_px if self.entry_px else 1.0
@@ -422,13 +429,24 @@ class Engine:
         st = self._load("state.json", {})
         self.seen = dict.fromkeys(st.get("seen", []))  # mint yang pernah jadi kandidat (urut waktu)
         self.creators = self._load("creators.json", {})
-        self.port = st.get("portfolio") or {"balance": cfg["START_SOL"], "stopped": False}
+        self.port = st.get("portfolio")
+        reset = self.port is not None and "usd" not in self.port
+        if self.port is None or reset:
+            self.port = {"usd": cfg["START_USD"], "start_usd": cfg["START_USD"], "stopped": False,
+                         "since": time.time()}
         self.n_cand = st.get("n_cand", 0)
         self.last_summary = st.get("last_summary", time.time())
+        self._recover_from = st
         self.last_welcome = st.get("last_welcome", 0)
         self.tg_chat = st.get("tg_chat", "")
         self.notified = set()
         self.sol_usd = None
+        if reset:   # saldo lama dalam SOL (sebelum modal $100) tidak dipakai lagi
+            self.outbox.append(f"♻️ Modal paper direset ke {fmt_bal(cfg['START_USD'])}. "
+                               "Saldo dan posisi paper lama dihapus.")
+        else:
+            self.recover(self._recover_from)
+        del self._recover_from
         self.orphans, self.orphan_q = {}, collections.deque()
         self.sample = set()        # id kandidat yang dikirim ke Telegram
         self.hour_start, self.n_hour, self.suppressed = time.time(), 0, 0
@@ -447,10 +465,50 @@ class Engine:
             json.dump(obj, f)
         os.replace(p + ".tmp", p)
 
-    def save(self):
+    def open_paper(self):
+        """Posisi paper terbuka + nilainya dalam USD kalau dijual sekarang (untuk pemulihan)."""
+        out = []
+        for p in self.positions:
+            if p.kind != "portfolio":
+                continue
+            tok = self.tokens.get(p.mint)
+            px = self.sol_usd or p.sol_usd
+            if p.entry_px is None:
+                value = p.cost_usd                  # order beli belum terisi: uang kembali
+            else:
+                sol = p.out
+                if tok and p.tokens:
+                    c = self.cfg
+                    sol += max(0.0, curve_sell(tok.v_sol, tok.v_tok, p.tokens) * (1 - c["SLIPPAGE"])
+                               * (1 - c["FEE_PCT"]) - c["PRIORITY_FEE"])
+                value = sol * px
+            out.append({"id": p.id, "mint": p.mint, "sym": p.sym, "cost_usd": p.cost_usd,
+                        "cost": p.cost or p.size, "value_usd": value, "opened": p.opened})
+        return out
+
+    def save_state(self):
         self._save("state.json", {"seen": list(self.seen)[-50000:], "portfolio": self.port,
                                   "n_cand": self.n_cand, "last_summary": self.last_summary,
-                                  "last_welcome": self.last_welcome, "tg_chat": self.tg_chat})
+                                  "last_welcome": self.last_welcome, "tg_chat": self.tg_chat,
+                                  "open_paper": self.open_paper()})
+
+    def recover(self, st):
+        """Bot sebelumnya mati mendadak dengan posisi paper terbuka: tutup di nilai terakhir
+        yang tersimpan (paling lama 60 detik sebelumnya) supaya saldo tetap benar."""
+        now = time.time()
+        for o in st.get("open_paper") or []:
+            got = o["value_usd"]
+            self.port["usd"] += got
+            mult = got / o["cost_usd"] if o["cost_usd"] else 0.0
+            self.log({"id": o["id"], "t": now, "mint": o["mint"], "kind": "portfolio", "outcome": {
+                "won": False, "multiple": round(mult, 4), "reason": "bot mati mendadak", "peak_x": None,
+                "held_s": round(now - o["opened"], 1), "usd_cost": o["cost_usd"], "usd_out": got}})
+            self.outbox.append(f"⚠️ <b>{html.escape(o['sym'])}</b> #{o['id']}: bot sempat mati mendadak, "
+                               f"posisi paper ditutup di nilai terakhir {fmt_bal(got - o['cost_usd'])}. "
+                               f"💼 Sisa saldo {fmt_bal(self.port['usd'])}")
+
+    def save(self):
+        self.save_state()
         if len(self.creators) > 200000:
             self.creators = dict(list(self.creators.items())[-100000:])
         self._save("creators.json", self.creators)
@@ -556,9 +614,12 @@ class Engine:
             if pos.kind == "portfolio" and pos.entry_px and not getattr(pos, "announced", False):
                 pos.announced = True
                 self.outbox.append(self.entry_msg(pos, tok, now))
+                self.save_state()
             if done:
                 self.positions.remove(pos)
                 self.close(pos, now)
+                if pos.kind == "portfolio":
+                    self.save_state()
 
         self.prune(now)
         if now - self.last_summary >= c["SUMMARY_EVERY_H"] * 3600:
@@ -572,7 +633,7 @@ class Engine:
             tok = self.tokens.get(pos.mint)
             self.positions.remove(pos)
             if pos.entry_px is None or not tok:
-                self.port["balance"] += pos.size if pos.entry_px is None else 0.0
+                self.port["usd"] += pos.cost_usd if pos.entry_px is None else pos.out * (self.sol_usd or pos.sol_usd)
                 continue
             pos._fill(tok, "sell", 1.0)
             pos.closed, pos.reason = True, "bot berhenti"
@@ -609,9 +670,13 @@ class Engine:
         self.positions.append(Position(self.n_cand, tok, self.cfg["SHADOW_SOL"], "shadow", now, self.cfg))
         size, why = self.sizing(s)
         if size:
-            pos = Position(self.n_cand, tok, size, "portfolio", now, self.cfg)
+            # total SOL yang keluar (termasuk priority fee) = size USD / harga SOL
+            sol = size / self.sol_usd - self.cfg["PRIORITY_FEE"]
+            pos = Position(self.n_cand, tok, sol, "portfolio", now, self.cfg)
+            pos.cost_usd, pos.sol_usd = size, self.sol_usd
             pos.signal = (gate, s, feats)
             self.positions.append(pos)
+            self.save_state()   # saldo langsung tersimpan
             return              # pesan dikirim waktu order beli terisi
         if now - self.hour_start >= 3600:
             self.hour_start, self.n_hour = now, 0
@@ -647,14 +712,14 @@ class Engine:
         if feats["creator_prev_rugs"]:
             flags.append(f"pembuat pernah dump {feats['creator_prev_rugs']}x")
         lines = [f"🟢 <b>BELI (paper) {e(tok.sym)}</b> #{pos.id} · gate {gate} · skor {sc}",
-                 f"Masuk {pos.size:g} SOL ({self.money(pos.size)}) @ {self.px(p)} · MC {self.money(tok.mcap)} · "
+                 f"Masuk {fmt_bal(pos.cost_usd)} ({pos.cost:.3f} SOL) @ {self.px(p)} · MC {self.money(tok.mcap)} · "
                  f"umur {tok.age(now):.0f} detik",
                  f"✅ {len(tok.buyers)} pembeli, top10 {tok.top_pct(10):.0%}, dev {tok.dev_pct():.0%}"]
         if flags:
             lines.append("🚩 " + e(", ".join(flags)))
         lines += [f"🎯 TP {self.px(p * c['TP1_X'])} (+{c['TP1_X'] - 1:.0%}, jual {c['TP1_FRAC']:.0%}) · "
                   f"SL {self.px(p * (1 - c['SL']))} (-{c['SL']:.0%}) · sisanya trailing {c['TRAIL']:.0%}",
-                  f"💼 Sisa saldo: {self.port['balance']:.3f} SOL ({self.money(self.port['balance'])})",
+                  f"💼 Sisa saldo: {fmt_bal(self.port['usd'])}",
                   f"https://pump.fun/coin/{e(tok.mint)}"]
         return "\n".join(lines)
 
@@ -696,58 +761,67 @@ class Engine:
             return 0, "auto-stop aktif (saldo di bawah minimum)"
         if any(x.kind == "portfolio" for x in self.positions):
             return 0, "skip, masih ada posisi terbuka (rotasi 1 posisi)"
+        if not self.sol_usd:
+            return 0, "skip, harga SOL belum didapat"
         if c["SCORE_ALLIN_MIN"] is None and c["SCORE_HALF_MIN"] is None:
             # skor belum terbukti: paper trading tetap jalan dengan ukuran kecil tetap
-            size = min(c["PAPER_STAKE_SOL"], p["balance"])
-            if size <= c["PRIORITY_FEE"] * 2:
-                return 0, "saldo paper habis"
-            p["balance"] -= size
-            return size, f"beli paper {size:g} SOL (ukuran tetap, skor belum terbukti)"
-        if s is None:
+            size, why = min(c["PAPER_STAKE_USD"], p["usd"]), "ukuran tetap, skor belum terbukti"
+        elif s is None:
             return 0, "skip, model skor belum ada"
-        if c["SCORE_ALLIN_MIN"] is not None and s >= c["SCORE_ALLIN_MIN"]:
-            size, why = p["balance"], "ALL-IN"
+        elif c["SCORE_ALLIN_MIN"] is not None and s >= c["SCORE_ALLIN_MIN"]:
+            size, why = p["usd"], "ALL-IN"
         elif c["SCORE_HALF_MIN"] is not None and s >= c["SCORE_HALF_MIN"]:
-            size, why = p["balance"] / 2, "setengah saldo"
+            size, why = p["usd"] / 2, "setengah saldo"
         else:
             return 0, "skip, skor di bawah ambang"
-        p["balance"] -= size
-        return size, f"beli {why} ({size:.3f} SOL)"
+        if size / self.sol_usd <= c["PRIORITY_FEE"] * 4:
+            return 0, "saldo paper habis"
+        p["usd"] -= size
+        return size, f"beli paper {fmt_bal(size)} ({why})"
 
     def close(self, pos, now):
         e = html.escape
+        out_usd = None
         if pos.kind == "portfolio":
-            self.port["balance"] += pos.out
-            if self.port["balance"] < self.cfg["MIN_BALANCE"] and not self.port["stopped"]:
+            out_usd = pos.out * (self.sol_usd or pos.sol_usd)
+            self.port["usd"] += out_usd
+            if self.port["usd"] < self.cfg["MIN_BALANCE_USD"] and not self.port["stopped"]:
                 self.port["stopped"] = True
-                self.outbox.append(f"⛔ Saldo paper {self.port['balance']:.3f} SOL di bawah minimum. "
+                self.outbox.append(f"⛔ Saldo paper {fmt_bal(self.port['usd'])} di bawah minimum. "
                                    "Pembelian berhenti. Lanjutkan dengan <code>memescan.py --resume</code>.")
-        self.log({"id": pos.id, "t": now, "mint": pos.mint, "kind": pos.kind, "outcome": {
-            "won": pos.won, "multiple": round(pos.multiple, 4), "reason": pos.reason,
-            "peak_x": round(pos.peak_x, 3), "held_s": round(now - pos.opened, 1),
-            "cost": pos.cost, "out": pos.out}})
+        oc = {"won": pos.won, "multiple": round(pos.multiple, 4), "reason": pos.reason,
+              "peak_x": round(pos.peak_x, 3), "held_s": round(now - pos.opened, 1),
+              "cost": pos.cost, "out": pos.out}
+        if out_usd is not None:
+            oc.update(usd_cost=round(pos.cost_usd, 4), usd_out=round(out_usd, 4))
+        self.log({"id": pos.id, "t": now, "mint": pos.mint, "kind": pos.kind, "outcome": oc})
         # posisi paper selalu dilaporkan; shadow hanya kalau kandidatnya dikirim ke Telegram
         if pos.kind == "portfolio" or pos.id in self.notified:
             if pos.kind == "shadow":
                 self.notified.discard(pos.id)
             tag = "Paper" if pos.kind == "portfolio" else f"Shadow {pos.size:g} SOL"
-            pnl = pos.out - pos.cost
+            if pos.kind == "portfolio":
+                pnl, pct = out_usd - pos.cost_usd, out_usd / pos.cost_usd - 1
+                pnl_s = fmt_bal(pnl) if pnl < 0 else "+" + fmt_bal(pnl)
+            else:
+                pnl, pct = pos.out - pos.cost, pos.multiple - 1
+                pnl_s = f"{pnl:+.3f} SOL"
             why = {"sl": "🛑 SL", "trailing": "📉 trailing stop", "time_stop": "⏱ time stop",
                    "basi": "💤 koin sepi", "bot berhenti": "🔁 bot ganti run, dijual di harga pasar"}.get(pos.reason, pos.reason)
-            tail = (f"\n💼 Sisa saldo {self.port['balance']:.3f} SOL ({self.money(self.port['balance'])})"
+            tail = (f"\n💼 Sisa saldo {fmt_bal(self.port['usd'])}"
                     if pos.kind == "portfolio" else "")
             self.outbox.append(
                 f"{'✅' if pnl > 0 else '❌'} <b>{e(pos.sym)}</b> #{pos.id} ditutup ({why}): "
-                f"bersih setelah biaya {pnl:+.3f} SOL ({pos.multiple - 1:+.0%}) · puncak {pos.peak_x:.1f}x · "
+                f"bersih setelah biaya {pnl_s} ({pct:+.0%}) · puncak {pos.peak_x:.1f}x · "
                 f"{(now - pos.opened) / 60:.0f} menit{' · TP 2x kena' if pos.won else ''} [{tag}]{tail}")
 
-    def results(self, kind="shadow"):
+    def results(self, kind="shadow", since=0):
         outs = []
         try:
             with open(os.path.join(self.dir, "candidates.jsonl")) as f:
                 for line in f:
                     r = json.loads(line)
-                    if r.get("kind") == kind and "outcome" in r:
+                    if r.get("kind") == kind and "outcome" in r and r.get("t", 0) >= since:
                         outs.append(r["outcome"])
         except OSError:
             pass
@@ -769,17 +843,19 @@ class Engine:
             lines.append(f"({self.suppressed} kandidat tidak dikirim karena batas "
                          f"{self.cfg['NOTIFY_MAX_PER_H']} pesan/jam, tetap dicatat)")
             self.suppressed = 0
-        pf = self.results("portfolio")
-        held = sum(x.size for x in self.positions if x.kind == "portfolio")
-        total = self.port["balance"] + held
-        start = self.cfg["START_SOL"]
-        w = sum(o["multiple"] > 1 for o in pf)
-        lines.append(f"💼 <b>Paper</b>: sisa saldo {self.port['balance']:.3f} SOL ({self.money(self.port['balance'])})"
-                     f"{f' + {held:.3f} SOL di posisi terbuka' if held else ''}"
+        pf = self.results("portfolio", self.port.get("since", 0))
+        held = sum(x.cost_usd for x in self.positions if x.kind == "portfolio")
+        total = self.port["usd"] + held
+        start = self.port["start_usd"]
+        w = sum(o.get("usd_out", 0) > o.get("usd_cost", 0) for o in pf)
+        lines.append(f"💼 <b>Paper</b>: sisa saldo {fmt_bal(self.port['usd'])}"
+                     f"{f' + {fmt_bal(held)} di posisi terbuka (harga beli)' if held else ''}"
                      f"{' · AUTO-STOP' if self.port['stopped'] else ''}")
-        lines.append(f"Modal awal {start:g} SOL · total {total:.3f} SOL ({total / start - 1:+.0%}) · "
+        lines.append(f"Modal awal {fmt_bal(start)} · total {fmt_bal(total)} ({total / start - 1:+.1%}) · "
                      f"menang {w} / kalah {len(pf) - w}"
                      f"{f' · winrate {w / len(pf):.0%}' if pf else ''}")
+        if pf and len(pf) < 30:
+            lines.append(f"<i>Paper baru {len(pf)} trade, belum bisa disimpulkan.</i>")
         return "\n".join(lines)
 
 
@@ -1029,9 +1105,9 @@ async def telegram_sender(engine):
     next_px = 0.0
     while True:
         if time.time() >= next_px:
-            next_px = time.time() + 600
             v = await loop.run_in_executor(None, fetch_sol_usd)
             engine.sol_usd = v or engine.sol_usd
+            next_px = time.time() + (600 if v else 30)
         while engine.outbox:
             await engine.tg.asend(engine.outbox.pop(0))
         await asyncio.sleep(0.5)

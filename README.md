@@ -51,8 +51,9 @@ HP Android (Termux): `curl -sL https://raw.githubusercontent.com/agilganteng/mem
 - Skor 0–100% adalah peluang kena TP 2x, dari regresi logistik yang dilatih dengan `calibrate`. Butuh ≥100 kandidat berlabel.
 - Data dibagi berdasarkan waktu: 70% paling lama untuk melatih, 30% terbaru untuk menguji (hold-out).
 - Ambang mengikuti spesifikasi: skor ≥60% all-in, 50–60% setengah saldo, di bawah itu skip. Ambang **hanya aktif kalau terbukti di hold-out**: ≥30 trade di rentang itu dan batas bawah CI 95% rata-rata hasil > 1,00x.
-- Selama belum terbukti (`SCORE_ALLIN_MIN` / `SCORE_HALF_MIN` kosong), saldo paper tidak dipakai. Kandidat cuma dicatat + shadow trade.
-- Satu posisi sekaligus, koin yang sama tidak pernah dibeli ulang. Saldo paper mulai 0,5 SOL. Auto-stop di bawah 0,1 SOL, lanjutkan dengan `--resume`.
+- **Saldo paper mulai $100.** Selama skor belum terbukti (`SCORE_ALLIN_MIN` / `SCORE_HALF_MIN` kosong), tiap kandidat dibeli paper $10 (ukuran tetap). Dolar ditukar ke SOL di harga SOL saat beli dan saat jual.
+- Satu posisi sekaligus, koin yang sama tidak pernah dibeli ulang. Auto-stop di bawah $20, lanjutkan dengan `--resume`.
+- Saldo dan posisi terbuka disimpan tiap beli/jual dan tiap menit. Kalau run berhenti, posisi dijual di harga saat itu. Kalau run mati mendadak, run berikutnya menutupnya di nilai terakhir yang tersimpan.
 - `calibrate` juga membuat simulasi modal $200 di data hold-out (PnL + winrate). Data sebelum memescan jalan tidak ada, jadi periode Jan 2026 – sekarang tidak bisa disimulasikan.
 
 ## Telegram
