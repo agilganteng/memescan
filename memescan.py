@@ -20,12 +20,13 @@ Pakai:
     python3 memescan.py --duration 300  # jalan 5 menit lalu berhenti (tes)
     python3 memescan.py status          # ringkasan hasil
     python3 memescan.py calibrate       # latih skor + uji ambang di data hold-out
-    python3 memescan.py setup-telegram  # simpan token bot + chat id ke .env
+    python3 memescan.py setup           # simpan token bot, chat id, RPC ke .env
 
 Butuh: Python 3.9+ dan `pip install websockets`.
 """
 import argparse
 import asyncio
+import base64
 import html
 import json
 import math
@@ -36,7 +37,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-WS_URL = "wss://pumpportal.fun/api/data"
+PUMP_PROGRAM = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+PUBLIC_RPC_WS = "wss://api.mainnet-beta.solana.com"
+SOL_MINT = "So11111111111111111111111111111111111111112"
 SUPPLY = 1_000_000_000      # supply token pump.fun (unit UI)
 VIRTUAL_SOL = 30.0          # SOL virtual awal di kurva bonding
 
@@ -78,7 +81,7 @@ def load_config(data_dir):
                     if k.startswith("export "):
                         k = k[7:].strip()
                     env[k] = v.strip().strip("'\"")
-    env.update({k: v for k, v in os.environ.items() if k in DEFAULTS or k.startswith("TELEGRAM")})
+    env.update({k: v for k, v in os.environ.items() if k in DEFAULTS or k.startswith("TELEGRAM") or k == "RPC_WS_URL"})
     cfg = {}
     for k, d in DEFAULTS.items():
         v = env.get(k)
@@ -86,6 +89,7 @@ def load_config(data_dir):
             cfg[k] = d
         else:
             cfg[k] = int(float(v)) if isinstance(d, int) else float(v)
+    cfg["RPC_WS_URL"] = env.get("RPC_WS_URL", "").strip()
     cfg["TELEGRAM_BOT_TOKEN"] = env.get("TELEGRAM_BOT_TOKEN", "").strip()
     cfg["TELEGRAM_CHAT_ID"] = env.get("TELEGRAM_CHAT_ID", "").strip()
     return cfg
@@ -381,7 +385,6 @@ class Engine:
         self.tokens = {}
         self.positions = []          # shadow + portfolio yang masih terbuka
         self.outbox = []             # pesan telegram yang menunggu dikirim
-        self.sub_del = []
         self.stats = {"create": 0, "trade": 0, "cepat": 0, "lambat": 0, "recheck_gagal": 0}
         st = self._load("state.json", {})
         self.seen = dict.fromkeys(st.get("seen", []))  # mint yang pernah jadi kandidat (urut waktu)
@@ -535,7 +538,6 @@ class Engine:
             drop += [t.mint for t in rest[:len(self.tokens) - len(drop) - int(c["MAX_TRACKED"])]]
         for m in drop:
             self.tokens.pop(m, None)
-            self.sub_del.append(m)
 
     # --- kandidat & posisi
     def candidate(self, tok, now, gate):
@@ -643,24 +645,163 @@ class Engine:
         return "\n".join(lines)
 
 
+# ---------------------------------------------------------------- dekode event pump.fun
+# Data diambil langsung dari log transaksi program pump.fun lewat RPC Solana (logsSubscribe),
+# jadi semua trade sejak koin dibuat ikut terlihat. Layout dari IDL resmi pump.fun.
+
+_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+DISC_CREATE = bytes([27, 114, 169, 77, 222, 235, 99, 118])
+DISC_TRADE = bytes([189, 219, 127, 211, 78, 230, 97, 238])
+
+
+def b58(b):
+    n = int.from_bytes(b, "big")
+    out = ""
+    while n:
+        n, r = divmod(n, 58)
+        out = _B58[r] + out
+    return "1" * (len(b) - len(b.lstrip(b"\0"))) + out
+
+
+class _Buf:
+    def __init__(self, b):
+        self.b, self.i = b, 8
+
+    def take(self, n):
+        v = self.b[self.i:self.i + n]
+        if len(v) < n:
+            raise ValueError("data terpotong")
+        self.i += n
+        return v
+
+    def u64(self):
+        return int.from_bytes(self.take(8), "little")
+
+    def i64(self):
+        return int.from_bytes(self.take(8), "little", signed=True)
+
+    def key(self):
+        return b58(self.take(32))
+
+    def str(self):
+        return self.take(self.u32()).decode("utf-8", "replace")
+
+    def u32(self):
+        return int.from_bytes(self.take(4), "little")
+
+    def flag(self):
+        return self.take(1) != b"\0"
+
+
+def decode_event(raw):
+    """bytes 'Program data' -> dict event, atau None kalau bukan create/trade."""
+    d = raw[:8]
+    try:
+        if d == DISC_TRADE:
+            r = _Buf(raw)
+            ev = {"kind": "trade", "mint": r.key(), "sol": r.u64() / 1e9, "tok": r.u64() / 1e6,
+                  "buy": r.flag(), "user": r.key()}
+            r.i64()
+            ev["v_sol"], ev["v_tok"] = r.u64() / 1e9, r.u64() / 1e6
+            return ev
+        if d == DISC_CREATE:
+            r = _Buf(raw)
+            ev = {"kind": "create", "name": r.str(), "symbol": r.str()}
+            r.str()                                   # uri
+            ev["mint"] = r.key()
+            r.key()                                   # bonding curve
+            ev["user"], ev["creator"] = r.key(), r.key()
+            r.i64()
+            ev["v_tok"], ev["v_sol"] = r.u64() / 1e6, r.u64() / 1e9
+            try:                                      # field baru: koin dengan quote selain SOL
+                r.u64(), r.u64(), r.key(), r.flag(), r.flag()
+                q = r.key()
+                ev["quote"] = q if q != "11111111111111111111111111111111" else SOL_MINT
+            except ValueError:
+                ev["quote"] = SOL_MINT
+            return ev
+    except (ValueError, UnicodeDecodeError):
+        return None
+    return None
+
+
+def tx_events(logs):
+    """Event pump.fun dari satu transaksi (urut sesuai log)."""
+    out = []
+    for line in logs or []:
+        if line.startswith("Program data: "):
+            try:
+                raw = base64.b64decode(line[14:])
+            except ValueError:
+                continue
+            ev = decode_event(raw)
+            if ev:
+                out.append(ev)
+    return out
+
+
+def feed_tx(engine, logs, now):
+    """Ubah event satu transaksi ke format engine (create + beli awal dev digabung)."""
+    evs = tx_events(logs)
+    engine.stats["tx"] = engine.stats.get("tx", 0) + 1
+    created = {}
+    for ev in evs:
+        if ev["kind"] == "create":
+            if ev.get("quote", SOL_MINT) != SOL_MINT:
+                continue                              # koin non-SOL tidak didukung
+            created[ev["mint"]] = {"txType": "create", "mint": ev["mint"], "traderPublicKey": ev["creator"],
+                                   "symbol": ev["symbol"], "name": ev["name"], "initialBuy": 0.0,
+                                   "solAmount": 0.0, "vSolInBondingCurve": ev["v_sol"],
+                                   "vTokensInBondingCurve": ev["v_tok"], "pool": "pump"}
+    pending = []
+    for ev in evs:
+        if ev["kind"] != "trade":
+            continue
+        c = created.get(ev["mint"])
+        if c is not None and ev["buy"] and ev["user"] == c["traderPublicKey"] and not c["initialBuy"]:
+            c.update(initialBuy=ev["tok"], solAmount=ev["sol"], vSolInBondingCurve=ev["v_sol"],
+                     vTokensInBondingCurve=ev["v_tok"])
+            continue
+        pending.append(ev)
+    for ev in evs:
+        if ev["kind"] not in engine.sample:          # contoh untuk cek dekode di log
+            engine.sample.add(ev["kind"])
+            print(f"[info] contoh {ev['kind']}: {json.dumps(ev)[:400]}", file=sys.stderr)
+    for c in created.values():
+        c["marketCapSol"] = c["vSolInBondingCurve"] / c["vTokensInBondingCurve"] * SUPPLY
+        engine.on_create(c, now)
+    for ev in pending:
+        tok = engine.tokens.get(ev["mint"])
+        if not tok:
+            continue
+        prev = tok.bal.get(ev["user"], 0.0)
+        engine.on_trade({"txType": "buy" if ev["buy"] else "sell", "mint": ev["mint"],
+                         "traderPublicKey": ev["user"], "solAmount": ev["sol"],
+                         "newTokenBalance": max(0.0, prev + (ev["tok"] if ev["buy"] else -ev["tok"])),
+                         "vSolInBondingCurve": ev["v_sol"], "vTokensInBondingCurve": ev["v_tok"],
+                         "marketCapSol": ev["v_sol"] / ev["v_tok"] * SUPPLY if ev["v_tok"] else None,
+                         "pool": "pump"}, now)
+
+
 # ---------------------------------------------------------------- koneksi
 
 async def run(engine, duration=0):
     import websockets  # pip install websockets
 
+    url = engine.cfg["RPC_WS_URL"] or PUBLIC_RPC_WS
+    shown = url.split("?")[0]                          # jangan cetak api-key
     stop_at = time.time() + duration if duration else None
     sender = asyncio.ensure_future(telegram_sender(engine))
     backoff = 1
     try:
         while not stop_at or time.time() < stop_at:
             try:
-                async with websockets.connect(WS_URL, ping_interval=20, ping_timeout=20,
-                                              max_size=2 ** 22) as ws:
-                    await ws.send(json.dumps({"method": "subscribeNewToken"}))
-                    keys = list(engine.tokens)
-                    for i in range(0, len(keys), 200):
-                        await ws.send(json.dumps({"method": "subscribeTokenTrade", "keys": keys[i:i + 200]}))
-                    print(f"[{time.strftime('%H:%M:%S')}] tersambung ke PumpPortal", file=sys.stderr)
+                async with websockets.connect(url, ping_interval=20, ping_timeout=30,
+                                              max_size=2 ** 24) as ws:
+                    await ws.send(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "logsSubscribe",
+                                              "params": [{"mentions": [PUMP_PROGRAM]},
+                                                         {"commitment": "processed"}]}))
+                    print(f"[{time.strftime('%H:%M:%S')}] tersambung ke {shown}", file=sys.stderr)
                     backoff = 1
                     tasks = [asyncio.ensure_future(reader(ws, engine)),
                              asyncio.ensure_future(ticker(ws, engine, stop_at))]
@@ -675,7 +816,7 @@ async def run(engine, duration=0):
             except Exception as e:  # putus koneksi: sambung ulang
                 if stop_at and time.time() >= stop_at:
                     break
-                print(f"[warn] websocket: {e!r}, sambung ulang {backoff}s", file=sys.stderr)
+                print(f"[warn] websocket: {str(e).replace(url, shown)[:200]}, sambung ulang {backoff}s", file=sys.stderr)
                 await asyncio.sleep(backoff)
                 backoff = min(backoff * 2, 60)
     finally:
@@ -688,44 +829,42 @@ async def run(engine, duration=0):
 
 
 async def reader(ws, engine):
+    last_msg = time.time()
     async for raw in ws:
         try:
-            ev = json.loads(raw)
+            msg = json.loads(raw)
         except ValueError:
             continue
-        if not isinstance(ev, dict):
+        if not isinstance(msg, dict):
             continue
-        now = time.time()
-        t = ev.get("txType")
-        if t and t not in engine.sample:
-            engine.sample.add(t)
-            print(f"[info] contoh event {t}: " + json.dumps({k: (v if k != "uri" else "...") for k, v in ev.items()})[:600],
-                  file=sys.stderr)
-        if t == "create":
-            if engine.on_create(ev, now):
-                # langsung subscribe supaya trade awal (dan bundle) tidak terlewat
-                await ws.send(json.dumps({"method": "subscribeTokenTrade", "keys": [ev["mint"]]}))
-        elif t in ("buy", "sell"):
-            engine.on_trade(ev, now)
-    raise ConnectionError("PumpPortal menutup koneksi")
+        if "error" in msg:
+            raise ConnectionError(f"RPC menolak: {str(msg['error'])[:200]}")
+        val = ((msg.get("params") or {}).get("result") or {}).get("value")
+        if not isinstance(val, dict) or val.get("err") is not None:
+            continue
+        feed_tx(engine, val.get("logs"), time.time())
+        last_msg = time.time()
+    raise ConnectionError(f"RPC menutup koneksi ({time.time() - last_msg:.0f}s sejak data terakhir)")
 
 
 async def ticker(ws, engine, stop_at):
     last_save = time.time()
+    last_tx, last_tx_t = 0, time.time()
     while True:
         await asyncio.sleep(0.5)
         now = time.time()
         engine.tick(now)
-        if engine.sub_del:
-            keys, engine.sub_del = engine.sub_del, []
-            for i in range(0, len(keys), 200):
-                await ws.send(json.dumps({"method": "unsubscribeTokenTrade", "keys": keys[i:i + 200]}))
         if now - last_save > 60:
             engine.save()
             last_save = now
             print(f"[{time.strftime('%H:%M:%S')}] dilacak {len(engine.tokens)} · posisi {len(engine.positions)} · "
                   f"kandidat {engine.n_cand} · " + " · ".join(f"{k} {v}" for k, v in engine.stats.items()),
                   file=sys.stderr)
+        tx = engine.stats.get("tx", 0)
+        if tx != last_tx:
+            last_tx, last_tx_t = tx, now
+        elif now - last_tx_t > 60:
+            raise ConnectionError("tidak ada data 60 detik")   # koneksi macet: sambung ulang
         if stop_at and now >= stop_at:
             await ws.close()
             return
@@ -867,15 +1006,16 @@ def calibrate(data_dir):
     return model
 
 
-# ---------------------------------------------------------------- setup telegram
+# ---------------------------------------------------------------- setup
 
 def _tg_api(token, method):
     with urllib.request.urlopen(f"https://api.telegram.org/bot{token}/{method}", timeout=20) as r:
         return json.load(r)
 
 
-def setup_telegram(data_dir):
-    """Tanya token bot (tidak tampil di layar), cari chat id dari /start, simpan ke .env (chmod 600)."""
+def setup(data_dir):
+    """Tanya token bot (tidak tampil di layar), cari chat id dari /start, tanya RPC websocket
+    (opsional), simpan ke .env (chmod 600)."""
     import getpass
     path = os.path.join(data_dir, ".env")
     lines = open(path).read().splitlines() if os.path.exists(path) else []
@@ -908,8 +1048,15 @@ def setup_telegram(data_dir):
                 tty.readline()
         except OSError:
             sys.stdin.readline()
+    rpc = os.environ.get("RPC_WS_URL", "").strip() or cfg["RPC_WS_URL"]
+    if not rpc:
+        print("Opsional: URL websocket RPC Solana, misal Helius "
+              "wss://mainnet.helius-rpc.com/?api-key=... (lebih stabil dari RPC publik).")
+        rpc = getpass.getpass("Tempel URL lalu Enter, atau Enter saja untuk pakai RPC publik (tidak tampil): ").strip()
     keep = [l for l in lines if l.split("=", 1)[0].strip().replace("export ", "")
-            not in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID")]
+            not in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "RPC_WS_URL")]
+    if rpc:
+        keep.append(f"RPC_WS_URL={rpc}")
     old = os.umask(0o077)
     try:
         with open(path, "w") as f:
@@ -926,21 +1073,21 @@ def setup_telegram(data_dir):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "setup-telegram"])
+    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "setup"])
     ap.add_argument("--data", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
                     help="folder .env + data (default: data/ di sebelah script)")
     ap.add_argument("--duration", type=float, default=0, help="detik; 0 = jalan terus")
     ap.add_argument("--resume", action="store_true", help="lepas auto-stop saldo minimum")
     a = ap.parse_args()
     os.makedirs(a.data, exist_ok=True)
-    if a.cmd == "setup-telegram":
-        setup_telegram(a.data)
+    if a.cmd == "setup":
+        setup(a.data)
         return
     cfg = load_config(a.data)
     tg = Telegram(cfg)
     if not (tg.token and tg.chat):
         print("[warn] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID kosong, pesan cuma dicetak di log. "
-              "Jalankan: memescan.py setup-telegram", file=sys.stderr)
+              "Jalankan: memescan.py setup", file=sys.stderr)
 
     if a.cmd == "calibrate":
         m = calibrate(a.data)

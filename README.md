@@ -10,7 +10,11 @@ Login ke VPS sebagai root, lalu:
 curl -sL https://raw.githubusercontent.com/agilganteng/memescan/main/install-vps.sh | sudo bash
 ```
 
-Script akan minta token bot Telegram (dari @BotFather → /mybots → pilih bot → API Token). Token tidak tampil di layar dan disimpan di `/root/memescan/data/.env` (chmod 600, tidak pernah di-commit). Chat ID dicari otomatis dari /start ke bot. Bisa juga diisi langsung: `curl ... | sudo TELEGRAM_CHAT_ID=123 bash`.
+Script akan minta:
+- token bot Telegram (dari @BotFather → /mybots → pilih bot → API Token);
+- URL websocket RPC (opsional, misal `wss://mainnet.helius-rpc.com/?api-key=...`). Enter saja untuk pakai RPC publik Solana.
+
+Keduanya tidak tampil di layar dan disimpan di `/root/memescan/data/.env` (chmod 600, tidak pernah di-commit). Chat ID dicari otomatis dari /start ke bot. Bisa juga diisi langsung: `curl ... | sudo TELEGRAM_CHAT_ID=123 bash`.
 
 Hasilnya service systemd `memescan`, terpisah dari `memesniper`.
 
@@ -27,7 +31,7 @@ HP Android (Termux): `curl -sL https://raw.githubusercontent.com/agilganteng/mem
 
 ## Cara kerja
 
-1. Dengar semua koin baru pump.fun lewat websocket PumpPortal (gratis), lalu ikuti trade-nya.
+1. Baca langsung semua transaksi program pump.fun dari RPC Solana (websocket `logsSubscribe`): koin baru dan setiap beli/jual sejak detik pertama. Gratis lewat RPC publik, atau pakai RPC Helius kamu supaya lebih stabil.
 2. **Gate cepat**, umur 6–60 detik, cek tiap 1,5 detik: inflow ≥1 SOL, harga ≥1,05x dari awal, market cap ≤150 SOL, turun dari puncak ≤20%.
 3. **Gate lambat** untuk koin yang naik pelan, cek tiap 15 detik sampai umur 30 menit: dalam 180 detik terakhir harga ≥1,5x dan inflow ≥2,5 SOL, likuiditas ≥12 SOL, turun dari puncak ≤10%.
 4. **Filter holder**, dicek lagi 5 detik kemudian: ≥5 holder, top10 ≤35%, top20 ≤50%, dev ≤10%. Kalau dev sudah jual semua, ditolak.
@@ -56,7 +60,9 @@ Semua angka bisa diubah di `data/.env` (nama variabel lihat `DEFAULTS` di `memes
 
 ## Batasan yang perlu diketahui
 
-- Data holder hanya dari trade yang terlihat sejak bot subscribe (beberapa ratus milidetik setelah koin dibuat). Pembeli di blok yang sama dengan pembuatan koin bisa terlewat, jadi konsentrasi holder bisa sedikit lebih kecil dari kenyataan.
+- Holder dihitung dari beli/jual di kurva bonding. Token yang dipindah antar wallet di luar pump.fun tidak terlihat.
+- RPC publik Solana bisa putus atau membatasi; bot sambung ulang sendiri. Kalau sering putus, isi `RPC_WS_URL` dengan RPC Helius dan pantau pemakaian kreditnya di dashboard Helius.
+- Koin pump.fun dengan quote selain SOL dilewati.
 - Riwayat dev (berapa koin dan rug sebelumnya) hanya sejak bot pertama jalan.
 - Mint/freeze authority tidak dicek karena selalu dicabut untuk koin di kurva bonding pump.fun.
 - Ini sinyal untuk riset, bukan saran beli. Riset MemeSniper sebelumnya menemukan semua strategi yang diuji rugi di data out-of-sample.

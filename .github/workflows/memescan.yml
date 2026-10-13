@@ -2,7 +2,7 @@ name: memescan smoke test
 
 # Bukan tempat jalan 24 jam (GitHub tidak dibuat untuk bot dan jadwalnya molor berjam-jam).
 # Bot aslinya jalan di VPS lewat install-vps.sh. Workflow ini cuma tes manual:
-# sambung ke PumpPortal beberapa menit, lalu tampilkan kandidat yang tercatat.
+# sambung ke RPC publik Solana beberapa menit, lalu tampilkan kandidat yang tercatat.
 # Telegram sengaja tidak dipakai di sini supaya chat tidak kena pesan tes.
 
 on:

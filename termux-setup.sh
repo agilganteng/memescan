@@ -16,7 +16,7 @@ fi
 mkdir -p "$HOME/memescan/data"
 
 if ! grep -qs '^TELEGRAM_BOT_TOKEN=.' "$HOME/memescan/data/.env" || ! grep -qs '^TELEGRAM_CHAT_ID=.' "$HOME/memescan/data/.env"; then
-  python3 "$HOME/memescan/memescan.py" setup-telegram </dev/tty
+  python3 "$HOME/memescan/memescan.py" setup </dev/tty
 fi
 
 cat > "$HOME/memescan/run.sh" <<'RUN'

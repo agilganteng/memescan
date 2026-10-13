@@ -33,7 +33,7 @@ echo "== 3/4 Python + websockets"
 
 if ! grep -qs '^TELEGRAM_BOT_TOKEN=.' "$DIR/data/.env" || ! grep -qs '^TELEGRAM_CHAT_ID=.' "$DIR/data/.env"; then
   echo "== Telegram"
-  "$DIR/venv/bin/python3" "$DIR/memescan.py" setup-telegram --data "$DIR/data" </dev/tty
+  "$DIR/venv/bin/python3" "$DIR/memescan.py" setup --data "$DIR/data" </dev/tty
 fi
 
 echo "== 4/4 Service systemd"
