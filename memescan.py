@@ -382,6 +382,7 @@ class Engine:
         self.positions = []          # shadow + portfolio yang masih terbuka
         self.outbox = []             # pesan telegram yang menunggu dikirim
         self.sub_del = []
+        self.stats = {"create": 0, "trade": 0, "cepat": 0, "lambat": 0, "recheck_gagal": 0}
         st = self._load("state.json", {})
         self.seen = dict.fromkeys(st.get("seen", []))  # mint yang pernah jadi kandidat (urut waktu)
         self.creators = self._load("creators.json", {})
@@ -389,7 +390,8 @@ class Engine:
         self.n_cand = st.get("n_cand", 0)
         self.last_summary = st.get("last_summary", time.time())
         self.last_welcome = st.get("last_welcome", 0)
-        self.notified = set()        # id kandidat yang dikirim ke Telegram
+        self.notified = set()
+        self.sample = set()        # id kandidat yang dikirim ke Telegram
         self.hour_start, self.n_hour, self.suppressed = time.time(), 0, 0
 
     # --- persistensi
@@ -424,6 +426,7 @@ class Engine:
         mint = ev.get("mint")
         if not mint or mint in self.tokens or mint in self.seen:
             return False
+        self.stats["create"] += 1
         tok = Token(ev, now, self.cfg["BUNDLE_WINDOW"])
         self.tokens[mint] = tok
         c = self.creators.setdefault(tok.creator, {"tokens": 0, "rugs": 0})
@@ -434,6 +437,7 @@ class Engine:
         tok = self.tokens.get(ev.get("mint"))
         if not tok:
             return
+        self.stats["trade"] += 1
         was_sold = tok.dev_sold_flag
         tok.on_trade(ev, now)
         if not was_sold and tok.dev_max > 0 and tok.bal.get(tok.creator, 0) <= tok.dev_max * 0.1:
@@ -475,20 +479,32 @@ class Engine:
             age = tok.age(now)
             if tok.recheck_at is not None:
                 if now >= tok.recheck_at:
-                    ok, _ = self.holder_ok(tok)
+                    ok, why = self.holder_ok(tok)
                     gate = tok.recheck_gate
                     tok.recheck_at = tok.recheck_gate = None
                     if ok:
                         self.candidate(tok, now, gate)
+                    else:
+                        self.stats["recheck_gagal"] += 1
                 continue
             if c["FAST_MIN_AGE"] <= age <= c["FAST_MAX_AGE"] and now >= tok.next_fast:
                 tok.next_fast = now + c["FAST_EVERY"]
-                if self.fast_ok(tok) and self.holder_ok(tok)[0]:
+                if self.fast_ok(tok):
+                    ok, why = self.holder_ok(tok)
+                    self.stats["cepat"] += 1
+                    if not ok:
+                        self.stats[why] = self.stats.get(why, 0) + 1
+                        continue
                     tok.recheck_at, tok.recheck_gate = now + c["HOLD_RECHECK"], "cepat"
                     continue
             if c["FAST_MAX_AGE"] < age <= c["SLOW_MAX_AGE"] and now >= tok.next_slow:
                 tok.next_slow = now + c["SLOW_EVERY"]
-                if self.slow_ok(tok, now) and self.holder_ok(tok)[0]:
+                if self.slow_ok(tok, now):
+                    ok, why = self.holder_ok(tok)
+                    self.stats["lambat"] += 1
+                    if not ok:
+                        self.stats[why] = self.stats.get(why, 0) + 1
+                        continue
                     tok.recheck_at, tok.recheck_gate = now + c["HOLD_RECHECK"], "lambat"
 
         for pos in list(self.positions):
@@ -681,6 +697,10 @@ async def reader(ws, engine):
             continue
         now = time.time()
         t = ev.get("txType")
+        if t and t not in engine.sample:
+            engine.sample.add(t)
+            print(f"[info] contoh event {t}: " + json.dumps({k: (v if k != "uri" else "...") for k, v in ev.items()})[:600],
+                  file=sys.stderr)
         if t == "create":
             if engine.on_create(ev, now):
                 # langsung subscribe supaya trade awal (dan bundle) tidak terlewat
@@ -700,9 +720,12 @@ async def ticker(ws, engine, stop_at):
             keys, engine.sub_del = engine.sub_del, []
             for i in range(0, len(keys), 200):
                 await ws.send(json.dumps({"method": "unsubscribeTokenTrade", "keys": keys[i:i + 200]}))
-        if now - last_save > 30:
+        if now - last_save > 60:
             engine.save()
             last_save = now
+            print(f"[{time.strftime('%H:%M:%S')}] dilacak {len(engine.tokens)} · posisi {len(engine.positions)} · "
+                  f"kandidat {engine.n_cand} · " + " · ".join(f"{k} {v}" for k, v in engine.stats.items()),
+                  file=sys.stderr)
         if stop_at and now >= stop_at:
             await ws.close()
             return
