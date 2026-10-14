@@ -67,6 +67,10 @@ DEFAULTS = {
     # lain-lain
     "BUNDLE_WINDOW": 1.0, "PRUNE_AGE": 120.0, "PRUNE_INFLOW": 0.5, "IDLE_DROP": 300.0,
     "MAX_TRACKED": 800, "SUMMARY_EVERY_H": 1.0, "NOTIFY_CANDIDATES": 0, "NOTIFY_MAX_PER_H": 10,
+    # rekam semua koin baru (data untuk menguji aturan beli lain), simpan sekian hari
+    "RECORD": 1, "REC_KEEP_DAYS": 14,
+    # 1 = beli paper ukuran tetap walau belum ada aturan yang terbukti (hasil 13 Okt: rugi)
+    "PAPER_FLAT": 0,
 }
 
 
@@ -170,6 +174,38 @@ def curve_sell(v_sol, v_tok, tok_in):
 
 # ---------------------------------------------------------------- data token
 
+# ---------------------------------------------------------------- rekaman semua koin
+# Tiap koin baru direkam sampai 30 menit: candle harga (market cap SOL) + volume beli/jual,
+# plus foto fitur di umur tertentu. Dipakai `research` untuk menguji aturan beli lain.
+
+REC_SNAPS = (10, 20, 30, 45, 60, 90, 120, 180, 300, 600)
+
+
+def rec_bucket(age):
+    """Candle 5 dtk sampai umur 2 menit, 15 dtk sampai 10 menit, 60 dtk sampai 30 menit."""
+    if age < 120:
+        return int(max(0.0, age) // 5)
+    if age < 600:
+        return 24 + int((age - 120) // 15)
+    return min(75, 56 + int((age - 600) // 60))
+
+
+def rec_bucket_start(b):
+    if b < 24:
+        return b * 5.0
+    if b < 56:
+        return 120 + (b - 24) * 15.0
+    return 600 + (b - 56) * 60.0
+
+
+def rec_bucket_end(b):
+    return rec_bucket_start(b + 1) if b < 75 else 1800.0
+
+
+def sig(x, n=4):
+    return float(f"{x:.{n}g}") if x else 0.0
+
+
 class Token:
     def __init__(self, ev, now, bundle_window=1.0):
         self.mint = ev["mint"]
@@ -199,6 +235,10 @@ class Token:
         self.recheck_at = None
         self.recheck_gate = None
         self.decided = False
+        self.rec_c = {}            # candle: bucket -> [high, low, close, sol beli, sol jual, n beli, n jual]
+        self.rec_snaps = []
+        self.rec_next = 0
+        self.rec_cand = None
 
     @property
     def price(self):
@@ -440,6 +480,8 @@ class Engine:
         self.last_welcome = st.get("last_welcome", 0)
         self.tg_chat = st.get("tg_chat", "")
         self.notified = set()
+        self.n_rec = st.get("n_rec", 0)
+        self.rec_cleanup()
         self.sol_usd = None
         if reset:   # saldo lama dalam SOL (sebelum modal $100) tidak dipakai lagi
             self.outbox.append(f"♻️ Modal paper direset ke {fmt_bal(cfg['START_USD'])}. "
@@ -490,6 +532,7 @@ class Engine:
         self._save("state.json", {"seen": list(self.seen)[-50000:], "portfolio": self.port,
                                   "n_cand": self.n_cand, "last_summary": self.last_summary,
                                   "last_welcome": self.last_welcome, "tg_chat": self.tg_chat,
+                                  "n_rec": self.n_rec,
                                   "open_paper": self.open_paper()})
 
     def recover(self, st):
@@ -537,9 +580,58 @@ class Engine:
         self.stats["trade"] += 1
         was_sold = tok.dev_sold_flag
         tok.on_trade(ev, now)
+        if self.cfg["RECORD"]:
+            self.rec_trade(tok, ev, now)
         if not was_sold and tok.dev_max > 0 and tok.bal.get(tok.creator, 0) <= tok.dev_max * 0.1:
             tok.dev_sold_flag = True
             self.creators.setdefault(tok.creator, {"tokens": 1, "rugs": 0})["rugs"] += 1
+
+    # --- rekaman
+    def rec_cleanup(self):
+        d = os.path.join(self.dir, "rec")
+        if not os.path.isdir(d):
+            return
+        keep = time.strftime("%Y%m%d", time.gmtime(time.time() - self.cfg["REC_KEEP_DAYS"] * 86400))
+        for fn in os.listdir(d):
+            if fn.startswith("rec-") and fn[4:12] < keep:
+                os.remove(os.path.join(d, fn))
+
+    def rec_trade(self, tok, ev, now):
+        m = tok.price * SUPPLY
+        b = rec_bucket(tok.age(now))
+        c = tok.rec_c.get(b)
+        if c is None:
+            c = tok.rec_c[b] = [m, m, m, 0.0, 0.0, 0, 0]
+        c[0], c[1], c[2] = max(c[0], m), min(c[1], m), m
+        sol = float(ev.get("solAmount") or 0)
+        if ev.get("txType") == "buy":
+            c[3] += sol
+            c[5] += 1
+        else:
+            c[4] += sol
+            c[6] += 1
+
+    def rec_snap(self, tok, now):
+        age = tok.age(now)
+        while tok.rec_next < len(REC_SNAPS) and age >= REC_SNAPS[tok.rec_next]:
+            a = REC_SNAPS[tok.rec_next]
+            tok.rec_next += 1
+            if age - a <= 2.0:     # foto telat (bot sempat tersendat) tidak dipakai
+                f = features(tok, now, self.creators, "")
+                tok.rec_snaps.append([a, sig(tok.price * SUPPLY)] + [sig(f[k]) for k in FEATURES])
+
+    def rec_write(self, tok, now, why):
+        if not self.cfg["RECORD"]:
+            return
+        d = os.path.join(self.dir, "rec")
+        os.makedirs(d, exist_ok=True)
+        rec = {"m": tok.mint, "s": tok.sym, "t0": round(tok.t0, 1), "m0": sig(tok.price0 * SUPPLY),
+               "snaps": tok.rec_snaps,
+               "c": [[b] + [sig(v) for v in c[:5]] + c[5:] for b, c in sorted(tok.rec_c.items())],
+               "end": round(min(tok.age(now), 1800.0), 1), "why": why, "cand": tok.rec_cand}
+        with open(os.path.join(d, time.strftime("rec-%Y%m%d.jsonl", time.gmtime(tok.t0))), "a") as f:
+            f.write(json.dumps(rec, separators=(",", ":")) + "\n")
+        self.n_rec += 1
 
     # --- filter
     def holder_ok(self, tok):
@@ -571,6 +663,8 @@ class Engine:
     def tick(self, now):
         c = self.cfg
         for tok in list(self.tokens.values()):
+            if c["RECORD"] and tok.rec_next < len(REC_SNAPS):
+                self.rec_snap(tok, now)
             if tok.decided:
                 continue
             age = tok.age(now)
@@ -638,28 +732,40 @@ class Engine:
             pos._fill(tok, "sell", 1.0)
             pos.closed, pos.reason = True, "bot berhenti"
             self.close(pos, now)
+        for tok in self.tokens.values():
+            self.rec_write(tok, now, "run selesai")
+        self.tokens = {}
 
     def prune(self, now):
         c = self.cfg
         held = {p.mint for p in self.positions}
-        drop = []
+        drop = {}
         for m, tok in self.tokens.items():
             if m in held:
                 continue
             age = tok.age(now)
-            if (tok.decided or age > c["SLOW_MAX_AGE"] or now - tok.last_trade > c["IDLE_DROP"]
-                    or (age > c["PRUNE_AGE"] and tok.inflow < c["PRUNE_INFLOW"])):
-                drop.append(m)
+            if age > c["SLOW_MAX_AGE"]:
+                drop[m] = "30 menit"
+            elif now - tok.last_trade > c["IDLE_DROP"]:
+                drop[m] = "sepi"
+            elif age > c["PRUNE_AGE"] and tok.inflow < c["PRUNE_INFLOW"]:
+                drop[m] = "inflow kecil"
+            elif tok.decided and not c["RECORD"]:
+                drop[m] = "kandidat"
         if len(self.tokens) - len(drop) > c["MAX_TRACKED"]:
             rest = sorted((t for m, t in self.tokens.items() if m not in drop and m not in held),
                           key=lambda t: t.inflow)
-            drop += [t.mint for t in rest[:len(self.tokens) - len(drop) - int(c["MAX_TRACKED"])]]
-        for m in drop:
-            self.tokens.pop(m, None)
+            for t in rest[:len(self.tokens) - len(drop) - int(c["MAX_TRACKED"])]:
+                drop[t.mint] = "batas memori"
+        for m, why in drop.items():
+            tok = self.tokens.pop(m, None)
+            if tok:
+                self.rec_write(tok, now, why)
 
     # --- kandidat & posisi
     def candidate(self, tok, now, gate):
         tok.decided = True
+        tok.rec_cand = [gate, round(tok.age(now), 1)]
         self.seen[tok.mint] = None  # tidak pernah dibeli ulang
         self.n_cand += 1
         feats = features(tok, now, self.creators, gate)
@@ -764,6 +870,8 @@ class Engine:
         if not self.sol_usd:
             return 0, "skip, harga SOL belum didapat"
         if c["SCORE_ALLIN_MIN"] is None and c["SCORE_HALF_MIN"] is None:
+            if not c["PAPER_FLAT"]:
+                return 0, "skip, belum ada aturan beli yang terbukti"
             # skor belum terbukti: paper trading tetap jalan dengan ukuran kecil tetap
             size, why = min(c["PAPER_STAKE_USD"], p["usd"]), "ukuran tetap, skor belum terbukti"
         elif s is None:
@@ -843,6 +951,8 @@ class Engine:
             lines.append(f"({self.suppressed} kandidat tidak dikirim karena batas "
                          f"{self.cfg['NOTIFY_MAX_PER_H']} pesan/jam, tetap dicatat)")
             self.suppressed = 0
+        if self.cfg["RECORD"]:
+            lines.append(f"📼 Rekaman: {self.n_rec} koin baru terekam (data untuk cari aturan beli baru)")
         pf = self.results("portfolio", self.port.get("since", 0))
         held = sum(x.cost_usd for x in self.positions if x.kind == "portfolio")
         total = self.port["usd"] + held

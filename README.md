@@ -51,10 +51,20 @@ HP Android (Termux): `curl -sL https://raw.githubusercontent.com/agilganteng/mem
 - Skor 0–100% adalah peluang kena TP 2x, dari regresi logistik yang dilatih dengan `calibrate`. Butuh ≥100 kandidat berlabel.
 - Data dibagi berdasarkan waktu: 70% paling lama untuk melatih, 30% terbaru untuk menguji (hold-out).
 - Ambang mengikuti spesifikasi: skor ≥60% all-in, 50–60% setengah saldo, di bawah itu skip. Ambang **hanya aktif kalau terbukti di hold-out**: ≥30 trade di rentang itu dan batas bawah CI 95% rata-rata hasil > 1,00x.
-- **Saldo paper mulai $100.** Selama skor belum terbukti (`SCORE_ALLIN_MIN` / `SCORE_HALF_MIN` kosong), tiap kandidat dibeli paper $10 (ukuran tetap). Dolar ditukar ke SOL di harga SOL saat beli dan saat jual.
+- **Saldo paper mulai $100.** Selama belum ada aturan beli yang terbukti di data baru, paper **tidak membeli** (uji 13 Okt: 2852 trade, rata-rata 0,81x, lihat `analyze`). `PAPER_FLAT=1` di `.env` memaksa beli paper $10 per kandidat. Dolar ditukar ke SOL di harga SOL saat beli dan saat jual.
 - Satu posisi sekaligus, koin yang sama tidak pernah dibeli ulang. Auto-stop di bawah $20, lanjutkan dengan `--resume`.
 - Saldo dan posisi terbuka disimpan tiap beli/jual dan tiap menit. Kalau run berhenti, posisi dijual di harga saat itu. Kalau run mati mendadak, run berikutnya menutupnya di nilai terakhir yang tersimpan.
 - `calibrate` juga membuat simulasi modal $200 di data hold-out (PnL + winrate). Data sebelum memescan jalan tidak ada, jadi periode Jan 2026 – sekarang tidak bisa disimulasikan.
+
+## Rekaman semua koin
+
+Semua koin pump.fun baru direkam sampai umur 30 menit di `data/rec/rec-YYYYMMDD.jsonl` (disimpan 14 hari):
+- candle harga dan volume beli/jual: 5 detik sampai umur 2 menit, 15 detik sampai 10 menit, 1 menit sampai 30 menit;
+- foto 18 fitur di umur 10, 20, 30, 45, 60, 90, 120, 180, 300 dan 600 detik.
+
+Koin yang sepi (tanpa trade 5 menit, atau inflow < 0,5 SOL di umur 2 menit) berhenti direkam lebih awal. Data ini dipakai untuk menguji aturan beli lain dengan pembagian data lama/baru.
+
+`python3 memescan.py analyze` membedah hasil shadow trade. Bisa juga lewat GitHub: Actions → analyze → Run workflow.
 
 ## Telegram
 
