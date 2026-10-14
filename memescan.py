@@ -1592,17 +1592,26 @@ def research(data_dir, cfg, size=0.1, train_frac=0.7, min_train=100, top=15):
         if best:
             print(f"  umur {A:>3} dtk, {ex_lab(best[2]):<26} lama {fmt(best[4])} | baru {fmt(best[5])}")
 
-    results.sort(key=lambda r: -r[0])
-    print(f"\n== {top} ATURAN TERBAIK DI DATA LAMA, lalu hasilnya di data baru")
+    # urut dari rata-rata data lama; satu baris per (umur, filter) dengan aturan jual terbaiknya.
+    # (urut dari batas bawah CI cuma memunculkan koin mati yang rugi sebesar biaya saja)
+    results.sort(key=lambda r: -r[4][1])
+    picked, seen_af = [], set()
+    for r in results:
+        if (r[1], r[3]) not in seen_af:
+            seen_af.add((r[1], r[3]))
+            picked.append(r)
+        if len(picked) >= top:
+            break
+    print(f"\n== {top} ATURAN TERBAIK DI DATA LAMA (rata-rata tertinggi), lalu hasilnya di data baru")
     proven = []
-    for sc, A, e, lab, st_tr, st_va in results[:top]:
+    for sc, A, e, lab, st_tr, st_va in picked:
         ok = st_va[0] >= 30 and st_va[2] > 1.0
         if ok:
             proven.append((A, e, lab))
         print(f"  [{'TERBUKTI' if ok else 'gagal   '}] umur {A} dtk · {lab} · {ex_lab(e)}")
         print(f"      lama {fmt(st_tr)}\n      baru {fmt(st_va)}")
 
-    A, e, lab = proven[0] if proven else (results[0][1], results[0][2], results[0][3])
+    A, e, lab = proven[0] if proven else (picked[0][1], picked[0][2], picked[0][3])
     rows, X, t0, M, TX, filters = per_age[A]
     mask = dict(filters)[lab] & (t0 >= t_cut)
     trades = sorted((t0[i] + A + cfg["EXEC_DELAY"], M[e][i], TX[e][i] - A) for i in np.where(mask)[0]
