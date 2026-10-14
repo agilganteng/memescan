@@ -1,0 +1,45 @@
+Data diambil 2026-10-14 07:37 UTC, SOL $107.3, ukuran copy $20 (0.186 SOL), fee 1.25%, slippage 2%, priority 0.0005 SOL
+Titik harga kurva dicari 61/61 (0 tak terjangkau), rpc 4313 call (460 gagal)
+
+Per wallet (hasil dia sendiri, semua venue, dari perubahan saldo):
+  -                Au1GUWfc    282 tx  rentang  104.5 jam     0 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                215nhcAH    274 tx  rentang   21.1 jam     1 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                95TWoKkv    273 tx  rentang  113.1 jam     1 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                4Be9Cvxq    271 tx  rentang   74.0 jam     1 ronde (1 tutup, win 1/1)  PnL tutup +76.8 SOL
+  -                DAEdBmTP    276 tx  rentang   32.2 jam     0 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                3j5c4aD1    208 tx  rentang  166.6 jam     0 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                4vw54BmA      0 tx  rentang      0 jam     0 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                Hi5yNvPS    275 tx  rentang   53.5 jam    37 ronde (33 tutup, win 7/33)  PnL tutup +64.3 SOL
+  -                ApRnQN2H    276 tx  rentang   19.7 jam     0 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                5YRgrP3m    262 tx  rentang    6.0 jam     2 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                B9K2wTQc    269 tx  rentang   34.4 jam     0 ronde (0 tutup, win 0/1)  PnL tutup +0.0 SOL
+  -                DemfvB4i    275 tx  rentang   27.6 jam    14 ronde (13 tutup, win 3/13)  PnL tutup -2.6 SOL
+
+Copy trade semua wallet (beli pembuka di kurva pump.fun saja):
+
+ SEBELUM masuk leaderboard (>24 jam lalu) = out-of-sample
+  jeda 0 (harga sama persis dengan dia): n=9, winrate 44% (95% CI 19%-73%), rata-rata 0.94x, median 0.96x | simulasi $200 ($20/trade): akhir $188 (-6%), drawdown maks 6%  (<30 trade, belum bisa disimpulkan)
+      dilewati 4 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 1 slot (~0.4 dtk): n=9, winrate 0% (95% CI 0%-30%), rata-rata 0.80x, median 0.85x | simulasi $200 ($20/trade): akhir $164 (-18%), drawdown maks 18%  (<30 trade, belum bisa disimpulkan)
+      dilewati 4 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 3 slot (~1.2 dtk): n=9, winrate 0% (95% CI 0%-30%), rata-rata 0.83x, median 0.86x | simulasi $200 ($20/trade): akhir $169 (-15%), drawdown maks 15%  (<30 trade, belum bisa disimpulkan)
+      dilewati 4 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 8 slot (~3.2 dtk): n=9, winrate 0% (95% CI 0%-30%), rata-rata 0.85x, median 0.92x | simulasi $200 ($20/trade): akhir $173 (-14%), drawdown maks 14%  (<30 trade, belum bisa disimpulkan)
+      dilewati 4 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 13 slot (~5.2 dtk): n=9, winrate 0% (95% CI 0%-30%), rata-rata 0.85x, median 0.92x | simulasi $200 ($20/trade): akhir $173 (-14%), drawdown maks 14%  (<30 trade, belum bisa disimpulkan)
+      dilewati 4 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+
+ 24 jam terakhir = jendela leaderboard, IN-SAMPLE (terlalu bagus)
+  jeda 0 (harga sama persis dengan dia): n=18, winrate 33% (95% CI 16%-56%), rata-rata 0.68x, median 0.89x | simulasi $200 ($20/trade): akhir $85 (-57%), drawdown maks 58%  (<30 trade, belum bisa disimpulkan)
+      dilewati 25 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 1 slot (~0.4 dtk): n=18, winrate 6% (95% CI 1%-26%), rata-rata 0.59x, median 0.82x | simulasi $200 ($20/trade): akhir $53 (-73%), drawdown maks 73%  (<30 trade, belum bisa disimpulkan)
+      dilewati 25 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 3 slot (~1.2 dtk): n=18, winrate 6% (95% CI 1%-26%), rata-rata 0.59x, median 0.77x | simulasi $200 ($20/trade): akhir $52 (-74%), drawdown maks 74%  (<30 trade, belum bisa disimpulkan)
+      dilewati 25 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 8 slot (~3.2 dtk): n=18, winrate 6% (95% CI 1%-26%), rata-rata 0.59x, median 0.77x | simulasi $200 ($20/trade): akhir $52 (-74%), drawdown maks 74%  (<30 trade, belum bisa disimpulkan)
+      dilewati 25 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+  jeda 13 slot (~5.2 dtk): n=18, winrate 6% (95% CI 1%-26%), rata-rata 0.59x, median 0.77x | simulasi $200 ($20/trade): akhir $52 (-74%), drawdown maks 74%  (<30 trade, belum bisa disimpulkan)
+      dilewati 25 (data harga kurang), jual di AMM 0 (pakai harga dia, optimis), masih dipegang 0 (dihitung 0)
+
+Catatan: wallet dipilih dari leaderboard HARI INI, jadi periode 24 jam terakhir pasti kelihatan bagus.
+Yang relevan untuk keputusan adalah periode sebelumnya, dan jeda >=1 slot (jeda 0 tidak mungkin dicapai).
