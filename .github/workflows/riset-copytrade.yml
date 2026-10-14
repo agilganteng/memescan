@@ -1,0 +1,19 @@
+name: riset-copytrade
+
+# Riset sekali jalan: apakah copy trade wallet top pump.fun untung? Hanya jalan di branch copytrade-riset, tidak menyentuh memescan.
+on:
+  push:
+    branches: [copytrade-riset]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe
+        run: bash riset/probe.sh
