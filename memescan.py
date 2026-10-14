@@ -1439,6 +1439,192 @@ def find_chat(data_dir, token):
     return ""
 
 
+# ---------------------------------------------------------------- riset aturan beli
+
+RES_AGES = (10, 20, 30, 45, 60, 90, 120, 180, 300)
+RES_EXITS = [(tp, sl, T) for tp in (1.3, 1.5, 2.0, 3.0) for sl in (0.2, 0.35, 0.5) for T in (120, 300, 900)]
+
+
+def v_sol_at(m):
+    """Cadangan SOL kurva di market cap m (SOL), dari x*y=k kurva pump.fun."""
+    return math.sqrt(VIRTUAL_SOL * 1.073e9 / SUPPLY * max(m, 1e-9))
+
+
+def res_load(data_dir):
+    recs = []
+    d = os.path.join(data_dir, "rec")
+    for fn in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        with open(os.path.join(d, fn)) as f:
+            for line in f:
+                try:
+                    recs.append(json.loads(line))
+                except ValueError:
+                    pass
+    recs.sort(key=lambda r: r["t0"])
+    return recs
+
+
+def res_trade(cs, end, entry_age, m_snap, tp, sl, T, cfg, size):
+    """Simulasi satu trade di candle rekaman. cs: [(mulai, selesai, high, low, close)].
+    Masuk EXEC_DELAY detik setelah keputusan di close candle saat itu. Keluar di TP/SL/batas
+    waktu; kalau TP dan SL kena di candle yang sama dianggap SL dulu, isi SL/TP paling bagus
+    di close candle itu (harga sudah bergerak selama jeda). Return (hasil x, umur keluar)."""
+    fee, slip, prio = cfg["FEE_PCT"], cfg["SLIPPAGE"], cfg["PRIORITY_FEE"]
+    te = entry_age + cfg["EXEC_DELAY"]
+    p, k = m_snap, 0
+    while k < len(cs) and cs[k][0] <= te:   # candle yang memuat saat order terisi ikut dihitung
+        p = cs[k][4]
+        k += 1
+    if te >= end:
+        return None
+    entry = p * (1 + size / v_sol_at(p)) / ((1 - fee) * (1 - slip))
+    tp_px, sl_px = entry * tp, entry * (1 - sl)
+    out, t_out, last = None, min(end, te + T), p
+    for a, b, h, lo, c in cs[k:]:
+        if a >= te + T:
+            break
+        if lo <= sl_px:
+            out, t_out = min(sl_px, c), b
+            break
+        if h >= tp_px:
+            out, t_out = min(tp_px, c) if c < tp_px else tp_px, b
+            break
+        last = c
+    if out is None:
+        out = last
+    sell = out * (1 - fee) * (1 - slip) / (1 + size / v_sol_at(out))
+    return sell / entry - 2 * prio / size, t_out
+
+
+def research(data_dir, cfg, size=0.1, train_frac=0.7, min_train=100, top=15):
+    """Cari aturan beli di rekaman semua koin: umur masuk x satu filter fitur x aturan jual.
+    Dipilih di data lama (70%), dinilai di data terbaru (30%) yang tidak dipakai memilih.
+    Terbukti = hold-out >=30 trade dan batas bawah CI 95% rata-rata > 1,00x."""
+    try:
+        import numpy as np
+    except ImportError:
+        print("Butuh numpy: pip install numpy")
+        return
+    recs = res_load(data_dir)
+    n_rec = len(recs)
+    if n_rec < 500:
+        print(f"Baru {n_rec} koin terekam. Tunggu sampai ada beberapa ribu koin.")
+        return
+    t_cut = recs[int(n_rec * train_frac)]["t0"]
+    span = lambda a, b: (time.strftime("%d/%m %H:%M", time.gmtime(a)) + " - "
+                         + time.strftime("%d/%m %H:%M", time.gmtime(b)) + " UTC")
+    print(f"== RISET ATURAN BELI: {n_rec} koin terekam, {span(recs[0]['t0'], recs[-1]['t0'])}")
+    print(f"   Data lama (pilih aturan): sampai {span(recs[0]['t0'], t_cut)}; data baru (uji): sesudahnya.")
+    print(f"   Ukuran per trade {size} SOL, jeda {cfg['EXEC_DELAY']:g} dtk, fee {cfg['FEE_PCT']:.2%}, "
+          f"slippage {cfg['SLIPPAGE']:.0%}, priority fee {cfg['PRIORITY_FEE']} SOL, dampak harga kurva.")
+    paths = []
+    for r in recs:
+        cs = [(rec_bucket_start(c[0]), rec_bucket_end(c[0]), c[1], c[2], c[3]) for c in r["c"]]
+        paths.append((cs, r["end"]))
+    names = FEATURES + ["mcap"]
+    results = []          # (skor latih, A, exit, filter label, statistik latih, statistik uji)
+    tested = 0
+    per_age = {}
+    for A in RES_AGES:
+        rows = []
+        for i, r in enumerate(recs):
+            snap = next((s for s in r["snaps"] if s[0] == A), None)
+            if snap:
+                rows.append((i, snap))
+        if len(rows) < 200:
+            continue
+        X = np.array([s[2:] + [s[1]] for _, s in rows], dtype=float)
+        t0 = np.array([recs[i]["t0"] for i, _ in rows])
+        tr = t0 < t_cut
+        M, TX = [], []
+        for tp, sl, T in RES_EXITS:
+            ms, ts = [], []
+            for i, s in rows:
+                cs, end = paths[i]
+                res = res_trade(cs, end, A, s[1], tp, sl, T, cfg, size)
+                ms.append(res[0] if res else np.nan)
+                ts.append(res[1] if res else np.nan)
+            M.append(ms)
+            TX.append(ts)
+        M, TX = np.array(M), np.array(TX)
+        ok = ~np.isnan(M[0])
+        filters = [("semua koin", np.ones(len(rows), bool))]
+        for j, nm in enumerate(names):
+            col = X[:, j]
+            qs = sorted(set(np.quantile(col[tr & ok], [0.2, 0.4, 0.6, 0.8]).round(6)))
+            for q in qs:
+                filters.append((f"{nm} >= {q:.4g}", col >= q))
+                filters.append((f"{nm} <= {q:.4g}", col <= q))
+        per_age[A] = (rows, X, t0, M, TX, filters)
+
+        def stat(v):
+            v = v[~np.isnan(v)]
+            n = len(v)
+            if n < 2:
+                return n, float("nan"), float("nan"), float("nan")
+            m, sd = float(v.mean()), float(v.std(ddof=1))
+            return n, m, m - 1.96 * sd / math.sqrt(n), float((v > 1).mean())
+        for e, ex in enumerate(RES_EXITS):
+            for lab, mask in filters:
+                tested += 1
+                st = stat(M[e][mask & tr])
+                if st[0] < min_train:
+                    continue
+                results.append((st[2], A, e, lab, st, stat(M[e][mask & ~tr])))
+    if not results:
+        print("Belum cukup data per umur masuk.")
+        return
+    print(f"   {tested} kombinasi diuji (umur masuk x filter x aturan jual). Semakin banyak yang diuji, "
+          "semakin besar peluang ada yang kelihatan bagus di data lama cuma karena kebetulan; "
+          "karena itu yang dipercaya cuma hasil di data baru.")
+
+    def fmt(st):
+        n, m, lo, w = st
+        return f"n={n:<5} untung {w:>4.0%} rata {m:.3f}x (CI bawah {lo:.3f})" if n >= 2 else f"n={n}"
+
+    def ex_lab(e):
+        tp, sl, T = RES_EXITS[e]
+        return f"TP {tp:g}x SL -{sl:.0%} maks {T / 60:g}m"
+
+    print("\n== PEMBANDING: beli semua koin di umur itu (aturan jual terbaik di data lama)")
+    for A in sorted(per_age):
+        best = max((r for r in results if r[1] == A and r[3] == "semua koin"), key=lambda r: r[0], default=None)
+        if best:
+            print(f"  umur {A:>3} dtk, {ex_lab(best[2]):<26} lama {fmt(best[4])} | baru {fmt(best[5])}")
+
+    results.sort(key=lambda r: -r[0])
+    print(f"\n== {top} ATURAN TERBAIK DI DATA LAMA, lalu hasilnya di data baru")
+    proven = []
+    for sc, A, e, lab, st_tr, st_va in results[:top]:
+        ok = st_va[0] >= 30 and st_va[2] > 1.0
+        if ok:
+            proven.append((A, e, lab))
+        print(f"  [{'TERBUKTI' if ok else 'gagal   '}] umur {A} dtk · {lab} · {ex_lab(e)}")
+        print(f"      lama {fmt(st_tr)}\n      baru {fmt(st_va)}")
+
+    A, e, lab = proven[0] if proven else (results[0][1], results[0][2], results[0][3])
+    rows, X, t0, M, TX, filters = per_age[A]
+    mask = dict(filters)[lab] & (t0 >= t_cut)
+    trades = sorted((t0[i] + A + cfg["EXEC_DELAY"], M[e][i], TX[e][i] - A) for i in np.where(mask)[0]
+                    if not np.isnan(M[e][i]))
+    bal, busy, n, w = 200.0, -1.0, 0, 0
+    for t, m, held in trades:
+        if t < busy or bal < 40:
+            continue
+        stake = min(20.0, bal)
+        bal += stake * (m - 1)
+        busy, n, w = t + held, n + 1, w + (m > 1)
+    print(f"\n== SIMULASI $200 di data baru, aturan {'terbukti' if proven else 'terbaik (TIDAK terbukti)'}: "
+          f"umur {A} dtk · {lab} · {ex_lab(e)}")
+    print(f"  $20 per trade, satu posisi sekaligus, berhenti di bawah $40: {n} trade, menang {w}"
+          f"{f' ({w / n:.0%})' if n else ''}, modal akhir ${bal:.2f} ({bal - 200:+.2f})")
+    if n < 30:
+        print("  Kurang dari 30 trade, belum bisa disimpulkan.")
+    print("  Data sebelum rekaman dimulai tidak ada, jadi periode Jan 2026 - sekarang tidak bisa disimulasikan.")
+    if not proven:
+        print("\nKESIMPULAN: belum ada aturan yang terbukti di data baru.")
+
+
 def analyze(data_dir, cfg):
     """Bedah hasil trade: alasan keluar, biaya, puncak harga, fitur. Pola fitur dicek di
     70% data lama dan 30% data terbaru terpisah; pola yang cuma muncul di satu bagian
@@ -1557,7 +1743,7 @@ def analyze(data_dir, cfg):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "analyze", "setup"])
+    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "analyze", "research", "setup"])
     ap.add_argument("--data", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
                     help="folder .env + data (default: data/ di sebelah script)")
     ap.add_argument("--duration", type=float, default=0, help="detik; 0 = jalan terus")
@@ -1569,6 +1755,9 @@ def main():
         return
     if a.cmd == "analyze":
         analyze(a.data, load_config(a.data))
+        return
+    if a.cmd == "research":
+        research(a.data, load_config(a.data))
         return
     cfg = load_config(a.data)
     tg = Telegram(cfg)

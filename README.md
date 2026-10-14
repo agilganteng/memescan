@@ -64,6 +64,8 @@ Semua koin pump.fun baru direkam sampai umur 30 menit di `data/rec/rec-YYYYMMDD.
 
 Koin yang sepi (tanpa trade 5 menit, atau inflow < 0,5 SOL di umur 2 menit) berhenti direkam lebih awal. Data ini dipakai untuk menguji aturan beli lain dengan pembagian data lama/baru.
 
+`python3 memescan.py research` (butuh `pip install numpy`) menguji ribuan aturan beli: umur masuk 10 detik–5 menit × satu filter fitur × TP/SL/batas waktu. Aturan dipilih di 70% data lama, lalu dinilai di 30% data terbaru. Terbukti kalau di data baru ada ≥30 trade dan batas bawah CI 95% rata-rata > 1,00x. Ada juga simulasi $200.
+
 `python3 memescan.py analyze` membedah hasil shadow trade. Bisa juga lewat GitHub: Actions → analyze → Run workflow.
 
 ## Telegram

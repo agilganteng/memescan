@@ -1,6 +1,6 @@
 name: analyze
 
-# Bedah hasil trade memescan dari data terbaru di cache (tidak mengubah data, tidak kirim Telegram).
+# Cari aturan beli baru di rekaman semua koin + bedah hasil trade memescan dari data terbaru di cache (tidak mengubah data, tidak kirim Telegram).
 # Jalankan dari tab Actions → analyze → Run workflow. Hasilnya di log langkah "Analisa".
 
 on:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   analyze:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,6 +23,9 @@ jobs:
           path: data
           key: memescan-data-none
           restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Riset aturan beli (rekaman semua koin)
+        run: python3 memescan.py research --data data
       - name: Analisa
         run: python3 memescan.py analyze --data data
       - name: Kalibrasi (uji skor di data terbaru)
