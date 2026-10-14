@@ -13,7 +13,8 @@ Cara kerja fetch:
 Analyze mensimulasikan copy dengan ukuran tetap, fee 1.25%, slippage 2%, priority fee 0.0005 SOL,
 dan dampak harga kurva. Tidak ada kode live / kunci privat di sini.
 """
-import argparse, base64, gzip, json, math, os, re, sys, time, urllib.request, urllib.error
+import argparse, base64, gzip, json, math, os, re, sys, threading, time, urllib.request, urllib.error
+from concurrent.futures import ThreadPoolExecutor
 
 RPC = os.environ.get("RPC_HTTP", "https://api.mainnet-beta.solana.com")
 PUMP = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
@@ -64,15 +65,21 @@ def trade_events(logs):
 class Rpc:
     def __init__(self, rate=8.0):
         self.gap, self.last, self.n, self.err = 1.0 / rate, 0.0, 0, 0
+        self.lock = threading.Lock()
+
+    def _slot(self):
+        """Rate limit bersama untuk semua thread."""
+        with self.lock:
+            t = max(time.time(), self.last + self.gap)
+            self.last = t
+            self.n += 1
+        if t > time.time():
+            time.sleep(t - time.time())
 
     def call(self, method, params):
         body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode()
         for attempt in range(8):
-            wait = self.last + self.gap - time.time()
-            if wait > 0:
-                time.sleep(wait)
-            self.last = time.time()
-            self.n += 1
+            self._slot()
             try:
                 req = urllib.request.Request(RPC, body, {"content-type": "application/json", "user-agent": UA})
                 with urllib.request.urlopen(req, timeout=40) as r:
@@ -244,7 +251,7 @@ def fetch(args):
     wallets = kolscan_wallets(args.wallets)
     print(f"[fetch] {len(wallets)} wallet dari kolscan, SOL ${sol_usd}", flush=True)
     data = {"fetched_at": time.time(), "sol_usd": sol_usd, "slots": SLOTS, "wallets": [], "after": {}}
-    budget_per_wallet = (args.minutes * 60 * 0.5) / max(1, len(wallets))
+    budget_per_wallet = (args.minutes * 60 * 0.7) / max(1, len(wallets))
     anchors = {}
     for wi, w in enumerate(wallets):
         t_w = time.time()
@@ -262,13 +269,17 @@ def fetch(args):
         sigs = [s for s in sigs[:args.max_sigs] if not s.get("err")
                 and (s.get("blockTime") or 0) >= time.time() - args.days * 86400]
         trades, n_read = [], 0
-        for s in sigs:
-            if time.time() - t_w > budget_per_wallet or time.time() > deadline:
-                break
-            tx = rpc.tx(s["signature"])
-            n_read += 1
-            if tx:
-                t = wallet_trade(tx, w["wallet"])
+        stop = lambda: time.time() - t_w > budget_per_wallet or time.time() > deadline
+
+        def one(sg):
+            if stop():
+                return None, False
+            tx = rpc.tx(sg)
+            return (wallet_trade(tx, w["wallet"]) if tx else None), True
+
+        with ThreadPoolExecutor(args.threads) as ex:
+            for t, read_ok in ex.map(one, [s["signature"] for s in sigs]):
+                n_read += read_ok
                 if t:
                     trades.append(t)
         read = sigs[:n_read]
@@ -487,6 +498,7 @@ def main():
     ap.add_argument("--days", type=float, default=7)
     ap.add_argument("--minutes", type=float, default=150)
     ap.add_argument("--rate", type=float, default=8)
+    ap.add_argument("--threads", type=int, default=6)
     a = ap.parse_args()
     {"fetch": fetch, "analyze": analyze, "debug": debug}[a.mode](a)
 

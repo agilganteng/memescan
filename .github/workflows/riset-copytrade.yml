@@ -34,7 +34,7 @@ jobs:
           python3 riset/copytrade.py analyze --out /tmp/smoke
       - name: Ambil data
         if: hashFiles('riset/DEBUG') == ''
-        run: python3 riset/copytrade.py fetch --out riset/data --wallets 12 --max-sigs 1500 --days 7 --minutes 150
+        run: python3 riset/copytrade.py fetch --out riset/data --wallets 12 --max-sigs 2500 --days 7 --minutes 170 --rate 7 --threads 8
       - name: Analisa
         if: always() && hashFiles('riset/DEBUG') == ''
         run: python3 riset/copytrade.py analyze --out riset/data | tee riset/data/hasil.txt
