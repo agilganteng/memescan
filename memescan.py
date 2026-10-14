@@ -1329,9 +1329,125 @@ def find_chat(data_dir, token):
     return ""
 
 
+def analyze(data_dir, cfg):
+    """Bedah hasil trade: alasan keluar, biaya, puncak harga, fitur. Pola fitur dicek di
+    70% data lama dan 30% data terbaru terpisah; pola yang cuma muncul di satu bagian
+    kemungkinan kebetulan."""
+    cands, outs, port = {}, {}, []
+    with open(os.path.join(data_dir, "candidates.jsonl")) as f:
+        for line in f:
+            r = json.loads(line)
+            if "features" in r:
+                cands[r["id"]] = r
+            elif "outcome" in r and r.get("kind") == "shadow":
+                outs[r["id"]] = r["outcome"]
+            elif "outcome" in r and r.get("kind") == "portfolio":
+                port.append(r)
+    rows = sorted(((cands[i], outs[i]) for i in outs if i in cands), key=lambda r: r[0]["t"])
+    n = len(rows)
+    if n < 30:
+        print(f"Baru {n} trade shadow, belum cukup untuk dianalisa.")
+        return
+    xs = [o["multiple"] for _, o in rows]
+    t0, t1 = rows[0][0]["t"], rows[-1][0]["t"]
+
+    def line(label, sub):
+        if not sub:
+            return f"  {label:<26} n=0"
+        k = sum(o["won"] for o in sub)
+        m, lo, hi = mean_ci([o["multiple"] for o in sub])
+        prof = sum(o["multiple"] > 1 for o in sub)
+        return (f"  {label:<26} n={len(sub):<5} untung {prof / len(sub):>4.0%}  TP2x {k / len(sub):>4.0%}  "
+                f"rata {m:.2f}x (CI {lo:.2f}-{hi:.2f})")
+
+    print(f"== SHADOW {n} trade, {time.strftime('%d/%m %H:%M', time.gmtime(t0))} - "
+          f"{time.strftime('%d/%m %H:%M', time.gmtime(t1))} UTC, ukuran {cfg['SHADOW_SOL']} SOL")
+    k = sum(o["won"] for _, o in rows)
+    lo, hi = wilson(k, n)
+    srt = sorted(xs)
+    print(f"  kena TP 2x {k}/{n} = {k / n:.1%} (CI {lo:.1%}-{hi:.1%}); untung (>1x) "
+          f"{sum(x > 1 for x in xs) / n:.1%}; median {srt[n // 2]:.2f}x; rata {sum(xs) / n:.3f}x")
+    gross = ((1 - cfg["FEE_PCT"]) * (1 - cfg["SLIPPAGE"])) ** 2
+    print(f"  biaya pasti per trade (fee {cfg['FEE_PCT']:.2%} + slippage {cfg['SLIPPAGE']:.0%}, beli+jual): "
+          f"{1 - gross:.1%} + priority fee {2 * cfg['PRIORITY_FEE'] / cfg['SHADOW_SOL']:.1%} + dampak harga")
+    print(f"  rata sebelum fee & slippage kira-kira {sum(xs) / n / gross:.3f}x")
+
+    print("\n== ALASAN KELUAR (sumbangan = bagian dari total rugi)")
+    loss = sum(1 - x for x in xs if x < 1) or 1
+    by = collections.defaultdict(list)
+    for _, o in rows:
+        by[o["reason"]].append(o)
+    for why, sub in sorted(by.items(), key=lambda kv: -len(kv[1])):
+        lost = sum(1 - o["multiple"] for o in sub if o["multiple"] < 1)
+        print(line(why, sub) + f"  sumbangan rugi {lost / loss:.0%}")
+
+    print("\n== PUNCAK HARGA SETELAH MASUK (dari harga beli termasuk biaya)")
+    for a, b in ((0, 1.0), (1.0, 1.1), (1.1, 1.3), (1.3, 1.5), (1.5, 2.0), (2.0, 1e9)):
+        sub = [o for _, o in rows if a <= o["peak_x"] < b]
+        print(line(f"puncak {a:g}-{b:g}x" if b < 1e9 else f"puncak >={a:g}x", sub))
+    gave = [o for _, o in rows if o["peak_x"] >= 1.5 and o["multiple"] < 1]
+    print(f"  sempat >=1.5x tapi tutup rugi: {len(gave)} ({len(gave) / n:.1%})")
+
+    sl = sorted(o["held_s"] for _, o in rows if o["reason"] == "sl")
+    if sl:
+        print(f"\n== SL: {len(sl)} trade. Kena SL dalam 15 dtk {sum(s <= 15 for s in sl) / len(sl):.0%}, "
+              f"30 dtk {sum(s <= 30 for s in sl) / len(sl):.0%}, 60 dtk {sum(s <= 60 for s in sl) / len(sl):.0%}; "
+              f"median {sl[len(sl) // 2]:.0f} dtk")
+        slx = sorted(o["multiple"] for _, o in rows if o["reason"] == "sl")
+        print(f"  hasil SL median {slx[len(slx) // 2]:.2f}x (aturan SL -{cfg['SL']:.0%}; selisihnya = harga "
+              f"sudah jatuh lebih dalam selama jeda {cfg['EXEC_DELAY']:g} dtk)")
+
+    print("\n== PERKIRAAN KASAR: jual semua begitu harga X kali harga beli (batas atas, optimistis)")
+    for X in (1.2, 1.3, 1.5, 2.0):
+        sim = [X * (1 - cfg["FEE_PCT"]) * (1 - cfg["SLIPPAGE"]) if o["peak_x"] >= X else o["multiple"]
+               for _, o in rows]
+        print(f"  jual di {X:g}x: rata {sum(sim) / n:.3f}x, untung {sum(s > 1 for s in sim) / n:.0%}")
+
+    print("\n== PER GATE")
+    for g in ("cepat", "lambat"):
+        print(line(g, [o for c, o in rows if c["gate"] == g]))
+
+    cut = int(n * 0.7)
+    tr, va = rows[:cut], rows[cut:]
+    print(f"\n== FITUR SAAT MASUK, dibagi 5 kelompok (batas dari 70% data lama). "
+          f"Kiri: {len(tr)} trade lama. Kanan: {len(va)} trade terbaru")
+    for fk in FEATURES:
+        vals = sorted(c["features"].get(fk, 0.0) for c, _ in tr)
+        qs = sorted(set(vals[int(len(vals) * q / 5)] for q in range(1, 5)))
+        edges = [-1e18] + qs + [1e18]
+        print(f" {fk}")
+        for a, b in zip(edges, edges[1:]):
+            def pick(rs):
+                return [o for c, o in rs if a <= c["features"].get(fk, 0.0) < b]
+            st, sv = pick(tr), pick(va)
+            if not st and not sv:
+                continue
+            lab = (f"< {b:.3g}" if a == -1e18 else f">= {a:.3g}" if b == 1e18 else f"{a:.3g}-{b:.3g}")
+            mt = sum(o["multiple"] for o in st) / len(st) if st else 0
+            mv = sum(o["multiple"] for o in sv) / len(sv) if sv else 0
+            wt = sum(o["won"] for o in st) / len(st) if st else 0
+            wv = sum(o["won"] for o in sv) / len(sv) if sv else 0
+            print(f"   {lab:<16} lama n={len(st):<4} TP {wt:>4.0%} {mt:.2f}x | baru n={len(sv):<4} TP {wv:>4.0%} {mv:.2f}x")
+
+    print("\n== JAM (UTC) MASUK")
+    for h0 in range(0, 24, 4):
+        print(line(f"{h0:02d}-{h0 + 4:02d}", [o for c, o in rows if h0 <= time.gmtime(c["t"]).tm_hour < h0 + 4]))
+
+    if port:
+        po = [r["outcome"] for r in port if "usd_cost" in r["outcome"]]
+        print(f"\n== PAPER ($) {len(po)} trade")
+        if po:
+            pnl = sum(o["usd_out"] - o["usd_cost"] for o in po)
+            w = sum(o["usd_out"] > o["usd_cost"] for o in po)
+            print(f"  menang {w} kalah {len(po) - w}, total {pnl:+.2f} USD, rata "
+                  f"{sum(o['usd_out'] / o['usd_cost'] for o in po) / len(po):.3f}x")
+            pr = collections.Counter(o["reason"] for o in po)
+            print("  alasan keluar: " + ", ".join(f"{k} {v}" for k, v in pr.most_common()))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "setup"])
+    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "analyze", "setup"])
     ap.add_argument("--data", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
                     help="folder .env + data (default: data/ di sebelah script)")
     ap.add_argument("--duration", type=float, default=0, help="detik; 0 = jalan terus")
@@ -1340,6 +1456,9 @@ def main():
     os.makedirs(a.data, exist_ok=True)
     if a.cmd == "setup":
         setup(a.data)
+        return
+    if a.cmd == "analyze":
+        analyze(a.data, load_config(a.data))
         return
     cfg = load_config(a.data)
     tg = Telegram(cfg)

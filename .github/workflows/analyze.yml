@@ -1,0 +1,29 @@
+name: analyze
+
+# Bedah hasil trade memescan dari data terbaru di cache (tidak mengubah data, tidak kirim Telegram).
+# Jalankan dari tab Actions → analyze → Run workflow. Hasilnya di log langkah "Analisa".
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Analisa
+        run: python3 memescan.py analyze --data data
+      - name: Kalibrasi (uji skor di data terbaru)
+        run: python3 memescan.py calibrate --data data && cat data/calibration_report.md || true
