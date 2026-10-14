@@ -5,7 +5,7 @@ name: riset-copytrade
 on:
   push:
     branches: [copytrade-riset]
-    paths: [riset/copytrade.py, .github/workflows/riset-copytrade.yml]
+    paths: [riset/copytrade.py, riset/DEBUG, .github/workflows/riset-copytrade.yml]
   workflow_dispatch:
 
 permissions:
@@ -24,17 +24,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Debug alamat
+        if: hashFiles('riset/DEBUG') != ''
+        run: python3 riset/copytrade.py debug --wallets 12 --rate 3
       - name: Uji singkat
+        if: hashFiles('riset/DEBUG') == ''
         run: |
           python3 riset/copytrade.py fetch --out /tmp/smoke --wallets 1 --max-sigs 40 --minutes 2
           python3 riset/copytrade.py analyze --out /tmp/smoke
       - name: Ambil data
+        if: hashFiles('riset/DEBUG') == ''
         run: python3 riset/copytrade.py fetch --out riset/data --wallets 12 --max-sigs 1500 --days 7 --minutes 150
       - name: Analisa
-        if: always()
+        if: always() && hashFiles('riset/DEBUG') == ''
         run: python3 riset/copytrade.py analyze --out riset/data | tee riset/data/hasil.txt
       - name: Simpan data ke branch
-        if: always()
+        if: always() && hashFiles('riset/DEBUG') == ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

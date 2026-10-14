@@ -449,9 +449,38 @@ def analyze(args):
           "Yang relevan untuk keputusan adalah periode sebelumnya, dan jeda >=1 slot (jeda 0 tidak mungkin dicapai).")
 
 
+def debug(args):
+    """Lihat isi beberapa transaksi tiap alamat: program apa yang dipanggil, saldo apa yang berubah."""
+    rpc = Rpc(args.rate)
+    for w in kolscan_wallets(args.wallets):
+        a = w["wallet"]
+        info = rpc.call("getAccountInfo", [a, {"encoding": "base64"}]) or {}
+        v = info.get("value") or {}
+        sigs = rpc.sigs(a, 15)
+        print(f"\n=== {a} owner={v.get('owner')} lamports={v.get('lamports')} exec={v.get('executable')} sigs={len(sigs)}")
+        for s in sigs[:8]:
+            tx = rpc.tx(s["signature"])
+            if not tx:
+                print("   (tx kosong)")
+                continue
+            meta = tx.get("meta") or {}
+            progs = sorted({l.split()[1] for l in meta.get("logMessages") or [] if l.startswith("Program ") and " invoke [1]" in l})
+            keys = (tx["transaction"]["message"].get("accountKeys") or [])
+            ch = {}
+            for side, sg in (("preTokenBalances", -1), ("postTokenBalances", 1)):
+                for b in meta.get(side) or []:
+                    ua = b.get("uiTokenAmount") or {}
+                    k = (b.get("owner", "?")[:6], b["mint"][:6])
+                    ch[k] = ch.get(k, 0) + sg * float(ua.get("uiAmountString") or 0)
+            ch = {f"{o}/{m}": round(x, 2) for (o, m), x in ch.items() if abs(x) > 1e-9}
+            wt = wallet_trade(tx, a)
+            print(f"   signer={keys[0][:6] if keys else '?'} err={meta.get('err') is not None} progs={[p[:6] for p in progs]} "
+                  f"tok={ch} -> {('BELI' if wt['tok'] > 0 else 'JUAL') + ' ' + wt['mint'][:6] + ' curve=' + str(wt['curve']) if wt else None}")
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("mode", choices=["fetch", "analyze"])
+    ap.add_argument("mode", choices=["fetch", "analyze", "debug"])
     ap.add_argument("--out", default="riset/data")
     ap.add_argument("--wallets", type=int, default=12)
     ap.add_argument("--max-sigs", type=int, default=1500)
@@ -459,7 +488,7 @@ def main():
     ap.add_argument("--minutes", type=float, default=150)
     ap.add_argument("--rate", type=float, default=8)
     a = ap.parse_args()
-    fetch(a) if a.mode == "fetch" else analyze(a)
+    {"fetch": fetch, "analyze": analyze, "debug": debug}[a.mode](a)
 
 
 if __name__ == "__main__":
