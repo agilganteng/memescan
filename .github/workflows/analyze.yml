@@ -26,6 +26,8 @@ jobs:
       - run: pip install -q numpy
       - name: Riset aturan beli (rekaman semua koin)
         run: python3 memescan.py research --data data
+      - name: Riset wallet buatan sendiri (sinyal wallet bagus + filter memescan)
+        run: python3 memescan.py wallets --data data
       - name: Analisa
         run: python3 memescan.py analyze --data data
       - name: Kalibrasi (uji skor di data terbaru)

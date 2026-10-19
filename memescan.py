@@ -179,6 +179,7 @@ def curve_sell(v_sol, v_tok, tok_in):
 # plus foto fitur di umur tertentu. Dipakai `research` untuk menguji aturan beli lain.
 
 REC_SNAPS = (10, 20, 30, 45, 60, 90, 120, 180, 300, 600)
+REC_W_AGE, REC_W_MAX = 300.0, 150     # rekam wallet pembeli/penjual sampai umur 5 menit, maks 150 trade per koin
 
 
 def rec_bucket(age):
@@ -239,6 +240,7 @@ class Token:
         self.rec_snaps = []
         self.rec_next = 0
         self.rec_cand = None
+        self.rec_w = []            # trade per wallet 5 menit pertama: [umur, wallet 10 huruf, beli 1/0, sol]
 
     @property
     def price(self):
@@ -610,6 +612,11 @@ class Engine:
         else:
             c[4] += sol
             c[6] += 1
+        age = tok.age(now)
+        if age < REC_W_AGE and len(tok.rec_w) < REC_W_MAX:
+            w = (ev.get("traderPublicKey") or "")[:10]
+            if w:
+                tok.rec_w.append([round(age, 1), w, 1 if ev.get("txType") == "buy" else 0, sig(sol, 3)])
 
     def rec_snap(self, tok, now):
         age = tok.age(now)
@@ -628,7 +635,8 @@ class Engine:
         rec = {"m": tok.mint, "s": tok.sym, "t0": round(tok.t0, 1), "m0": sig(tok.price0 * SUPPLY),
                "snaps": tok.rec_snaps,
                "c": [[b] + [sig(v) for v in c[:5]] + c[5:] for b, c in sorted(tok.rec_c.items())],
-               "end": round(min(tok.age(now), 1800.0), 1), "why": why, "cand": tok.rec_cand}
+               "end": round(min(tok.age(now), 1800.0), 1), "why": why, "cand": tok.rec_cand,
+               "dev": tok.creator[:10], "w": tok.rec_w}
         with open(os.path.join(d, time.strftime("rec-%Y%m%d.jsonl", time.gmtime(tok.t0))), "a") as f:
             f.write(json.dumps(rec, separators=(",", ":")) + "\n")
         self.n_rec += 1
@@ -1634,6 +1642,179 @@ def research(data_dir, cfg, size=0.1, train_frac=0.7, min_train=100, top=15):
         print("\nKESIMPULAN: belum ada aturan yang terbukti di data baru.")
 
 
+WR_EXITS = [(2.0, 0.35, 300), (3.0, 0.5, 900), (1.5, 0.2, 120), (2.0, 0.5, 900)]
+
+
+def research_wallets(data_dir, cfg, size=0.1):
+    """Riset sinyal wallet buatan sendiri (bukan leaderboard publik), tanpa bocor ke masa depan:
+    data dibagi 3 menurut waktu. 50% pertama: kumpulkan wallet yang ikut-belinya untung.
+    20% berikutnya: pilih aturan sinyal (min wallet bagus, syarat wallet, aturan jual, filter).
+    30% terakhir: nilai satu kali. Terbukti = >=30 trade dan batas bawah CI 95% rata-rata > 1,00x.
+    Setiap hasil ikut-beli memakai jeda EXEC_DELAY setelah wallet itu beli, fee, slippage, dampak kurva."""
+    recs = [r for r in res_load(data_dir) if r.get("w")]
+    n = len(recs)
+    if n < 3000:
+        print(f"== RISET WALLET: baru {n} koin yang punya rekaman wallet. Butuh minimal 3000 "
+              "(sekitar 1 hari rekaman). Jalankan lagi nanti.")
+        return
+    tA, tB = recs[int(n * 0.5)]["t0"], recs[int(n * 0.7)]["t0"]
+    span = lambda a, b: (time.strftime("%d/%m %H:%M", time.gmtime(a)) + " - "
+                         + time.strftime("%d/%m %H:%M", time.gmtime(b)) + " UTC")
+    print(f"== RISET WALLET BUATAN SENDIRI: {n} koin, {span(recs[0]['t0'], recs[-1]['t0'])}")
+    print(f"   Kumpulkan wallet: {span(recs[0]['t0'], tA)} | pilih aturan: {span(tA, tB)} | "
+          f"uji: {span(tB, recs[-1]['t0'])}")
+    print(f"   Per trade {size} SOL, jeda {cfg['EXEC_DELAY']:g} dtk setelah wallet beli, fee {cfg['FEE_PCT']:.2%}, "
+          f"slippage {cfg['SLIPPAGE']:.0%}, priority fee {cfg['PRIORITY_FEE']} SOL.")
+    paths = [([(rec_bucket_start(c[0]), rec_bucket_end(c[0]), c[1], c[2], c[3]) for c in r["c"]], r["end"])
+             for r in recs]
+
+    # 1) kumpulkan: hasil ikut-beli tiap wallet (beli pertama per koin), aturan jual pertama sebagai patokan
+    tp0, sl0, T0 = WR_EXITS[0]
+    wst = collections.defaultdict(list)
+    for i, r in enumerate(recs):
+        if r["t0"] >= tA:
+            break
+        seen = set()
+        for a, w, b, sol in r["w"]:
+            if not b or w in seen or w == r.get("dev"):
+                continue
+            seen.add(w)
+            cs, end = paths[i]
+            res = res_trade(cs, end, a, r["m0"], tp0, sl0, T0, cfg, size)
+            if res:
+                wst[w].append(res[0])
+    print(f"   {len(wst)} wallet beli di periode kumpul; "
+          f"{sum(len(v) >= 5 for v in wst.values())} di antaranya beli >=5 koin.")
+
+    def good_set(min_n, min_mean, min_win):
+        return {w for w, v in wst.items() if len(v) >= min_n and sum(v) / len(v) >= min_mean
+                and sum(x > 1 for x in v) / len(v) >= min_win}
+
+    def snap_ok(r, age):
+        s = None
+        for x in r["snaps"]:
+            if x[0] <= age:
+                s = x
+        if s is None:
+            return False
+        f = dict(zip(FEATURES, s[2:]))
+        return (f["holders"] >= cfg["HOLD_MIN"] and f["top10"] <= cfg["TOP10_MAX"]
+                and f["dev_pct"] <= cfg["DEV_MAX"])
+
+    memo = {}
+
+    def signal_ages(good, lo, hi):
+        """Umur saat wallet bagus ke-1/2/3 beli, per koin di [lo, hi)."""
+        key = (id(good), lo, hi)
+        if key not in memo:
+            out = []
+            for i, r in enumerate(recs):
+                if not lo <= r["t0"] < hi:
+                    continue
+                hit, ages = set(), []
+                for a, w, b, sol in r["w"]:
+                    if b and w in good and w not in hit and w != r.get("dev"):
+                        hit.add(w)
+                        ages.append(a)
+                        if len(ages) >= 3:
+                            break
+                if ages:
+                    out.append((i, ages))
+            memo[key] = out
+        return memo[key]
+
+    def run_rule(good, k, e, filt, lo, hi):
+        tp, sl, T = WR_EXITS[e]
+        out = []
+        for i, ages in signal_ages(good, lo, hi):
+            r = recs[i]
+            if len(ages) < k:
+                continue
+            age = ages[k - 1]
+            if filt and not snap_ok(r, age):
+                continue
+            cs, end = paths[i]
+            res = res_trade(cs, end, age, r["m0"], tp, sl, T, cfg, size)
+            if res:
+                out.append((r["t0"] + age + cfg["EXEC_DELAY"], res[0], res[1] - age))
+        return out
+
+    def stat(v):
+        k = len(v)
+        if k < 2:
+            return k, float("nan"), float("nan"), float("nan")
+        m = sum(v) / k
+        sd = math.sqrt(sum((x - m) ** 2 for x in v) / (k - 1))
+        return k, m, m - 1.96 * sd / math.sqrt(k), sum(x > 1 for x in v) / k
+
+    def fmt(st):
+        k, m, lo, w = st
+        return f"n={k:<4} untung {w:>4.0%} rata {m:.3f}x (CI bawah {lo:.3f})" if k >= 2 else f"n={k}"
+
+    # 2) pilih aturan di periode tengah
+    rules, sets, seen_sets = [], {}, set()
+    for min_n in (3, 5, 10):
+        for min_mean in (1.0, 1.2, 1.5):
+            for min_win in (0.0, 0.3):
+                good = good_set(min_n, min_mean, min_win)
+                fz = frozenset(good)
+                if not good or fz in seen_sets:      # syarat beda tapi wallet sama = aturan sama
+                    continue
+                seen_sets.add(fz)
+                sets[(min_n, min_mean, min_win)] = good
+                for k in (1, 2, 3):
+                    for e in range(len(WR_EXITS)):
+                        for filt in (False, True):
+                            v = [m for _, m, _ in run_rule(good, k, e, filt, tA, tB)]
+                            st = stat(v)
+                            if st[0] >= 20:
+                                rules.append((st[1], min_n, min_mean, min_win, k, e, filt, st, len(good)))
+    if not rules:
+        print("Belum ada aturan dengan >=20 trade di periode pilih. Butuh data lebih banyak.")
+        return
+    rules.sort(key=lambda x: -x[0])
+    print(f"   {len(rules)} aturan punya >=20 trade di periode pilih.")
+
+    def lab(x):
+        _, mn, mm, mw, k, e, filt = x[:7]
+        tp, sl, T = WR_EXITS[e]
+        return (f"wallet bagus = beli >={mn} koin, rata >={mm:g}x, untung >={mw:.0%} ({x[8]} wallet) · "
+                f"sinyal >={k} wallet bagus · TP {tp:g}x SL -{sl:.0%} maks {T / 60:g}m"
+                f"{' · + filter holder/top10/dev memescan' if filt else ''}")
+    print("\n== 5 ATURAN TERBAIK DI PERIODE PILIH, lalu hasilnya di periode uji (sekali saja)")
+    best_tr = None
+    for x in rules[:5]:
+        good = sets[x[1:4]]
+        tr = run_rule(good, x[4], x[5], x[6], tB, float("inf"))
+        st = stat([m for _, m, _ in tr])
+        ok = st[0] >= 30 and st[2] > 1.0
+        print(f"  [{'TERBUKTI' if ok else 'gagal   '}] {lab(x)}")
+        print(f"      pilih {fmt(x[7])}\n      uji   {fmt(st)}")
+        if best_tr is None:
+            best_tr = (x, tr, st, ok)
+
+    # pembanding: aturan yang sama tanpa filter wallet = beli semua koin di umur yang sama tidak ada;
+    # pakai 'beli semua koin umur 10/30 dtk' dari `research` sebagai pembanding.
+    x, tr, st, ok = best_tr
+    bal, busy, nn, w = 200.0, -1.0, 0, 0
+    for t, m, held in sorted(tr):
+        if t < busy or bal < 40:
+            continue
+        stake = min(20.0, bal)
+        bal += stake * (m - 1)
+        busy, nn, w = t + held, nn + 1, w + (m > 1)
+    lo_w, hi_w = wilson(w, nn) if nn else (0, 0)
+    print(f"\n== SIMULASI $200 di periode uji, aturan nomor 1 ({'terbukti' if ok else 'TIDAK terbukti'}):")
+    print(f"  $20 per trade, satu posisi sekaligus, berhenti di bawah $40: {nn} trade, menang {w}"
+          f"{f' ({w / nn:.0%}, CI {lo_w:.0%}-{hi_w:.0%})' if nn else ''}, modal akhir ${bal:.2f} ({bal - 200:+.2f})")
+    if nn < 30:
+        print("  Kurang dari 30 trade, belum bisa disimpulkan.")
+    print("  Rekaman wallet baru mulai setelah update ini, jadi periode Jan 2026 - sekarang tidak bisa disimulasikan.")
+    print("  Pembanding 'beli semua koin' ada di output `research` di atas.")
+    if not ok:
+        print("\nKESIMPULAN: sinyal wallet buatan sendiri belum terbukti di data uji.")
+
+
 def analyze(data_dir, cfg):
     """Bedah hasil trade: alasan keluar, biaya, puncak harga, fitur. Pola fitur dicek di
     70% data lama dan 30% data terbaru terpisah; pola yang cuma muncul di satu bagian
@@ -1752,7 +1933,7 @@ def analyze(data_dir, cfg):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "analyze", "research", "setup"])
+    ap.add_argument("cmd", nargs="?", default="run", choices=["run", "status", "calibrate", "analyze", "research", "wallets", "setup"])
     ap.add_argument("--data", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
                     help="folder .env + data (default: data/ di sebelah script)")
     ap.add_argument("--duration", type=float, default=0, help="detik; 0 = jalan terus")
@@ -1767,6 +1948,9 @@ def main():
         return
     if a.cmd == "research":
         research(a.data, load_config(a.data))
+        return
+    if a.cmd == "wallets":
+        research_wallets(a.data, load_config(a.data))
         return
     cfg = load_config(a.data)
     tg = Telegram(cfg)

@@ -66,6 +66,8 @@ Koin yang sepi (tanpa trade 5 menit, atau inflow < 0,5 SOL di umur 2 menit) berh
 
 `python3 memescan.py research` (butuh `pip install numpy`) menguji ribuan aturan beli: umur masuk 10 detik–5 menit × satu filter fitur × TP/SL/batas waktu. Aturan dipilih di 70% data lama, lalu dinilai di 30% data terbaru. Terbukti kalau di data baru ada ≥30 trade dan batas bawah CI 95% rata-rata > 1,00x. Ada juga simulasi $200.
 
+`python3 memescan.py wallets` menguji sinyal wallet buatan sendiri. Sejak 19 Okt 2026, recorder juga mencatat wallet setiap pembeli dan penjual di 5 menit pertama (maks 150 trade per koin). Datanya dibagi 3 menurut waktu: 50% pertama untuk mengumpulkan wallet yang ikut-belinya untung, 20% berikutnya untuk memilih aturan (berapa wallet bagus, syarat wallet, TP/SL, dengan atau tanpa filter holder/top10/dev memescan), lalu 30% terakhir untuk diuji sekali. Kriteria terbukti sama, dan ada simulasi $200. Butuh minimal 3000 koin dengan rekaman wallet (sekitar 1 hari).
+
 `python3 memescan.py analyze` membedah hasil shadow trade. Bisa juga lewat GitHub: Actions → analyze → Run workflow.
 
 ## Telegram
