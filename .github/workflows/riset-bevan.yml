@@ -24,4 +24,4 @@ jobs:
       - name: Cek RPC
         run: echo lewati
       - name: Cari wallet
-        run: python3 -u riset/bevan_mars.py inflow 0x8894e0a0c962cb723c1976a4421c95949be2d4e3 2026-09-04T13:30 2026-09-05T00:00
+        run: python3 -u riset/bevan_mars.py holders 2026-08-10 2026-08-20 2026-08-27 2026-09-01 2026-09-15 2026-10-01
