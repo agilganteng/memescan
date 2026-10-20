@@ -7,13 +7,22 @@ hitung BNB yang dibayar, lalu cek saldo wallet itu sekarang. Hanya stdlib, RPC p
 import json, sys, time, urllib.request, collections, datetime
 
 RPCS = ["https://bsc-rpc.publicnode.com", "https://bsc.drpc.org", "https://bsc-dataseed.bnbchain.org",
-        "https://1rpc.io/bnb", "https://bsc.meowrpc.com", "https://bsc-dataseed1.defibit.io"]
+        "https://1rpc.io/bnb", "https://bsc.meowrpc.com", "https://bsc-dataseed1.defibit.io",
+        "https://bsc-dataseed1.ninicoin.io", "https://rpc-bsc.48.club", "https://bsc.blockpi.network/v1/rpc/public",
+        "https://bsc-mainnet.public.blastapi.io", "https://endpoints.omniatech.io/v1/bsc/mainnet/public",
+        "https://bsc.api.onfinality.io/public", "https://api.zan.top/bsc-mainnet", "https://bsc-pokt.nodies.app",
+        "https://bnb.rpc.subquery.network/public", "https://binance.llamarpc.com", "https://bsc.rpc.blxrbdn.com",
+        "https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3", "https://bsc.publicnode.com"]
 TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 ZERO_T = "0x" + "0" * 64
 TOKENS = {"MARSCOIN (Flap, 0xfe18..7777)": "0xfe189e97832da1573e4e4ff034f4ffc3a15c7777",
           "Marscoin (four.meme, 0x1fd4..5b68)": "0x1fd448d0361c3212961a70930f3129a45f425b68"}
 UA = {"User-Agent": "Mozilla/5.0", "content-type": "application/json"}
 good = list(RPCS)
+
+
+def utc(t):
+    return datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
 
 def post(url, body, timeout=40):
@@ -70,21 +79,28 @@ def call(to, data, block="latest"):
 
 
 def debug():
-    head = None
+    """Uji tiap RPC: getLogs lama (50 blok, Juli 2026) dan state lama (archive)."""
+    tok = TOKENS[next(iter(TOKENS))]
     for url in RPCS:
-        try:
-            h = int(post(url, {"jsonrpc": "2.0", "id": 1, "method": "eth_blockNumber", "params": []})["result"], 16)
-            head = head or h
-            old = h - 4_000_000
-            j = post(url, {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": [
-                {"address": TOKENS[next(iter(TOKENS))], "fromBlock": hex(old), "toBlock": hex(old + 2000), "topics": [TRANSFER]}]})
-            print(f"{url}: head {h}, getLogs lama -> {'ERR ' + str(j['error'])[:120] if 'error' in j else str(len(j['result'])) + ' log'}")
-        except Exception as e:
-            print(f"{url}: gagal {str(e)[:120]}")
+        res = []
+        for name, method, params in [
+            ("head", "eth_blockNumber", []),
+            ("logs50", "eth_getLogs", [{"address": tok, "fromBlock": hex(112_430_000), "toBlock": hex(112_430_049), "topics": [TRANSFER]}]),
+            ("logs5k", "eth_getLogs", [{"address": tok, "fromBlock": hex(112_430_000), "toBlock": hex(112_434_999), "topics": [TRANSFER]}]),
+            ("code_old", "eth_getCode", [tok, hex(112_000_000)]),
+        ]:
+            try:
+                j = post(url, {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}, timeout=20)
+                r = j.get("result")
+                res.append(f"{name}=" + ("ERR " + str(j["error"])[:70] if "error" in j else
+                                         (str(int(r, 16)) if name == "head" else str(len(r)) + ("log" if isinstance(r, list) else "ch"))))
+            except Exception as e:
+                res.append(f"{name}=X {str(e)[:40]}")
+        print(url, "|", " ".join(res), flush=True)
 
 
 def bnb_usd(ts):
-    d = datetime.datetime.utcfromtimestamp(ts).strftime("%d-%m-%Y")
+    d = utc(ts).strftime("%d-%m-%Y")
     try:
         return get_json(f"https://api.coingecko.com/api/v3/coins/binancecoin/history?date={d}&localization=false")["market_data"]["current_price"]["usd"]
     except Exception as e:
@@ -112,7 +128,7 @@ def analyze(name, tok, hours):
             print(f"  dexscreener: {p.get('dexId')} MC ${p.get('marketCap') or p.get('fdv')} liq ${(p.get('liquidity') or {}).get('usd')}")
         if pc:
             hint = min(head, head - int((t_head - min(pc) / 1000) / bt) + 2000)
-            print(f"  pair dibuat {datetime.datetime.utcfromtimestamp(min(pc) / 1000)} UTC -> mulai cari dari blok {hint}")
+            print(f"  pair dibuat {utc(min(pc) / 1000)} UTC -> mulai cari dari blok {hint}")
     except Exception as e:
         print(f"  dexscreener gagal: {str(e)[:80]}")
     # cari mint (Transfer dari alamat nol) mundur dari hint
@@ -134,7 +150,7 @@ def analyze(name, tok, hours):
         print("blok peluncuran tidak ketemu")
         return
     t0 = bts(launch)
-    print(f"diluncurkan blok {launch} ({datetime.datetime.utcfromtimestamp(t0)} UTC); suplai awal dikirim ke {curve}")
+    print(f"diluncurkan blok {launch} ({utc(t0)} UTC); suplai awal dikirim ke {curve}")
     end = launch + int(hours * 3600 / bt)
     tr = logs(tok, launch, end, [TRANSFER], 3000)
     print(f"{len(tr)} transfer di {hours} jam pertama")
@@ -178,6 +194,8 @@ if __name__ == "__main__":
     if sys.argv[1:2] == ["debug"]:
         debug()
     else:
+        if sys.argv[1:2] == ["skip"]:
+            sys.exit(0)
         hours = float(sys.argv[1]) if len(sys.argv) > 1 else 3
         for n, t in TOKENS.items():
             try:

@@ -24,4 +24,4 @@ jobs:
       - name: Cek RPC
         run: python3 riset/bevan_mars.py debug
       - name: Cari wallet
-        run: python3 -u riset/bevan_mars.py 3
+        run: python3 -u riset/bevan_mars.py skip
