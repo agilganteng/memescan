@@ -16,7 +16,7 @@ RPCS = ["https://bsc-rpc.publicnode.com", "https://bsc.drpc.org", "https://bsc-d
 TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 ZERO_T = "0x" + "0" * 64
 TOKENS = {"MARSCOIN (Flap, 0xfe18..7777)": "0xfe189e97832da1573e4e4ff034f4ffc3a15c7777",
-          "Marscoin (four.meme, 0x1fd4..5b68)": "0x1fd448d0361c3212961a70930f3129a45f425b68"}
+          }  # Marscoin four.meme 0x1fd4..5b68 dibuang: diluncurkan 2024, MC $50rb, bukan koin di video
 UA = {"User-Agent": "Mozilla/5.0", "content-type": "application/json"}
 good = ["https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3",
         "https://bsc-mainnet.public.blastapi.io", "https://api.zan.top/bsc-mainnet"]
@@ -102,7 +102,7 @@ def debug():
 
 
 def bnb_usd(ts):
-    d = utc(ts).strftime("%d-%m-%Y")
+    d = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).strftime("%d-%m-%Y")
     try:
         return get_json(f"https://api.coingecko.com/api/v3/coins/binancecoin/history?date={d}&localization=false")["market_data"]["current_price"]["usd"]
     except Exception as e:
@@ -151,19 +151,32 @@ def analyze(name, tok, hours):
     end = launch + int(hours * 3600 / 0.45) + 1
     tr = logs(tok, launch, end, [TRANSFER], 2000)
     print(f"{len(tr)} transfer dalam ~{hours} jam pertama (sampai {utc(bts(min(end, head)))} UTC)")
-    buy = collections.defaultdict(lambda: {"tok": 0, "txs": [], "first": None})
+    # sumber beli = curve + kontrak pool (alamat yang paling sering mengirim token dan punya kode)
+    cnt = collections.Counter("0x" + l["topics"][1][-40:] for l in tr)
+    src = {curve}
+    for a, c in cnt.most_common(12):
+        if c >= 50 and a != "0x" + "0" * 40 and len(rpc("eth_getCode", [a, "latest"])) > 2:
+            src.add(a)
+    print("sumber (curve/pool):", ", ".join(f"{a}({cnt[a]})" for a in src))
+    buy = collections.defaultdict(lambda: {"tok": 0, "net": 0, "txs": [], "first": None})
     for l in tr:
         fr, to, amt = "0x" + l["topics"][1][-40:], "0x" + l["topics"][2][-40:], int(l["data"], 16)
-        if fr == curve and to != curve:
+        b = int(l["blockNumber"], 16)
+        if fr in src and to not in src:
             w = buy[to]
-            w["tok"] += amt
-            w["txs"].append((l["transactionHash"], amt, int(l["blockNumber"], 16)))
-            w["first"] = w["first"] or int(l["blockNumber"], 16)
-    print(f"{len(buy)} wallet beli dari curve")
+            w["net"] += amt
+            if b <= launch + int(600 / 0.45):           # pembelian di 10 menit pertama
+                w["tok"] += amt
+                w["txs"].append((l["transactionHash"], amt, b))
+                w["first"] = w["first"] or b
+        elif to in src and fr not in src and fr in buy:
+            buy[fr]["net"] -= amt
+    buy = {k: v for k, v in buy.items() if v["tok"] > 0}
+    print(f"{len(buy)} wallet beli di 10 menit pertama")
     ath_blk = block_at(int(datetime.datetime(2026, 9, 5, tzinfo=datetime.timezone.utc).timestamp()), head)
     px = bnb_usd(t0)
     print(f"harga BNB hari peluncuran: {px}; blok 5 Sep 2026: {ath_blk}")
-    print(f"\n{'wallet':44} {'menit':>6} {'beli%':>6} {'BNB':>8} {'avgMC$':>9} {'5Sep%':>6} {'kini%':>6}  signer / bayar")
+    print(f"\n{'wallet':44} {'menit':>6} {'beli%':>6} {'net3j%':>6} {'BNB':>8} {'avgMC$':>9} {'5Sep%':>6} {'kini%':>6}  signer / bayar")
     top = sorted(buy.items(), key=lambda kv: -kv[1]["tok"])[:40]
     for w, d in top:
         bnb, part, signer, other = 0.0, 0, set(), collections.Counter()
@@ -187,7 +200,7 @@ def analyze(name, tok, hours):
         b5, bn_ = bal(tok, w, ath_blk), bal(tok, w)
         sg = ",".join(x[:12] for x in signer if x != w) or "sama"
         oth = " ".join(f"{k}:{v:.2f}" for k, v in other.items())
-        print(f"{w:44} {mins:6.1f} {100 * d['tok'] / sup:5.2f}% {bnb:8.3f} {('%9.0f' % mc) if mc else '        -'} "
+        print(f"{w:44} {mins:6.1f} {100 * d['tok'] / sup:5.2f}% {100 * d['net'] / sup:5.2f}% {bnb:8.3f} {('%9.0f' % mc) if mc else '        -'} "
               f"{100 * b5 / sup:5.2f}% {100 * bn_ / sup:5.2f}%  {sg} {oth}", flush=True)
 
 
