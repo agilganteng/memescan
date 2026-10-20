@@ -221,12 +221,12 @@ def trace(tok, sup, src, launch, head, ath_blk, cands, depth=0, seen=None):
     if depth == 0:
         print(f"\n---- jejak {len(cands)} wallet kandidat ----")
     pad = "    " * depth
-    for w in cands:
+    for c in cands:
+        w, got, start = c if isinstance(c, tuple) else (c, 0, launch + int(3 * 3600 / 0.45))
         if w in seen:
             continue
         seen.add(w)
-        start = launch + int(3 * 3600 / 0.45)
-        b0 = bal(tok, w, start) if depth == 0 else max(bal(tok, w, start), 1)
+        b0 = max(bal(tok, w, start), got)
         if b0 <= 0 and depth == 0:
             print(f"{pad}{w}: sudah habis dalam 3 jam pertama")
             continue
@@ -236,7 +236,7 @@ def trace(tok, sup, src, launch, head, ath_blk, cands, depth=0, seen=None):
             continue
         blk = drop_block(tok, w, start, head, 0.1 * peak)
         out = logs(tok, max(launch, blk - 3000), blk, [TRANSFER, "0x" + "0" * 24 + w[2:]], 3001)
-        moved = collections.Counter()
+        moved, mblk = collections.Counter(), {}
         sold = 0
         for l in out:
             to, amt = "0x" + l["topics"][2][-40:], int(l["data"], 16)
@@ -244,6 +244,7 @@ def trace(tok, sup, src, launch, head, ath_blk, cands, depth=0, seen=None):
                 sold += amt
             else:
                 moved[to] += amt
+                mblk[to] = int(l["blockNumber"], 16)
         print(f"{pad}{w}: saldo habis {utc(bts(blk))} UTC; di blok itu jual ke pool {100 * sold / sup:.2f}%, pindah {100 * sum(moved.values()) / sup:.2f}%")
         nxt = []
         for d, amt in moved.most_common(3):
@@ -251,7 +252,7 @@ def trace(tok, sup, src, launch, head, ath_blk, cands, depth=0, seen=None):
                 code = len(rpc("eth_getCode", [d, "latest"])) > 2
                 print(f"{pad}    -> {d}{' (kontrak)' if code else ''} {100 * amt / sup:.2f}%; saldo 5 Sep {100 * bal(tok, d, ath_blk) / sup:.2f}%, kini {100 * bal(tok, d) / sup:.2f}%", flush=True)
                 if not code:
-                    nxt.append(d)
+                    nxt.append((d, amt, mblk[d]))
         if nxt and depth < 2:
             trace(tok, sup, src, launch, head, ath_blk, nxt, depth + 1, seen)
 
