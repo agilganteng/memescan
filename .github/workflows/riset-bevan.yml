@@ -1,0 +1,27 @@
+name: riset-bevan
+
+# Riset sekali jalan: wallet pembeli awal koin MARS (BNB Chain) yang masih pegang ~5% suplai.
+# Hanya jalan di branch bevan-riset, tidak menyentuh memescan, cache, atau Telegram. Hasil di log.
+on:
+  push:
+    branches: [bevan-riset]
+    paths: [riset/bevan_mars.py, .github/workflows/riset-bevan.yml]
+  workflow_dispatch:
+
+concurrency:
+  group: riset-bevan
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cek RPC
+        run: python3 riset/bevan_mars.py debug
+      - name: Cari wallet
+        run: python3 -u riset/bevan_mars.py 3
