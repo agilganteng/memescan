@@ -257,11 +257,55 @@ def trace(tok, sup, src, launch, head, ath_blk, cands, depth=0, seen=None):
             trace(tok, sup, src, launch, head, ath_blk, nxt, depth + 1, seen)
 
 
+def holders(tok, at_ts, top_n=25):
+    """Bangun ulang saldo semua wallet dari semua Transfer sejak peluncuran sampai at_ts, tampilkan pemegang terbesar."""
+    sup = int(call(tok, "0x18160ddd"), 16)
+    head = bn()
+    launch = first_block(lambda n: len(rpc("eth_getCode", [tok, hex(n)])) > 2, 0, head)
+    at = block_at(at_ts, head)
+    print(f"\n---- pemegang terbesar per {utc(at_ts)} UTC (blok {at}), dari semua transfer sejak blok {launch} ----", flush=True)
+    balmap, first = collections.defaultdict(int), {}
+    lo, step, n, t_start = launch, 2000, 0, time.time()
+    while lo <= at:
+        hi = min(at, lo + step - 1)
+        try:
+            chunk = rpc("eth_getLogs", [{"address": tok, "fromBlock": hex(lo), "toBlock": hex(hi), "topics": [TRANSFER]}])
+        except RuntimeError as e:
+            step = max(100, step // 2)
+            time.sleep(2)
+            continue
+        for l in chunk:
+            if len(l["topics"]) != 3:
+                continue
+            fr, to, amt = "0x" + l["topics"][1][-40:], "0x" + l["topics"][2][-40:], int(l["data"], 16)
+            balmap[fr] -= amt
+            balmap[to] += amt
+            first.setdefault(to, int(l["blockNumber"], 16))
+            n += 1
+        lo = hi + 1
+        if len(chunk) < 3000 and step < 2000:
+            step = min(2000, step * 2)
+        if (lo - launch) // 2000 % 400 == 0:
+            print(f"  ... blok {lo} ({100 * (lo - launch) / (at - launch + 1):.0f}%), {n} transfer, {time.time() - t_start:.0f}s", flush=True)
+    t0 = bts(launch)
+    print(f"{n} transfer diproses; {sum(1 for v in balmap.values() if v > 0)} alamat bersaldo")
+    print(f"{'alamat':44} {'saldo%':>7} {'cek RPC%':>8} {'kini%':>6} {'pertama terima':>20} kontrak?")
+    for a, v in sorted(balmap.items(), key=lambda kv: -kv[1])[:top_n]:
+        code = len(rpc("eth_getCode", [a, "latest"])) > 2
+        fb = first.get(a)
+        print(f"{a:44} {100 * v / sup:6.2f}% {100 * bal(tok, a, at) / sup:7.2f}% {100 * bal(tok, a) / sup:5.2f}% "
+              f"{(utc(bts(fb)) + ' +' + str(round((bts(fb) - t0) / 60, 1)) + 'm') if fb else '-':>28} {'ya' if code else ''}", flush=True)
+
+
 if __name__ == "__main__":
     if sys.argv[1:2] == ["debug"]:
         debug()
     else:
         if sys.argv[1:2] == ["skip"]:
+            sys.exit(0)
+        if sys.argv[1:2] == ["holders"]:
+            for d in sys.argv[2:]:
+                holders(TOKENS[next(iter(TOKENS))], int(datetime.datetime.fromisoformat(d).replace(tzinfo=datetime.timezone.utc).timestamp()))
             sys.exit(0)
         hours = float(sys.argv[1]) if len(sys.argv) > 1 else 3
         for n, t in TOKENS.items():

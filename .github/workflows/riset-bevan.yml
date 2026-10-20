@@ -15,7 +15,7 @@ concurrency:
 jobs:
   riset:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,4 +24,4 @@ jobs:
       - name: Cek RPC
         run: echo lewati
       - name: Cari wallet
-        run: python3 -u riset/bevan_mars.py 3
+        run: python3 -u riset/bevan_mars.py holders 2026-09-05
