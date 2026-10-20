@@ -302,7 +302,17 @@ def inflow(tok, w, frm_ts, to_ts):
     sup = int(call(tok, "0x18160ddd"), 16)
     head = bn()
     a, b = block_at(frm_ts, head), block_at(to_ts, head)
-    got = logs(tok, a, b, [TRANSFER, None, "0x" + "0" * 24 + w[2:]], 2000)
+    got, lo, step = [], a, 2000
+    tw = "0x" + "0" * 24 + w[2:]
+    while lo <= b:
+        hi = min(b, lo + step - 1)
+        try:
+            got += [l for l in rpc("eth_getLogs", [{"address": tok, "fromBlock": hex(lo), "toBlock": hex(hi), "topics": [TRANSFER]}])
+                    if len(l["topics"]) == 3 and l["topics"][2] == tw]
+            lo = hi + 1
+        except RuntimeError:
+            step = max(100, step // 2)
+            time.sleep(2)
     snd = collections.Counter()
     ex = {}
     for l in got:
