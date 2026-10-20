@@ -22,6 +22,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Cek RPC
-        run: python3 riset/bevan_mars.py debug
+        run: echo lewati
       - name: Cari wallet
-        run: python3 -u riset/bevan_mars.py skip
+        run: python3 -u riset/bevan_mars.py 3

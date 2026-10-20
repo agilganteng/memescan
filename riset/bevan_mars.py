@@ -18,7 +18,8 @@ ZERO_T = "0x" + "0" * 64
 TOKENS = {"MARSCOIN (Flap, 0xfe18..7777)": "0xfe189e97832da1573e4e4ff034f4ffc3a15c7777",
           "Marscoin (four.meme, 0x1fd4..5b68)": "0x1fd448d0361c3212961a70930f3129a45f425b68"}
 UA = {"User-Agent": "Mozilla/5.0", "content-type": "application/json"}
-good = list(RPCS)
+good = ["https://bsc-mainnet.nodereal.io/v1/64a9df0874fb4a93b9d0a3849de012d3",
+        "https://bsc-mainnet.public.blastapi.io", "https://api.zan.top/bsc-mainnet"]
 
 
 def utc(t):
@@ -33,7 +34,7 @@ def post(url, body, timeout=40):
 
 def rpc(method, params, tries=None):
     err = None
-    for url in list(good)[: tries or len(good)]:
+    for url in (list(good) * 3)[: tries or 3 * len(good)]:
         try:
             j = post(url, {"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
             if "error" in j:
@@ -42,6 +43,7 @@ def rpc(method, params, tries=None):
             return j["result"]
         except Exception as e:
             err = f"{url}: {e}"
+            time.sleep(1)
     raise RuntimeError(err)
 
 
@@ -108,86 +110,85 @@ def bnb_usd(ts):
         return None
 
 
+def first_block(pred, lo, hi):
+    """Blok terkecil di (lo, hi] dengan pred benar (pred monoton)."""
+    while hi - lo > 1:
+        m = (lo + hi) // 2
+        if pred(m):
+            hi = m
+        else:
+            lo = m
+    return hi
+
+
+def block_at(ts, head):
+    return first_block(lambda n: bts(n) >= ts, 0, head)
+
+
+def bal(tok, w, block="latest"):
+    try:
+        return int(call(tok, "0x70a08231" + "0" * 24 + w[2:], block if block == "latest" else hex(block)), 16)
+    except Exception:
+        return -1
+
+
 def analyze(name, tok, hours):
     print(f"\n==================== {name} ====================\n{tok}")
     sup = int(call(tok, "0x18160ddd"), 16)
-    try:
-        dec = int(call(tok, "0x313ce567"), 16)
-    except Exception:
-        dec = 18
-    print(f"total suplai {sup / 10**dec:,.0f} (desimal {dec})")
+    print(f"total suplai {sup / 1e18:,.0f}")
     head = bn()
-    t_head = bts(head)
-    bt = (t_head - bts(head - 100_000)) / 100_000
-    print(f"blok terakhir {head}, waktu blok {bt:.3f} s")
-    hint = head
     try:
-        ds = get_json(f"https://api.dexscreener.com/latest/dex/tokens/{tok}").get("pairs") or []
-        pc = [p["pairCreatedAt"] for p in ds if p.get("pairCreatedAt")]
-        for p in ds[:3]:
-            print(f"  dexscreener: {p.get('dexId')} MC ${p.get('marketCap') or p.get('fdv')} liq ${(p.get('liquidity') or {}).get('usd')}")
-        if pc:
-            hint = min(head, head - int((t_head - min(pc) / 1000) / bt) + 2000)
-            print(f"  pair dibuat {utc(min(pc) / 1000)} UTC -> mulai cari dari blok {hint}")
+        for p in (get_json(f"https://api.dexscreener.com/latest/dex/tokens/{tok}").get("pairs") or [])[:3]:
+            print(f"  dexscreener: {p.get('dexId')} MC ${p.get('marketCap') or p.get('fdv')} liq ${(p.get('liquidity') or {}).get('usd')}"
+                  f" pair dibuat {utc(p['pairCreatedAt'] / 1000) if p.get('pairCreatedAt') else '-'}")
     except Exception as e:
         print(f"  dexscreener gagal: {str(e)[:80]}")
-    # cari mint (Transfer dari alamat nol) mundur dari hint
-    launch, curve, hi = None, None, hint
-    while hi > hint - 12_000_000 and launch is None:
-        lo = hi - 200_000
-        ms = logs(tok, lo, hi, [TRANSFER, ZERO_T], 200_000)
-        if ms:
-            m = min(ms, key=lambda x: int(x["blockNumber"], 16))
-            launch, curve = int(m["blockNumber"], 16), "0x" + m["topics"][2][-40:]
-            # pastikan tidak ada mint lebih awal di chunk sebelumnya
-            prev = logs(tok, lo - 200_000, lo - 1, [TRANSFER, ZERO_T], 200_000)
-            if prev:
-                hi = lo - 1
-                launch = None
-                continue
-        hi = lo - 1
-    if launch is None:
-        print("blok peluncuran tidak ketemu")
-        return
+    launch = first_block(lambda n: len(rpc("eth_getCode", [tok, hex(n)])) > 2, 0, head)
     t0 = bts(launch)
-    print(f"diluncurkan blok {launch} ({utc(t0)} UTC); suplai awal dikirim ke {curve}")
-    end = launch + int(hours * 3600 / bt)
-    tr = logs(tok, launch, end, [TRANSFER], 3000)
-    print(f"{len(tr)} transfer di {hours} jam pertama")
+    ms = logs(tok, launch, launch + 200, [TRANSFER, ZERO_T], 201)
+    curve = "0x" + ms[0]["topics"][2][-40:] if ms else None
+    print(f"kontrak dibuat blok {launch} ({utc(t0)} UTC); suplai awal ke {curve}")
+    end = launch + int(hours * 3600 / 0.45) + 1
+    tr = logs(tok, launch, end, [TRANSFER], 2000)
+    print(f"{len(tr)} transfer dalam ~{hours} jam pertama (sampai {utc(bts(min(end, head)))} UTC)")
     buy = collections.defaultdict(lambda: {"tok": 0, "txs": [], "first": None})
-    sold_from_curve = 0
     for l in tr:
         fr, to, amt = "0x" + l["topics"][1][-40:], "0x" + l["topics"][2][-40:], int(l["data"], 16)
-        b = int(l["blockNumber"], 16)
         if fr == curve and to != curve:
-            sold_from_curve += amt
             w = buy[to]
             w["tok"] += amt
-            w["txs"].append((l["transactionHash"], amt, b, sold_from_curve))
-            w["first"] = w["first"] or b
-    top = sorted(buy.items(), key=lambda kv: -kv[1]["tok"])[:40]
+            w["txs"].append((l["transactionHash"], amt, int(l["blockNumber"], 16)))
+            w["first"] = w["first"] or int(l["blockNumber"], 16)
+    print(f"{len(buy)} wallet beli dari curve")
+    ath_blk = block_at(int(datetime.datetime(2026, 9, 5, tzinfo=datetime.timezone.utc).timestamp()), head)
     px = bnb_usd(t0)
-    print(f"harga BNB hari itu: {px}")
-    print(f"\n{'wallet':44} {'menit':>6} {'beli %':>7} {'BNB':>9} {'avg MC $':>10} {'saldo kini %':>12}")
+    print(f"harga BNB hari peluncuran: {px}; blok 5 Sep 2026: {ath_blk}")
+    print(f"\n{'wallet':44} {'menit':>6} {'beli%':>6} {'BNB':>8} {'avgMC$':>9} {'5Sep%':>6} {'kini%':>6}  signer / bayar")
+    top = sorted(buy.items(), key=lambda kv: -kv[1]["tok"])[:40]
     for w, d in top:
-        bnb, signer = 0, set()
-        for h, amt, b, cum in d["txs"][:25]:
+        bnb, part, signer, other = 0.0, 0, set(), collections.Counter()
+        for h, amt, b in d["txs"][:10]:
             try:
                 tx = rpc("eth_getTransactionByHash", [h])
-                bnb += int(tx["value"], 16) / 1e18
+                v = int(tx["value"], 16) / 1e18
                 signer.add(tx["from"])
-            except Exception:
-                pass
-        part = sum(a for _, a, _, _ in d["txs"][:25])
-        mc = (bnb / (part / 10**dec)) * (sup / 10**dec) * px if part and bnb and px else None
-        try:
-            now = int(call(tok, "0x70a08231" + "0" * 24 + w[2:]), 16)
-        except Exception:
-            now = -1
+                if v > 0:
+                    bnb += v
+                    part += amt
+                else:
+                    for l in rpc("eth_getTransactionReceipt", [h])["logs"]:
+                        if l["topics"] and l["topics"][0] == TRANSFER and len(l["topics"]) == 3 and l["address"].lower() != tok \
+                                and "0x" + l["topics"][2][-40:] == curve:
+                            other[l["address"][:10]] += int(l["data"], 16) / 1e18
+            except Exception as e:
+                print(f"   ({h[:10]} gagal: {str(e)[:60]})")
+        mc = bnb / (part / 1e18) * (sup / 1e18) * px if part and px else None
         mins = (bts(d["first"]) - t0) / 60
-        print(f"{w:44} {mins:6.1f} {100 * d['tok'] / sup:6.2f}% {bnb:9.3f} {('%10.0f' % mc) if mc else '         -'} "
-              f"{(100 * now / sup) if now >= 0 else -1:11.2f}%  signer {','.join(s[:10] for s in signer) if signer and signer != {w} else '-'}")
-        time.sleep(0.2)
+        b5, bn_ = bal(tok, w, ath_blk), bal(tok, w)
+        sg = ",".join(x[:12] for x in signer if x != w) or "sama"
+        oth = " ".join(f"{k}:{v:.2f}" for k, v in other.items())
+        print(f"{w:44} {mins:6.1f} {100 * d['tok'] / sup:5.2f}% {bnb:8.3f} {('%9.0f' % mc) if mc else '        -'} "
+              f"{100 * b5 / sup:5.2f}% {100 * bn_ / sup:5.2f}%  {sg} {oth}", flush=True)
 
 
 if __name__ == "__main__":
