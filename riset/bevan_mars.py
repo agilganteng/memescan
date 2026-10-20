@@ -297,11 +297,34 @@ def holders(tok, at_ts, top_n=25):
               f"{(utc(bts(fb)) + ' +' + str(round((bts(fb) - t0) / 60, 1)) + 'm') if fb else '-':>28} {'ya' if code else ''}", flush=True)
 
 
+def inflow(tok, w, frm_ts, to_ts):
+    """Dari mana saja wallet w menerima token di rentang waktu ini."""
+    sup = int(call(tok, "0x18160ddd"), 16)
+    head = bn()
+    a, b = block_at(frm_ts, head), block_at(to_ts, head)
+    got = logs(tok, a, b, [TRANSFER, None, "0x" + "0" * 24 + w[2:]], 2000)
+    snd = collections.Counter()
+    ex = {}
+    for l in got:
+        f = "0x" + l["topics"][1][-40:]
+        snd[f] += int(l["data"], 16)
+        ex.setdefault(f, l["transactionHash"])
+    print(f"\n---- {w} menerima {len(got)} transfer ({100 * sum(snd.values()) / sup:.2f}%) {utc(frm_ts)}..{utc(to_ts)} ----")
+    for f, amt in snd.most_common(12):
+        code = len(rpc("eth_getCode", [f, "latest"])) > 2
+        tx = rpc("eth_getTransactionByHash", [ex[f]])
+        print(f"  dari {f}{' (kontrak)' if code else ''} {100 * amt / sup:.2f}%  tx signer {tx['from']} ke {tx['to']}", flush=True)
+
+
 if __name__ == "__main__":
     if sys.argv[1:2] == ["debug"]:
         debug()
     else:
         if sys.argv[1:2] == ["skip"]:
+            sys.exit(0)
+        if sys.argv[1:2] == ["inflow"]:
+            iso = lambda d: int(datetime.datetime.fromisoformat(d).replace(tzinfo=datetime.timezone.utc).timestamp())
+            inflow(TOKENS[next(iter(TOKENS))], sys.argv[2], iso(sys.argv[3]), iso(sys.argv[4]))
             sys.exit(0)
         if sys.argv[1:2] == ["holders"]:
             for d in sys.argv[2:]:
