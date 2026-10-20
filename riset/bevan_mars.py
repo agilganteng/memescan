@@ -210,24 +210,50 @@ def analyze(name, tok, hours):
     trace(tok, sup, src, launch, head, ath_blk, cands)
 
 
-def trace(tok, sup, src, launch, head, ath_blk, cands):
-    """Ikuti ke mana token kandidat pergi: dijual ke pool, atau dipindah ke wallet lain (1 lapis)."""
-    print(f"\n---- jejak {len(cands)} wallet kandidat (semua transfer keluar sejak peluncuran) ----")
+def drop_block(tok, w, lo, hi, thr):
+    """Blok pertama di (lo, hi] saat saldo w turun di bawah thr (pakai archive balanceOf)."""
+    return first_block(lambda n: 0 <= bal(tok, w, n) < thr, lo, hi)
+
+
+def trace(tok, sup, src, launch, head, ath_blk, cands, depth=0, seen=None):
+    """Ikuti token kandidat: cari kapan saldonya habis, lalu lihat ke mana transfernya (jual ke pool atau pindah wallet)."""
+    seen = seen if seen is not None else set()
+    if depth == 0:
+        print(f"\n---- jejak {len(cands)} wallet kandidat ----")
+    pad = "    " * depth
     for w in cands:
-        out = logs(tok, launch, head, [TRANSFER, "0x" + "0" * 24 + w[2:]], 2_000_000)
-        sold, moved = 0, collections.Counter()
-        last = 0
+        if w in seen:
+            continue
+        seen.add(w)
+        start = launch + int(3 * 3600 / 0.45)
+        b0 = bal(tok, w, start) if depth == 0 else max(bal(tok, w, start), 1)
+        if b0 <= 0 and depth == 0:
+            print(f"{pad}{w}: sudah habis dalam 3 jam pertama")
+            continue
+        peak = max(b0, bal(tok, w, ath_blk), bal(tok, w))
+        if bal(tok, w) >= 0.5 * peak:
+            print(f"{pad}{w}: MASIH PEGANG {100 * bal(tok, w) / sup:.2f}% kini (5 Sep {100 * bal(tok, w, ath_blk) / sup:.2f}%)")
+            continue
+        blk = drop_block(tok, w, start, head, 0.1 * peak)
+        out = logs(tok, max(launch, blk - 3000), blk, [TRANSFER, "0x" + "0" * 24 + w[2:]], 3001)
+        moved = collections.Counter()
+        sold = 0
         for l in out:
             to, amt = "0x" + l["topics"][2][-40:], int(l["data"], 16)
-            last = max(last, int(l["blockNumber"], 16))
             if to in src:
                 sold += amt
             else:
                 moved[to] += amt
-        print(f"{w}: {len(out)} transfer keluar, jual ke pool {100 * sold / sup:.2f}%, terakhir {utc(bts(last)) if last else '-'}")
-        for d, a in moved.most_common(4):
-            if a >= 0.001 * sup:
-                print(f"    -> {d} {100 * a / sup:.2f}%  (saldo 5 Sep {100 * bal(tok, d, ath_blk) / sup:.2f}%, kini {100 * bal(tok, d) / sup:.2f}%)", flush=True)
+        print(f"{pad}{w}: saldo habis {utc(bts(blk))} UTC; di blok itu jual ke pool {100 * sold / sup:.2f}%, pindah {100 * sum(moved.values()) / sup:.2f}%")
+        nxt = []
+        for d, amt in moved.most_common(3):
+            if amt >= 0.002 * sup:
+                code = len(rpc("eth_getCode", [d, "latest"])) > 2
+                print(f"{pad}    -> {d}{' (kontrak)' if code else ''} {100 * amt / sup:.2f}%; saldo 5 Sep {100 * bal(tok, d, ath_blk) / sup:.2f}%, kini {100 * bal(tok, d) / sup:.2f}%", flush=True)
+                if not code:
+                    nxt.append(d)
+        if nxt and depth < 2:
+            trace(tok, sup, src, launch, head, ath_blk, nxt, depth + 1, seen)
 
 
 if __name__ == "__main__":
