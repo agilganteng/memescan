@@ -177,7 +177,10 @@ def analyze(name, tok, hours):
     px = bnb_usd(t0)
     print(f"harga BNB hari peluncuran: {px}; blok 5 Sep 2026: {ath_blk}")
     print(f"\n{'wallet':44} {'menit':>6} {'beli%':>6} {'net3j%':>6} {'BNB':>8} {'avgMC$':>9} {'5Sep%':>6} {'kini%':>6}  signer / bayar")
+    print(f"cek balanceOf: pool utama {100 * bal(tok, '0x94f3ed36706c746ad59fadcaf271b7431ab1d8f1') / sup:.2f}% kini, "
+          f"{100 * bal(tok, '0x94f3ed36706c746ad59fadcaf271b7431ab1d8f1', ath_blk) / sup:.2f}% 5 Sep")
     top = sorted(buy.items(), key=lambda kv: -kv[1]["tok"])[:40]
+    cands = []
     for w, d in top:
         bnb, part, signer, other = 0.0, 0, set(), collections.Counter()
         for h, amt, b in d["txs"][:10]:
@@ -202,6 +205,29 @@ def analyze(name, tok, hours):
         oth = " ".join(f"{k}:{v:.2f}" for k, v in other.items())
         print(f"{w:44} {mins:6.1f} {100 * d['tok'] / sup:5.2f}% {100 * d['net'] / sup:5.2f}% {bnb:8.3f} {('%9.0f' % mc) if mc else '        -'} "
               f"{100 * b5 / sup:5.2f}% {100 * bn_ / sup:5.2f}%  {sg} {oth}", flush=True)
+        if d["net"] >= 0.005 * sup or (mc and mc <= 20000 and d["tok"] >= 0.01 * sup):
+            cands.append(w)
+    trace(tok, sup, src, launch, head, ath_blk, cands)
+
+
+def trace(tok, sup, src, launch, head, ath_blk, cands):
+    """Ikuti ke mana token kandidat pergi: dijual ke pool, atau dipindah ke wallet lain (1 lapis)."""
+    print(f"\n---- jejak {len(cands)} wallet kandidat (semua transfer keluar sejak peluncuran) ----")
+    for w in cands:
+        out = logs(tok, launch, head, [TRANSFER, "0x" + "0" * 24 + w[2:]], 2_000_000)
+        sold, moved = 0, collections.Counter()
+        last = 0
+        for l in out:
+            to, amt = "0x" + l["topics"][2][-40:], int(l["data"], 16)
+            last = max(last, int(l["blockNumber"], 16))
+            if to in src:
+                sold += amt
+            else:
+                moved[to] += amt
+        print(f"{w}: {len(out)} transfer keluar, jual ke pool {100 * sold / sup:.2f}%, terakhir {utc(bts(last)) if last else '-'}")
+        for d, a in moved.most_common(4):
+            if a >= 0.001 * sup:
+                print(f"    -> {d} {100 * a / sup:.2f}%  (saldo 5 Sep {100 * bal(tok, d, ath_blk) / sup:.2f}%, kini {100 * bal(tok, d) / sup:.2f}%)", flush=True)
 
 
 if __name__ == "__main__":
