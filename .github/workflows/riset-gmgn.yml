@@ -1,0 +1,19 @@
+name: riset-gmgn
+
+# Cek sekali: apakah GMGN bisa diakses dari GitHub Actions (tanpa login, hanya baca). Hanya branch strat100k.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/gmgn_probe.py, .github/workflows/riset-gmgn.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -u riset/gmgn_probe.py
