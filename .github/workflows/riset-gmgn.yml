@@ -1,10 +1,10 @@
 name: riset-gmgn
 
-# Cek sekali: apakah GMGN bisa diakses dari GitHub Actions (tanpa login, hanya baca). Hanya branch strat100k.
+# Cek sekali: jalur akses GMGN (API resmi, browser otomatis, nitter) dari GitHub Actions. Hanya baca, tanpa login.
 on:
   push:
     branches: [strat100k]
-    paths: [riset/gmgn_probe.py, .github/workflows/riset-gmgn.yml]
+    paths: [riset/gmgn_probe.py, riset/gmgn_social_probe.py, .github/workflows/riset-gmgn.yml]
   workflow_dispatch:
 
 permissions:
@@ -13,7 +13,11 @@ permissions:
 jobs:
   cek:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python3 -u riset/gmgn_probe.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q playwright && python3 -m playwright install --with-deps chromium
+      - run: python3 -u riset/gmgn_social_probe.py
