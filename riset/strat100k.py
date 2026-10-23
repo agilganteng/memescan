@@ -1,7 +1,8 @@
 """Uji 100.000 strategi beli memecoin di rekaman semua koin memescan, cari 3 yang untungnya
 paling besar dengan modal $200, tanpa bocor ke masa depan.
 
-Strategi = umur masuk x filter (1 atau 2 syarat fitur) x aturan jual (TP/SL/batas waktu).
+Strategi = umur masuk x filter (1-2 syarat fitur, set 2: 1-3) x aturan jual (TP/SL/batas waktu).
+Set 2 (--set 2) memakai umur 10 menit tambahan dan aturan jual yang TP/SL-nya tidak ada di set 1.
 Data dibagi menurut waktu: 70% lama untuk MEMILIH, 30% terbaru untuk MENGUJI sekali saja.
   1. Semua strategi dinilai di data lama: untung kotor kalau tiap sinyal dibeli $20.
   2. 500 teratas disimulasikan penuh di data lama ($200, $20 per trade, satu posisi sekaligus,
@@ -27,6 +28,11 @@ import memescan as ms  # noqa: E402
 
 AGES = ms.RES_AGES
 EXITS = ms.RES_EXITS
+# set 2: umur 10 menit ditambah, aturan jual baru yang TP dan SL-nya tidak ada di set 1,
+# filter campuran 1, 2 dan 3 syarat. Jadi tidak ada strategi yang sama dengan set 1.
+AGES2 = ms.RES_AGES + (600,)
+EXITS2 = [(tp, sl, T) for tp in (1.2, 1.4, 1.75, 2.5, 4.0, 6.0) for sl in (0.1, 0.15, 0.25, 0.3, 0.4)
+          for T in (60, 180, 600, 1800)]
 SIZE = 0.1
 STAKE, START, STOP = 20.0, 200.0, 40.0
 G = {}
@@ -117,7 +123,11 @@ def main():
     ap.add_argument("--target", type=int, default=100_000)
     ap.add_argument("--train", type=float, default=0.7)
     ap.add_argument("--stage2", type=int, default=500)
+    ap.add_argument("--set", type=int, default=1, choices=[1, 2])
     a = ap.parse_args()
+    global AGES, EXITS
+    if a.set == 2:
+        AGES, EXITS = AGES2, EXITS2
     t_start = time.time()
     cfg = ms.load_config(a.data)
     t0_all, ends, starts, stops, C, snaps = load(a.data)
@@ -146,7 +156,7 @@ def main():
     # ---- filter: 1 syarat (desil data lama) lalu ditambah pasangan 2 syarat sampai target tercapai
     ages = sorted(per_age)
     need = math.ceil(a.target / (len(ages) * len(EXITS)))
-    rng = np.random.default_rng(7)
+    rng = np.random.default_rng(7 if a.set == 1 else 2026)
     filt = {}
     for A in ages:
         idx, X, M, H = per_age[A]
@@ -159,16 +169,27 @@ def main():
                 singles.append((f"{nm} <= {q:.4g}", j, col <= q))
         fl = [("semua koin", np.ones(len(idx), bool))] + [(lab, m) for lab, _, m in singles]
         seen = set()
-        while len(fl) < need:
-            p, q = rng.choice(len(singles), 2, replace=False)
-            if singles[p][1] == singles[q][1] or (min(p, q), max(p, q)) in seen:
-                continue
-            seen.add((min(p, q), max(p, q)))
-            fl.append((f"{singles[p][0]} & {singles[q][0]}", singles[p][2] & singles[q][2]))
+        if a.set == 1:
+            while len(fl) < need:
+                p, q = rng.choice(len(singles), 2, replace=False)
+                if singles[p][1] == singles[q][1] or (min(p, q), max(p, q)) in seen:
+                    continue
+                seen.add((min(p, q), max(p, q)))
+                fl.append((f"{singles[p][0]} & {singles[q][0]}", singles[p][2] & singles[q][2]))
+        else:
+            fl = fl[:1]
+            while len(fl) < need:
+                k = 1 + len(fl) % 3
+                pick = tuple(sorted(rng.choice(len(singles), k, replace=False).tolist()))
+                if len({singles[x][1] for x in pick}) < k or pick in seen:
+                    continue
+                seen.add(pick)
+                m = np.logical_and.reduce([singles[x][2] for x in pick])
+                fl.append((" & ".join(singles[x][0] for x in pick), m))
         filt[A] = fl[:need]
     total = sum(len(filt[A]) for A in ages) * len(EXITS)
     print(f"   {total:,} strategi = {len(ages)} umur masuk x {len(EXITS)} aturan jual x {need} filter "
-          f"(1-2 syarat fitur)")
+          f"({'1-2' if a.set == 1 else '1-3'} syarat fitur)")
 
     # ---- tahap 1: untung kotor $20 per sinyal di data lama (matriks, cepat)
     cand = []      # (untung $, A, e, f, n)
