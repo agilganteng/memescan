@@ -1,0 +1,35 @@
+name: riset-narasi
+
+# Riset sekali jalan: cek sumber data tren (X dan alternatif gratis), lalu uji apakah koin yang
+# simbolnya cocok dengan topik Wikipedia terpopuler kemarin lebih untung. Hanya baca cache, tidak
+# menyentuh bot, Telegram, atau data. Hanya jalan di branch strat100k. Hasil di log.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/narasi.py, .github/workflows/riset-narasi.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-narasi
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Riset sniper narasi (cek sumber tren + uji koin yang cocok tren)
+        run: python3 -u riset/narasi.py --data data
