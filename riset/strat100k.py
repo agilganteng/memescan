@@ -12,10 +12,12 @@ Biaya sama dengan memescan: jeda eksekusi, fee, slippage, priority fee, dampak h
 Pakai: python3 riset/strat100k.py --data data [--target 100000]
 """
 import argparse
+import json
 import math
 import os
 import sys
 import time
+from array import array
 from multiprocessing import Pool
 
 import numpy as np
@@ -30,19 +32,60 @@ STAKE, START, STOP = 20.0, 200.0, 40.0
 G = {}
 
 
+def load(data_dir):
+    """Baca rekaman hemat memori ke array datar: t0, umur akhir, candle, foto fitur per umur.
+    Daftar wallet dan isi lain dibuang supaya 250 ribu+ koin muat di runner."""
+    t0s, ends, starts, stops = array("d"), array("d"), array("q"), array("q")
+    cand = array("d")
+    nf = len(ms.FEATURES) + 1
+    snap_i = {A: array("q") for A in AGES}
+    snap_v = {A: array("d") for A in AGES}
+    d = os.path.join(data_dir, "rec")
+    for fn in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        with open(os.path.join(d, fn)) as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                    cs = [(ms.rec_bucket_start(c[0]), ms.rec_bucket_end(c[0]), c[1], c[2], c[3]) for c in r["c"]]
+                    sn = [(s[0], s[1:]) for s in r["snaps"] if s[0] in snap_i and len(s) == nf + 1]
+                    t0, end = float(r["t0"]), float(r["end"])
+                except (ValueError, KeyError, IndexError, TypeError):
+                    continue
+                i = len(t0s)
+                t0s.append(t0)
+                ends.append(end)
+                starts.append(len(cand) // 5)
+                for c in cs:
+                    cand.extend(c)
+                stops.append(len(cand) // 5)
+                for A, v in sn:
+                    snap_i[A].append(i)
+                    snap_v[A].extend(v)
+    t0 = np.frombuffer(t0s, dtype=np.float64)
+    order = np.argsort(t0, kind="stable")
+    rank = np.empty_like(order)
+    rank[order] = np.arange(len(order))
+    C = np.frombuffer(cand, dtype=np.float64).reshape(-1, 5)
+    snaps = {}
+    for A in AGES:
+        idx = rank[np.frombuffer(snap_i[A], dtype=np.int64)] if len(snap_i[A]) else np.zeros(0, np.int64)
+        snaps[A] = (idx, np.frombuffer(snap_v[A], dtype=np.float64).reshape(-1, nf))
+    return (t0[order], np.frombuffer(ends, dtype=np.float64)[order], np.frombuffer(starts, dtype=np.int64)[order],
+            np.frombuffer(stops, dtype=np.int64)[order], C, snaps)
+
+
 def sim_age(A):
     """Hasil semua aturan jual untuk semua koin yang punya foto di umur A."""
-    recs, cfg = G["recs"], G["cfg"]
-    rows = [(i, next((s for s in r["snaps"] if s[0] == A), None)) for i, r in enumerate(recs)]
-    rows = [(i, s) for i, s in rows if s]
-    idx = np.array([i for i, _ in rows], dtype=np.int64)
-    X = np.array([s[2:] + [s[1]] for _, s in rows], dtype=np.float64)
-    M = np.full((len(EXITS), len(rows)), np.nan, dtype=np.float32)
-    H = np.full((len(EXITS), len(rows)), np.nan, dtype=np.float32)
-    for j, (i, s) in enumerate(rows):
-        cs, end = G["paths"][i]
+    cfg, ends, starts, stops, C = G["cfg"], G["ends"], G["starts"], G["stops"], G["C"]
+    idx, V = G["snaps"][A]
+    X = np.column_stack([V[:, 1:], V[:, 0]])      # fitur ... , mcap (urutan sama dengan research)
+    M = np.full((len(EXITS), len(idx)), np.nan, dtype=np.float32)
+    H = np.full((len(EXITS), len(idx)), np.nan, dtype=np.float32)
+    for j, i in enumerate(idx.tolist()):
+        cs = [tuple(c) for c in C[starts[i]:stops[i]].tolist()]
+        m0 = float(V[j, 0])
         for e, (tp, sl, T) in enumerate(EXITS):
-            r = ms.res_trade(cs, end, A, s[1], tp, sl, T, cfg, SIZE)
+            r = ms.res_trade(cs, float(ends[i]), A, m0, tp, sl, T, cfg, SIZE)
             if r:
                 M[e, j], H[e, j] = r[0], r[1] - A
     return A, idx, X, M, H
@@ -77,24 +120,27 @@ def main():
     a = ap.parse_args()
     t_start = time.time()
     cfg = ms.load_config(a.data)
-    recs = ms.res_load(a.data)
-    if len(recs) < 1000:
-        print(f"Baru {len(recs)} koin terekam, terlalu sedikit.")
+    t0_all, ends, starts, stops, C, snaps = load(a.data)
+    n_rec = len(t0_all)
+    if n_rec < 1000:
+        print(f"Baru {n_rec} koin terekam, terlalu sedikit.")
         return
-    t_cut = recs[int(len(recs) * a.train)]["t0"]
+    t_cut = t0_all[int(n_rec * a.train)]
     day = lambda t: time.strftime("%d/%m %H:%M", time.gmtime(t))
-    print(f"== UJI {a.target:,} STRATEGI: {len(recs):,} koin, {day(recs[0]['t0'])} - {day(recs[-1]['t0'])} UTC")
+    print(f"== UJI {a.target:,} STRATEGI: {n_rec:,} koin, {day(t0_all[0])} - {day(t0_all[-1])} UTC")
     print(f"   Data lama (pilih): s/d {day(t_cut)} UTC · data baru (uji sekali): sesudahnya")
     print(f"   Biaya: jeda {cfg['EXEC_DELAY']:g} dtk, fee {cfg['FEE_PCT']:.2%}, slippage {cfg['SLIPPAGE']:.0%}, "
           f"priority fee {cfg['PRIORITY_FEE']} SOL, dampak kurva, {SIZE} SOL per trade")
+    print(f"   Data dibaca ({time.time() - t_start:.0f} dtk)")
 
-    G["recs"], G["cfg"] = recs, cfg
-    G["paths"] = [([(ms.rec_bucket_start(c[0]), ms.rec_bucket_end(c[0]), c[1], c[2], c[3]) for c in r["c"]], r["end"])
-                  for r in recs]
-    with Pool(os.cpu_count() or 2) as pool:
-        per_age = {A: (idx, X, M, H) for A, idx, X, M, H in pool.imap_unordered(sim_age, AGES) if len(idx) >= 300}
-    print(f"   Simulasi trade selesai ({time.time() - t_start:.0f} dtk)")
-    t0_all = np.array([r["t0"] for r in recs])
+    G.update(cfg=cfg, ends=ends, starts=starts, stops=stops, C=C, snaps=snaps)
+    per_age = {}
+    with Pool(min(4, os.cpu_count() or 2)) as pool:
+        for A, idx, X, M, H in pool.imap_unordered(sim_age, AGES):
+            print(f"   umur {A} dtk: {len(idx):,} koin disimulasikan ({time.time() - t_start:.0f} dtk)")
+            if len(idx) >= 300:
+                per_age[A] = (idx, X, M, H)
+    G.clear()
     names = ms.FEATURES + ["mcap"]
 
     # ---- filter: 1 syarat (desil data lama) lalu ditambah pasangan 2 syarat sampai target tercapai
