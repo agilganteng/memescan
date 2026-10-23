@@ -1,27 +1,27 @@
-"""Baca dokumentasi lengkap GMGN Agent API / OpenAPI (versi markdown) untuk melihat endpoint apa
-saja yang tersedia, terutama data X/Twitter (social tracking). Hanya baca."""
+"""Cari di repo resmi GMGNAI/gmgn-skills apakah OpenAPI GMGN punya endpoint data X/Twitter
+(social tracking). Hanya baca kode publik, tanpa API key."""
+import os
 import re
-import urllib.request
+import subprocess
 
-UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"}
-
-
-def get(u):
+d = "/tmp/gmgn-skills"
+subprocess.run(["git", "clone", "-q", "--depth", "1", "https://github.com/GMGNAI/gmgn-skills", d], check=True)
+files = [os.path.join(r, f) for r, _, fs in os.walk(d) if ".git" not in r for f in fs]
+print("== file:", len(files))
+for f in sorted(files):
+    print("  ", f[len(d) + 1:])
+print("\n== endpoint / path API yang disebut")
+paths = set()
+for f in files:
     try:
-        with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=25) as r:
-            return r.read().decode("utf-8", "replace")
-    except Exception as e:  # noqa: BLE001
-        return f"GAGAL {type(e).__name__}: {e}"
-
-
-llms = get("https://docs.gmgn.ai/llms.txt")
-print("===== llms.txt (baris yang menyebut api/agent/twitter/x tracker)")
-for line in llms.splitlines():
-    if re.search(r"api|agent|twitter|x tracker|social|openapi|skill", line, re.I):
-        print(" ", line[:200])
-for slug in ["gmgn-agent-api", "x-tracker"]:
-    md = get(f"https://docs.gmgn.ai/index/{slug}.md")
-    print(f"\n===== {slug}.md ({len(md)} char)\n{md[:9000]}")
-for u in ["https://gmgn.ai/ai", "https://github.com/GMGNAI", "https://api.github.com/orgs/GMGNAI/repos", "https://api.github.com/search/repositories?q=gmgn+agent+api"]:
-    b = get(u)
-    print(f"\n===== {u}\n{b[:2500] if 'api.github.com' in u else re.sub(r'<[^>]+>', ' ', b)[:800]}")
+        t = open(f, encoding="utf-8", errors="replace").read()
+    except OSError:
+        continue
+    paths |= set(re.findall(r"/(?:v\d|defi|api)/[A-Za-z0-9_/{}\-]+", t))
+for p in sorted(paths):
+    print("  ", p)
+print("\n== baris yang menyebut twitter / x tracker / social / kol / callout")
+for f in files:
+    for i, line in enumerate(open(f, encoding="utf-8", errors="replace"), 1):
+        if re.search(r"twitter|x[_ -]?tracker|social|\bkol\b|callout|tweet", line, re.I):
+            print(f"  {f[len(d) + 1:]}:{i}: {line.strip()[:180]}")
