@@ -1,0 +1,35 @@
+name: riset-strat100k
+
+# Riset sekali jalan: uji 100.000 strategi beli di rekaman semua koin (cache data memescan),
+# pilih top 3 di data lama, uji sekali di data baru + simulasi $200. Hanya baca cache, tidak
+# menyentuh bot, Telegram, atau data. Hanya jalan di branch strat100k. Hasil di log.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/strat100k.py, .github/workflows/riset-strat100k.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-strat100k
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Uji 100.000 strategi
+        run: python3 -u riset/strat100k.py --data data --target 100000
