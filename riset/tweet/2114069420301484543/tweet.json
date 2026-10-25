@@ -1,0 +1,1265 @@
+{
+ "code": 200,
+ "message": "OK",
+ "tweet": {
+  "url": "https://x.com/SolSt1ne/status/2114069420301484543",
+  "id": "2114069420301484543",
+  "text": "I gave my Grok Bot $3,000 and went to sleep.\n\n9 hours later: $12,500.\n\n4.17x. And no single agent made that money alone. It's a relay.\n\nFive agents. Each one does one thing, then hands the coin to the next:\n\n> SCOUT finds every new pair on Solana. 14,200 tonight\n> ANALYST runs the rug and holder checks. Top 10 wallets over 30%, dead. Mint not revoked, dead. 312 survived\n> SNIPER enters the ones that pass. 0.4 second fills\n> RISK trails every open position and never lets a winner turn red\n> BANKER takes the exit and moves the profit off the table\n\nA coin has to get past all five. Most don't make it past the second.\n\n14,200 pairs found.\n312 passed the checks.\n118 trades taken.\n97 green. 21 red.\n\nThe first approval of the night was $TRUMP. A −34% wick, bids stacked underneath, 5 checks passed. SCOUT found it, ANALYST cleared it, SNIPER was in before the bounce.\n\nNobody on the desk does two jobs. Nobody skips a step. The scout can't buy, the sniper can't pick, and the banker doesn't care how good the chart looks.\n\nHour 0 - $3,000\nHour 3 - $4,800\nHour 6 - $8,900\nHour 9 - $12,500\n\nI woke up. The relay never stopped.\n\nThe whole build is in the post below ↓",
+  "raw_text": {
+   "text": "I gave my Grok Bot $3,000 and went to sleep.\n\n9 hours later: $12,500.\n\n4.17x. And no single agent made that money alone. It's a relay.\n\nFive agents. Each one does one thing, then hands the coin to the next:\n\n> SCOUT finds every new pair on Solana. 14,200 tonight\n> ANALYST runs the rug and holder checks. Top 10 wallets over 30%, dead. Mint not revoked, dead. 312 survived\n> SNIPER enters the ones that pass. 0.4 second fills\n> RISK trails every open position and never lets a winner turn red\n> BANKER takes the exit and moves the profit off the table\n\nA coin has to get past all five. Most don't make it past the second.\n\n14,200 pairs found.\n312 passed the checks.\n118 trades taken.\n97 green. 21 red.\n\nThe first approval of the night was $TRUMP. A −34% wick, bids stacked underneath, 5 checks passed. SCOUT found it, ANALYST cleared it, SNIPER was in before the bounce.\n\nNobody on the desk does two jobs. Nobody skips a step. The scout can't buy, the sniper can't pick, and the banker doesn't care how good the chart looks.\n\nHour 0 - $3,000\nHour 3 - $4,800\nHour 6 - $8,900\nHour 9 - $12,500\n\nI woke up. The relay never stopped.\n\nThe whole build is in the post below ↓",
+   "display_text_range": [
+    0,
+    1167
+   ],
+   "facets": [
+    {
+     "type": "media",
+     "indices": [
+      284,
+      307
+     ],
+     "id": "2114065907362267136",
+     "display": "pic.x.com/GWmsgdgolV",
+     "original": "https://t.co/GWmsgdgolV",
+     "replacement": "https://x.com/SolSt1ne/status/2114069420301484543/video/1"
+    },
+    {
+     "type": "symbol",
+     "indices": [
+      739,
+      745
+     ],
+     "original": "TRUMP"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "SolSt1ne",
+   "url": "https://x.com/SolSt1ne",
+   "id": "726818028923588609",
+   "followers": 6511,
+   "following": 688,
+   "likes": 7536,
+   "media_count": 430,
+   "name": "st1ne",
+   "description": "- Crypto Degen\n- DM Open\n\nGithub: st1ne",
+   "raw_description": {
+    "text": "- Crypto Degen\n- DM Open\n\nGithub: st1ne",
+    "facets": []
+   },
+   "location": "",
+   "banner_url": "https://pbs.twimg.com/profile_banners/726818028923588609/1770397839",
+   "avatar_url": "https://pbs.twimg.com/profile_images/1928116156889473024/ffJRmDSH_200x200.jpg",
+   "joined": "Sun May 01 16:58:16 +0000 2016",
+   "protected": false,
+   "website": null,
+   "verification": {
+    "verified": true,
+    "verified_at": null,
+    "type": "individual"
+   },
+   "avatar_color": null
+  },
+  "replies": 85,
+  "retweets": 64,
+  "likes": 631,
+  "bookmarks": 899,
+  "quotes": 5,
+  "created_at": "Sat Oct 24 19:00:01 +0000 2026",
+  "created_timestamp": 1792868401,
+  "possibly_sensitive": false,
+  "views": 148929,
+  "is_note_tweet": true,
+  "community_note": null,
+  "lang": "en",
+  "replying_to": null,
+  "replying_to_status": null,
+  "media": {
+   "all": [
+    {
+     "id": "2114065907362267136",
+     "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/974x1778/DmyfsFYwJ5F3Wm-t.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/amplify_video_thumb/2114065907362267136/img/9hlLJcqDkRrcFN2I.jpg",
+     "duration": 25.007,
+     "width": 974,
+     "height": 1778,
+     "format": "video/mp4",
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/pl/QJBG-8AJHqN2TpUN.m3u8?tag=29&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/320x584/rlIQlpur5u70MuUb.mp4?tag=29",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/480x876/mwgsSl_2KXkMQOIz.mp4?tag=29",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/720x1314/ITsNKlkt_0B9hNsr.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/974x1778/DmyfsFYwJ5F3Wm-t.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ],
+     "publisher": null,
+     "variants": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/pl/QJBG-8AJHqN2TpUN.m3u8?tag=29&v=cfc",
+       "bitrate": 0,
+       "content_type": "application/x-mpegURL"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/320x584/rlIQlpur5u70MuUb.mp4?tag=29",
+       "bitrate": 632000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/480x876/mwgsSl_2KXkMQOIz.mp4?tag=29",
+       "bitrate": 950000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/720x1314/ITsNKlkt_0B9hNsr.mp4?tag=29",
+       "bitrate": 2176000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/974x1778/DmyfsFYwJ5F3Wm-t.mp4?tag=29",
+       "bitrate": 10368000,
+       "content_type": "video/mp4"
+      }
+     ]
+    }
+   ],
+   "videos": [
+    {
+     "id": "2114065907362267136",
+     "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/974x1778/DmyfsFYwJ5F3Wm-t.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/amplify_video_thumb/2114065907362267136/img/9hlLJcqDkRrcFN2I.jpg",
+     "duration": 25.007,
+     "width": 974,
+     "height": 1778,
+     "format": "video/mp4",
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/pl/QJBG-8AJHqN2TpUN.m3u8?tag=29&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/320x584/rlIQlpur5u70MuUb.mp4?tag=29",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/480x876/mwgsSl_2KXkMQOIz.mp4?tag=29",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/720x1314/ITsNKlkt_0B9hNsr.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/974x1778/DmyfsFYwJ5F3Wm-t.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ],
+     "publisher": null,
+     "variants": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/pl/QJBG-8AJHqN2TpUN.m3u8?tag=29&v=cfc",
+       "bitrate": 0,
+       "content_type": "application/x-mpegURL"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/320x584/rlIQlpur5u70MuUb.mp4?tag=29",
+       "bitrate": 632000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/480x876/mwgsSl_2KXkMQOIz.mp4?tag=29",
+       "bitrate": 950000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/720x1314/ITsNKlkt_0B9hNsr.mp4?tag=29",
+       "bitrate": 2176000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114065907362267136/vid/avc1/974x1778/DmyfsFYwJ5F3Wm-t.mp4?tag=29",
+       "bitrate": 10368000,
+       "content_type": "video/mp4"
+      }
+     ]
+    }
+   ]
+  },
+  "quote": {
+   "url": "https://x.com/Loofyb0i/status/2113235981100867780",
+   "id": "2113235981100867780",
+   "text": "https://x.com/i/article/2113227051628982272",
+   "raw_text": {
+    "text": "https://t.co/BMicEBAVob",
+    "display_text_range": [
+     0,
+     23
+    ],
+    "facets": [
+     {
+      "type": "url",
+      "indices": [
+       0,
+       23
+      ],
+      "original": "https://t.co/BMicEBAVob",
+      "replacement": "https://x.com/i/article/2113227051628982272",
+      "display": "x.com/i/article/2113…"
+     }
+    ]
+   },
+   "author": {
+    "screen_name": "Loofyb0i",
+    "url": "https://x.com/Loofyb0i",
+    "id": "1890864883509444609",
+    "followers": 3598,
+    "following": 378,
+    "likes": 3628,
+    "media_count": 328,
+    "name": "Loofy",
+    "description": "Crypto degen\n@Polymarket enjoyer",
+    "raw_description": {
+     "text": "Crypto degen\n@Polymarket enjoyer",
+     "facets": []
+    },
+    "location": "Worldwide",
+    "banner_url": "https://pbs.twimg.com/profile_banners/1890864883509444609/1773404254",
+    "avatar_url": "https://pbs.twimg.com/profile_images/1890865612294926336/hvMpAbuo_200x200.jpg",
+    "joined": "Sat Feb 15 20:45:01 +0000 2025",
+    "protected": false,
+    "website": null,
+    "verification": {
+     "verified": true,
+     "verified_at": null,
+     "type": "individual"
+    },
+    "avatar_color": null
+   },
+   "replies": 16,
+   "retweets": 21,
+   "likes": 128,
+   "bookmarks": 333,
+   "quotes": 10,
+   "created_at": "Thu Oct 22 11:48:14 +0000 2026",
+   "created_timestamp": 1792669694,
+   "possibly_sensitive": false,
+   "views": 507877,
+   "is_note_tweet": false,
+   "community_note": null,
+   "lang": null,
+   "replying_to": null,
+   "replying_to_status": null,
+   "article": {
+    "created_at": "2026-10-22T11:48:14.000Z",
+    "modified_at": "2026-10-22T11:48:14.000Z",
+    "id": "2113227051628982272",
+    "title": "Grok Bot Engineer: Every Memecoin Bot Has a Failure Mode. Find It Before the Market Does.",
+    "preview_text": "Same three signals. One desk is flat after a rug. The other is down 12% and gave back both wins.\nHard rule: position size is a fixed fraction of the current book, never a function of the last trade.",
+    "cover_media": {
+     "id": "QXBpTWVkaWE6DAAFCgABHVO19O7WgAEKAAIaPbOX49dAAQAA",
+     "media_id": "2113232713750577153",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 89.94,
+         "rgb": {
+          "blue": 250,
+          "green": 231,
+          "red": 240
+         }
+        },
+        {
+         "percentage": 2.62,
+         "rgb": {
+          "blue": 248,
+          "green": 173,
+          "red": 173
+         }
+        },
+        {
+         "percentage": 2.14,
+         "rgb": {
+          "blue": 75,
+          "green": 55,
+          "red": 56
+         }
+        },
+        {
+         "percentage": 1.93,
+         "rgb": {
+          "blue": 250,
+          "green": 132,
+          "red": 109
+         }
+        },
+        {
+         "percentage": 0.75,
+         "rgb": {
+          "blue": 248,
+          "green": 102,
+          "red": 112
+         }
+        }
+       ]
+      },
+      "original_img_height": 640,
+      "original_img_url": "https://pbs.twimg.com/media/HVO19O7WgAEs95c.jpg",
+      "original_img_width": 1600
+     },
+     "media_key": "3_2113232713750577153"
+    },
+    "content": {
+     "blocks": [
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "6dnud",
+       "text": "Same three signals. One desk is flat after a rug. The other is down 12% and gave back both wins.",
+       "type": "unstyled"
+      },
+      {
+       "data": {
+        "urls": [
+         {
+          "fromIndex": 239,
+          "text": "https://fomo.family/r/Loofyboi",
+          "toIndex": 269
+         }
+        ]
+       },
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4vd4c",
+       "text": "Hard rule: position size is a fixed fraction of the current book, never a function of the last trade. Contract checks (mint authority, LP status, top-10 holder share) are gates that reject the order, not scores that lower it.\n\nTrade here: https://fomo.family/r/Loofyboi",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "d5km4",
+       "text": "Every Grok Bot thread shows you the win.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "c4f4m",
+       "text": "0.25 ETH turned into 1.35 in a day. $1,000 turned into five figures overnight. A fee farm that prints from zero capital.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "c0dmj",
+       "text": "Nobody shows you how those bots break. And every one of them breaks somewhere.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "63en0",
+       "text": "An engineer doesn’t start with “how much can this make?” He starts with “how does this fail, and what does it cost when it does?” Nobody designs a bridge for the traffic on a quiet Tuesday. You design it for the load that would kill it.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "69ov5",
+       "text": "So I ran my Grok Bot desk through the same process engineers use on anything that can fail expensively. No new tools, $0. One sheet per bot. Here’s the method, the three bot types everyone is running right now, and the hard risk rule each one needs.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 52,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "3moit",
+       "text": "What does “engineering” a trading bot actually mean?",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "c0gke",
+       "text": "In aerospace and manufacturing there’s a boring, powerful exercise called failure mode analysis. You list every way a system can fail. For each one you score three things: how bad it is, how likely it is, and how fast you’d notice. Then you fix the worst score first.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "d561k",
+       "text": "Engineers add two more ideas on top:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "1c4ul",
+       "text": "Safety factor. You never run a system at its rated limit. If the beam holds 10 tons, you load it with 5.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "2s8nf",
+       "text": "Blast radius. When one part fails, how much else goes down with it?",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4sntm",
+       "text": "Applied to a memecoin desk, that becomes three questions per bot. What is its edge? What kills that edge? And when it dies, does it take one position with it, or the whole book?",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 37,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "3oa6c",
+       "text": "The three bots, and how each one dies",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "i7i1",
+       "text": "Right now most Grok Bot memecoin desks run some version of three architectures. They make money in completely different ways, so they fail in completely different ways.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 20,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "b26ok",
+       "text": "Bot one: the Gambler",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "6120k",
+       "text": "Scans fresh launches, checks contracts, trades direction.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "dn2iq",
+       "text": "Edge: being right about which coin moves.\nHow it dies: a streak of wrong reads, sized up by the previous wins.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4a87u",
+       "text": "The dangerous line in most Gambler setups is “size each trade off how the last one closed.” That’s a martingale wearing a hoodie. Here’s what it does on a $1,000 book:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 0,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "df9qt",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 1,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "d79nj",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "7l749",
+       "text": "Same three signals. One desk is flat after a rug. The other is down 12% and gave back both wins.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "i6s1",
+       "text": "Hard rule: position size is a fixed fraction of the current book, never a function of the last trade. Contract checks (mint authority, LP status, top-10 holder share) are gates that reject the order, not scores that lower it.\n",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "3de31",
+       "text": "Bot two: the House. ",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 2,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "625qq",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "cdpkr",
+       "text": "Launches tokens, collects a fee on every trade, kills the dead ones.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "fogs5",
+       "text": "Edge: volume existing. Direction irrelevant.\nHow it dies: launch costs outrun fee income when volume dries up. And a second failure mode nobody puts in the screenshot.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "2h9g1",
+       "text": "The House model is sold as “it rarely loses.” That’s only true if you count fees and ignore costs. Every launch costs something: deploy fees, seed liquidity, gas, the tokens that never pull a single trade. Run the break-even before the bot runs anything: fee rate × expected volume per token has to clear cost per launch, with a safety factor of 2.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "bu743",
+       "text": "The second failure mode is the one that matters more. A fee model earns from people trading. The moment the bot holds supply and sells it into buyers, it isn’t the house anymore. It’s the rug, and you’re the one pulling it. That’s where the reputational, platform and legal risk lives, and no P&L screenshot shows it.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "ak5os",
+       "text": "Hard rule: the House bot never holds or sells its own supply. Income is fees only. A per-day launch budget, with a hard stop when fees fall below cost.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "b7l96",
+       "text": "",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "3vh3m",
+       "text": "Bot three: the Spy. ",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "el8g",
+       "text": "Tracks profitable wallets, ranks them, mirrors their trades.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "5427v",
+       "text": "Edge: borrowing someone else’s proven edge.\nHow it dies: latency. You copy the right wallet at the wrong price.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "f4bt5",
+       "text": "This is the one that looks safest and hides the sharpest blade. On a memecoin, 40 seconds of lag is not a detail. It decides the sign of the trade:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 3,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "9ia0s",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 4,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "35oqi",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "7jdvj",
+       "text": "Same wallet, same token, same exit. The leader wins both times. You win one and lose the other, because you bought what he was already up on. Worse case: the wallet you copy is selling into the very buys that copiers like you create. Then you aren’t following smart money. You’re its exit liquidity.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "9b3up",
+       "text": "Hard rule: max chase. If your fill would be more than 15% above the leader’s entry, skip the trade. Mirror exits, not only entries. Cap allocation per wallet, and demote a wallet after three losing copies in a row.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 5,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "db8ql",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 35,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "79kss",
+       "text": "What does the full sheet look like?",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 6,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "9u063",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "6msab",
+       "text": "And above all three, one desk-level layer with circuit breakers: daily loss cap, consecutive-loss breaker, liquidity-drop breaker, and a feed-lag breaker that stops new entries when data is more than N seconds stale. Each breaker gets a test that fails the build if it ever stops firing.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 7,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "c2i3f",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 33,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "crau5",
+       "text": "Where does everyone get it wrong?",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "3e0qa",
+       "text": "They compare bots by return, not by failure mode. 10x in a day tells you the best case. It tells you nothing about the case that empties the wallet.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4rn45",
+       "text": "They trust one run. One 24-hour window is a sample of one. Engineers don’t certify a part because it survived a single test.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "dhmh7",
+       "text": "They run at the rated limit. If your stop works at 1-second checks, don’t rely on it at 1 second. Safety factor.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "1eiab",
+       "text": "They treat risk as a setting. A slider in the UI is a preference. A gate in the order path with a failing test behind it is a rule.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 26,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "1vgvn",
+       "text": "What is the honest caveat?",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4nlj0",
+       "text": "None of this makes a bot profitable. Failure mode analysis tells you how much you lose when you’re wrong. It doesn’t make you right.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "26amq",
+       "text": "Memecoins are still memecoins. Rugs, honeypots and liquidity that vanishes in a block don’t care how clean your circuit breakers are. The rules cap the damage. They don’t remove it.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "dglfd",
+       "text": "And if your strategy only works by being the reason other people lose, by dumping supply, front-running your own followers or bypassing a platform’s rules, no amount of risk engineering makes that a good trade.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 7,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "ak05i",
+       "text": "My take",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "afhor",
+       "text": "Start with the bot that has the biggest blast radius, not the biggest return.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "cugjp",
+       "text": "For most desks that’s the Gambler, because one bad sizing rule can touch the whole book. Fix sizing first. Then the Spy’s chase limit. Then the House’s break-even.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "a5hb5",
+       "text": "One bot, one sheet, one hard rule at a time.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "dlt0t",
+       "text": "Grok Bot trades the market. Engineering is how you decide what it’s allowed to lose.",
+       "type": "unstyled"
+      }
+     ],
+     "entityMap": [
+      {
+       "key": "4",
+       "value": {
+        "data": {
+         "entityKey": "7c068590-6158-413a-a104-3408b17f4fce",
+         "mediaItems": [
+          {
+           "localMediaId": "3",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2113228495199285248"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "5",
+       "value": {
+        "data": {
+         "markdown": "test: copy skipped when leader is too far ahead\n  given  leader entry = $0.0010, max chase = 15%\n  when   copy quote = $0.0013\n  expect order skipped, wallet + lag logged"
+        },
+        "mutability": "Mutable",
+        "type": "MARKDOWN"
+       }
+      },
+      {
+       "key": "6",
+       "value": {
+        "data": {
+         "markdown": "|Bot   |Edge   |How it dies   |Blast radius   |Hard rule   |\n| --- | --- | --- | --- | --- |\n|Gambler   |reads direction   |losing streak, sized up   |whole book   |fixed % size, contract gates   |\n|House   |fee on volume   |costs > fees; selling own supply   |capital + reputation   |fees only, launch budget   |\n|Spy   |copies wallets   |latency, exit liquidity   |per-wallet   |max chase, mirror exits   |"
+        },
+        "mutability": "Mutable",
+        "type": "MARKDOWN"
+       }
+      },
+      {
+       "key": "1",
+       "value": {
+        "data": {
+         "entityKey": "b3f0cef0-ed53-4ea8-a558-1a196243d123",
+         "mediaItems": [
+          {
+           "localMediaId": "1",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2113228104227282944"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "0",
+       "value": {
+        "data": {
+         "markdown": "size off last result        fixed 2% of book\nT1  5%   $50   +50%  →$1,025      $20  +50%  →$1,010\nT2  10%  $103  +50%  →$1,076      $20  +50%  →$1,020\nT3  20%  $215  rug −90% →$883     $20  rug −90% →$1,002"
+        },
+        "mutability": "Mutable",
+        "type": "MARKDOWN"
+       }
+      },
+      {
+       "key": "2",
+       "value": {
+        "data": {
+         "entityKey": "aea943dc-99de-4513-a1e3-a1c64320a724",
+         "mediaItems": [
+          {
+           "localMediaId": "9",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2113233894975643648"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "7",
+       "value": {
+        "data": {
+         "entityKey": "c9fe4d2d-21c3-4029-8894-6cb3d01f8b15",
+         "mediaItems": [
+          {
+           "localMediaId": "5",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2113230065244803072"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "3",
+       "value": {
+        "data": {
+         "markdown": "leader entry      $0.0010\nyour copy fill    $0.0016   (+60% chase, 40s late)\n\nleader exits 2.0x   leader +100%   you +25%\nleader exits 1.4x   leader +40%    you −12.5%"
+        },
+        "mutability": "Mutable",
+        "type": "MARKDOWN"
+       }
+      }
+     ]
+    },
+    "media_entities": [
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHVOxw7HW4AAKAAIaPbOX49dAAQAA",
+      "media_id": "2113228104227282944",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 92.05,
+          "rgb": {
+           "blue": 254,
+           "green": 252,
+           "red": 252
+          }
+         },
+         {
+          "percentage": 2.6,
+          "rgb": {
+           "blue": 195,
+           "green": 210,
+           "red": 255
+          }
+         },
+         {
+          "percentage": 1.09,
+          "rgb": {
+           "blue": 233,
+           "green": 243,
+           "red": 225
+          }
+         },
+         {
+          "percentage": 0.73,
+          "rgb": {
+           "blue": 253,
+           "green": 190,
+           "red": 187
+          }
+         },
+         {
+          "percentage": 0.72,
+          "rgb": {
+           "blue": 94,
+           "green": 136,
+           "red": 255
+          }
+         }
+        ]
+       },
+       "original_img_height": 900,
+       "original_img_url": "https://pbs.twimg.com/media/HVOxw7HW4AAdqw8.jpg",
+       "original_img_width": 1600
+      },
+      "media_key": "3_2113228104227282944"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHVO3B/VWoAAKAAIaPbOX49dAAQAA",
+      "media_id": "2113233894975643648",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 91.78,
+          "rgb": {
+           "blue": 255,
+           "green": 254,
+           "red": 254
+          }
+         },
+         {
+          "percentage": 3.58,
+          "rgb": {
+           "blue": 215,
+           "green": 227,
+           "red": 255
+          }
+         },
+         {
+          "percentage": 0.8,
+          "rgb": {
+           "blue": 233,
+           "green": 243,
+           "red": 226
+          }
+         },
+         {
+          "percentage": 0.79,
+          "rgb": {
+           "blue": 103,
+           "green": 159,
+           "red": 255
+          }
+         },
+         {
+          "percentage": 0.54,
+          "rgb": {
+           "blue": 250,
+           "green": 189,
+           "red": 200
+          }
+         }
+        ]
+       },
+       "original_img_height": 900,
+       "original_img_url": "https://pbs.twimg.com/media/HVO3B_VWoAAF4G0.jpg",
+       "original_img_width": 1600
+      },
+      "media_key": "3_2113233894975643648"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHVOyHrmWMAAKAAIaPbOX49dAAQAA",
+      "media_id": "2113228495199285248",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 95.9,
+          "rgb": {
+           "blue": 254,
+           "green": 250,
+           "red": 250
+          }
+         },
+         {
+          "percentage": 1.55,
+          "rgb": {
+           "blue": 223,
+           "green": 230,
+           "red": 219
+          }
+         },
+         {
+          "percentage": 0.82,
+          "rgb": {
+           "blue": 253,
+           "green": 189,
+           "red": 184
+          }
+         },
+         {
+          "percentage": 0.54,
+          "rgb": {
+           "blue": 178,
+           "green": 186,
+           "red": 222
+          }
+         },
+         {
+          "percentage": 0.33,
+          "rgb": {
+           "blue": 238,
+           "green": 213,
+           "red": 243
+          }
+         }
+        ]
+       },
+       "original_img_height": 900,
+       "original_img_url": "https://pbs.twimg.com/media/HVOyHrmWMAAe9LI.jpg",
+       "original_img_width": 1600
+      },
+      "media_key": "3_2113228495199285248"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHVOzjEeXkAAKAAIaPbOX49dAAQAA",
+      "media_id": "2113230065244803072",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 96.98,
+          "rgb": {
+           "blue": 254,
+           "green": 253,
+           "red": 253
+          }
+         },
+         {
+          "percentage": 0.72,
+          "rgb": {
+           "blue": 208,
+           "green": 219,
+           "red": 255
+          }
+         },
+         {
+          "percentage": 0.46,
+          "rgb": {
+           "blue": 252,
+           "green": 177,
+           "red": 179
+          }
+         },
+         {
+          "percentage": 0.41,
+          "rgb": {
+           "blue": 237,
+           "green": 213,
+           "red": 243
+          }
+         },
+         {
+          "percentage": 0.37,
+          "rgb": {
+           "blue": 253,
+           "green": 143,
+           "red": 109
+          }
+         }
+        ]
+       },
+       "original_img_height": 900,
+       "original_img_url": "https://pbs.twimg.com/media/HVOzjEeXkAAK6uH.jpg",
+       "original_img_width": 1600
+      },
+      "media_key": "3_2113230065244803072"
+     }
+    ]
+   },
+   "twitter_card": "tweet",
+   "color": null,
+   "provider": "twitter",
+   "reposted_by": null
+  },
+  "twitter_card": "player",
+  "color": null,
+  "provider": "twitter",
+  "reposted_by": null
+ }
+}
