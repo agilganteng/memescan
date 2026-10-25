@@ -1,0 +1,2866 @@
+{
+ "code": 200,
+ "message": "OK",
+ "tweet": {
+  "url": "https://x.com/0xboan/status/2111502544904012233",
+  "id": "2111502544904012233",
+  "text": "https://x.com/i/article/2111450739918663680",
+  "raw_text": {
+   "text": "https://t.co/j60ZLf72pa",
+   "display_text_range": [
+    0,
+    23
+   ],
+   "facets": [
+    {
+     "type": "url",
+     "indices": [
+      0,
+      23
+     ],
+     "original": "https://t.co/j60ZLf72pa",
+     "replacement": "https://x.com/i/article/2111450739918663680",
+     "display": "x.com/i/article/2111…"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "0xboan",
+   "url": "https://x.com/0xboan",
+   "id": "2087142753809412096",
+   "followers": 3826,
+   "following": 294,
+   "likes": 1800,
+   "media_count": 70,
+   "name": "boan",
+   "description": "AI agents creator | making $5K/month with AI, here's how I do it",
+   "raw_description": {
+    "text": "AI agents creator | making $5K/month with AI, here's how I do it",
+    "facets": []
+   },
+   "location": "",
+   "banner_url": "https://pbs.twimg.com/profile_banners/2087142753809412096/1786458823",
+   "avatar_url": "https://pbs.twimg.com/profile_images/2087185635438166016/G39nRbxF_200x200.jpg",
+   "joined": "Tue Aug 11 11:58:25 +0000 2026",
+   "protected": false,
+   "website": null,
+   "verification": {
+    "verified": true,
+    "verified_at": null,
+    "type": "individual"
+   },
+   "avatar_color": null
+  },
+  "replies": 40,
+  "retweets": 47,
+  "likes": 331,
+  "bookmarks": 1180,
+  "quotes": 30,
+  "created_at": "Sat Oct 17 17:00:11 +0000 2026",
+  "created_timestamp": 1792256411,
+  "possibly_sensitive": false,
+  "views": 428098,
+  "is_note_tweet": false,
+  "community_note": null,
+  "lang": null,
+  "replying_to": null,
+  "replying_to_status": null,
+  "article": {
+   "created_at": "2026-10-17T17:00:10.000Z",
+   "modified_at": "2026-10-17T17:00:10.000Z",
+   "id": "2111450739918663680",
+   "title": "Grok Bot from zero in one night: full setup + a copy-paste rug filter",
+   "preview_text": "most people meet Grok Bot through someone else's pnl screenshot, open it, point it at a chart, and lose the first $50 to a token that was dead before they bought it. the bot wasn't the problem. nobody",
+   "cover_media": {
+    "id": "QXBpTWVkaWE6DAAFCgABHU2L/4hWsAEKAAIc9wVGxFcwAAAA",
+    "media_id": "2111497729926934529",
+    "media_info": {
+     "__typename": "ApiImage",
+     "color_info": {
+      "palette": [
+       {
+        "percentage": 57.32,
+        "rgb": {
+         "blue": 8,
+         "green": 8,
+         "red": 8
+        }
+       },
+       {
+        "percentage": 7.72,
+        "rgb": {
+         "blue": 227,
+         "green": 226,
+         "red": 222
+        }
+       },
+       {
+        "percentage": 5.81,
+        "rgb": {
+         "blue": 10,
+         "green": 7,
+         "red": 64
+        }
+       },
+       {
+        "percentage": 5.16,
+        "rgb": {
+         "blue": 25,
+         "green": 22,
+         "red": 133
+        }
+       },
+       {
+        "percentage": 2.97,
+        "rgb": {
+         "blue": 28,
+         "green": 47,
+         "red": 6
+        }
+       }
+      ]
+     },
+     "original_img_height": 793,
+     "original_img_url": "https://pbs.twimg.com/media/HU2L_4hWsAEeu35.jpg",
+     "original_img_width": 1983
+    },
+    "media_key": "3_2111497729926934529"
+   },
+   "content": {
+    "blocks": [
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "5q96i",
+      "text": "most people meet Grok Bot through someone else's pnl screenshot, open it, point it at a chart, and lose the first $50 to a token that was dead before they bought it. the bot wasn't the problem. nobody told it what dead looks like.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "4u2g0",
+      "text": "this is the setup I'd build again tonight if I had to start over. one bot, one folder, ten small files. it doesn't hunt for 100x. its main job is killing tokens, and the few that survive still need Grok to read X before a single dollar moves.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ad2v3",
+      "text": "steps 01 to 07 are the first evening: the bot, the key, the limits, the exits. 08 to 12 are the rug filter, 14 checks, every one of them written down as code. 13 and 14 put it on autopilot, on paper first.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "5af6s",
+      "text": "if you read my eight-agent desk post, this is the floor that desk stands on.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 0,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "dd0il",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [
+       {
+        "length": 211,
+        "offset": 0,
+        "style": "Bold"
+       }
+      ],
+      "key": "uiku",
+      "text": "how to use this: open your Grok Bot, paste this whole article, and say \"build this desk in /workspace/desk, paper mode, ask me before anything touches a wallet.\" it writes every file itself, on its own computer.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [
+       {
+        "length": 35,
+        "offset": 25,
+        "style": "Bold"
+       }
+      ],
+      "key": "3c3ld",
+      "text": "the split you hold onto: code kills, Grok reads X, you sign. nobody on the desk does someone else's job.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 1,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "2089t",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "8t078",
+      "text": "01. get four things before you start",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cd3kh",
+      "text": "four things. each one says what it is, what you do tonight, and why the desk needs it.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [
+       {
+        "length": 11,
+        "offset": 0,
+        "style": "Bold"
+       }
+      ],
+      "key": "21r9o",
+      "text": "1. Grok Bot",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "4bvjh",
+      "text": "what it is. the app where you hire named bots. each one works on a cloud computer with a browser, files and a terminal, and keeps working with your laptop shut.",
+      "type": "unstyled"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 28,
+         "text": "x.ai/bot",
+         "toIndex": 36
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "fqpge",
+      "text": "what you do. download it at x.ai/bot, sign in, choose Create your own.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "1s7o5",
+      "text": "why. the whole desk lives on that computer. files, routines, alerts, all in one place you can open from your phone.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [
+       {
+        "length": 17,
+        "offset": 0,
+        "style": "Bold"
+       }
+      ],
+      "key": "2rcbu",
+      "text": "2. an xAI API key",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "dae69",
+      "text": "what it is. paid access to Grok from code, with X search built in.",
+      "type": "unstyled"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 13,
+         "text": "console.x.ai",
+         "toIndex": 25
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ekr44",
+      "text": "what you do. console.x.ai, API Keys, create one. don't paste it anywhere yet, step 03 says where it goes.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "9ljgc",
+      "text": "why. a routine can't sit and think about forty tokens in a chat. a script that makes one call per token can, and it logs every answer in the same format.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [
+       {
+        "length": 27,
+        "offset": 0,
+        "style": "Bold"
+       }
+      ],
+      "key": "2qp3s",
+      "text": "3. Rugcheck and DexScreener",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "9glih",
+      "text": "what it is. two free public APIs. Rugcheck reads the contract: authorities, LP, holders, insiders, the dev wallet. DexScreener reads the pool: depth, age, buys against sells.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "5mtfe",
+      "text": "what you do. nothing. no signup, no key for reads.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ecic2",
+      "text": "why. facts come before opinions. an open mint authority isn't a judgment call, it's a fact, and facts kill first.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [
+       {
+        "length": 35,
+        "offset": 0,
+        "style": "Bold"
+       }
+      ],
+      "key": "21ihf",
+      "text": "4. a burner wallet, but not tonight",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "71m6f",
+      "text": "what it is. a fresh Solana wallet that has never held anything else.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "881d1",
+      "text": "what you do. nothing yet. week one runs on paper.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "6l6he",
+      "text": "why. the desk never holds a key. when you go live, it tells you what to buy and you sign it yourself.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 2,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "bo35k",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "crbuj",
+      "text": "02. hire one bot, not eight",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "3j616",
+      "text": "my desk runs eight bots now. it didn't start that way, and yours shouldn't either. eight bots on day one is eight things to debug at once. one bot with one job shows you what the other seven will need later.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ei4cs",
+      "text": "choose Create your own and give it this, word for word:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 3,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "28cce",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "dl3un",
+      "text": "the last two lines matter more than the first five. a bot that guesses a missing number will eventually guess one that costs you.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 4,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "brsfh",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 5,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "2anoc",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "4b0sm",
+      "text": "03. keep the key out of the chat",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "fils3",
+      "text": "everything you type to a bot lands in a transcript. so the key goes into a file, typed by you, on the bot's computer.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "46tus",
+      "text": "open the bot's computer, click Take over, open the terminal and run this. it asks for the key without echoing it, so it never shows up in history either:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 6,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "d23k",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "4nai4",
+      "text": "then prove the key works before anything else. one call, so you never confuse a bad key with a bad prompt later:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 7,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "6fgra",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "afb9m",
+      "text": "click I'm done and hand the computer back. from here on the bot can run the desk, and it still never sees the key in the chat.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 8,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "fc6k4",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 9,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "rspf",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "9v9eu",
+      "text": "04. see the whole funnel before you build any of it",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cdfhu",
+      "text": "eight passes. the free ones run first. only what survives the free passes costs a Grok call, and only what Grok calls BUY costs money. this week, not even that.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 10,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "fo1j0",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cng27",
+      "text": "an open mint authority isn't a judgment call. it's a fact, and facts are free. Grok only ever sees tokens that already passed every check a script can do.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 11,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "8b5rh",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 12,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "cu052",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ajck",
+      "text": "05. put every number in one file",
+      "type": "header-two"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 8,
+         "text": "config.py",
+         "toIndex": 17
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "4aegi",
+      "text": "save as config.py. every number on the desk lives here, so when you retune, you edit one file and nothing else. these are mine, tuned for a $25 ticket. they are not a recommendation, they are a starting point you will move.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 13,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "9tq7m",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 14,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "do3pb",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 15,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "5jtmi",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "6cf27",
+      "text": "06. run the limits before anything else",
+      "type": "header-two"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 8,
+         "text": "book.py",
+         "toIndex": 15
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "obcs",
+      "text": "save as book.py. the cheapest check on the desk is the one that never calls an API. if today already lost $50, the desk doesn't even look at the token. if four positions are open, same. this file is also the desk's memory: two files you can open yourself, positions.json and trades.csv.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 16,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "df9j7",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 17,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "9ghef",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cke7g",
+      "text": "07. write the exit before the entry",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "fmtn1",
+      "text": "most people decide when to sell while staring at a green candle. that's the worst moment to decide anything. on this desk every exit exists before the token is bought, and the bot just checks it every 10 minutes:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cbhg6",
+      "text": "liquidity pulled 40% from entry: out, all of it, no questions",
+      "type": "unordered-list-item"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "74qms",
+      "text": "down 35%: out",
+      "type": "unordered-list-item"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "7pek4",
+      "text": "up 100%: half goes, the rest is the market's money",
+      "type": "unordered-list-item"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cd0tj",
+      "text": "up 200%: another quarter goes",
+      "type": "unordered-list-item"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "6l5ie",
+      "text": "after the first take, the rest leaves when price drops 30% from its peak",
+      "type": "unordered-list-item"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "4k5g0",
+      "text": "six hours without +20%: out, the slot is worth more than the hope",
+      "type": "unordered-list-item"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 8,
+         "text": "watch.py",
+         "toIndex": 16
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "6at2s",
+      "text": "save as watch.py:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 18,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "9ecq3",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 19,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "7i6ku",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 20,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "8nbhn",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 21,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "9q3gk",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "7l7ck",
+      "text": "08. learn the 14 ways a token dies",
+      "type": "header-two"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 143,
+         "text": "rugcheck.xyz",
+         "toIndex": 155
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "9gf2c",
+      "text": "if I had to throw away everything above and keep one thing, it would be this. it also works without any bot: run the same 14 checks by hand on rugcheck.xyz and dexscreener before your next buy and you'll skip most of the tokens you were about to regret.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cag9s",
+      "text": "13 of the checks are code. comparisons, no model, no opinion. the 14th is the only one that needs Grok.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 22,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "d2adv",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 23,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "3qfdh",
+      "text": " 09. let code kill the obvious ones",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 24,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "6k784",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "9i82j",
+      "text": "09. let code kill the obvious ones",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "7r4s5",
+      "text": "checks 1 to 9. it fetches one report and keeps only the fields the desk reads. Grok never sees the raw report, a fat payload costs tokens and costs accuracy.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cg394",
+      "text": "one detail people miss: the pool's own vault and the lockers sit in the top holders list. count them and every token looks like a whale token. the code drops them before it adds up the top 10.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 25,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "76vbn",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 26,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "b7th1",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 27,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "d4sn3",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "8gda3",
+      "text": "10. check the pool, not just the contract",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "8fpfo",
+      "text": "checks 10 to 13. a contract can be perfect and the pool still won't let you out. this reads the deepest pool for the token and asks four boring questions: is there enough in it, how big is my ticket next to it, how old is it, and is anyone actually selling.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 28,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "6qe98",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 29,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "739gp",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "fbfbj",
+      "text": "11. let Grok read what code can't",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "vq09",
+      "text": "check 14. this is the reason the desk runs on Grok and not on any other model: it can search X while it thinks. a token can pass all 13 checks and still be a copycat with a different contract address, or a launch where forty accounts made last week posted the same sentence in the same minute. no API returns that. X does.",
+      "type": "unstyled"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 8,
+         "text": "grok.py",
+         "toIndex": 15
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "3f69h",
+      "text": "save as grok.py. it's the only file that reads the key and the only place the desk talks to xAI:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 30,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "52ofd",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 8,
+         "text": "prompts.py",
+         "toIndex": 18
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "9lqhm",
+      "text": "save as prompts.py. this is the file you'll actually reread:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 31,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "14he0",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 32,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "adpto",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "2vn22",
+      "text": "12. wire it into one command",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "6s0ls",
+      "text": "one contract address in, one verdict out. limits, facts, pool, Grok, in that order, and the first one that says no ends it:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 33,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "6oeni",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "d60np",
+      "text": "you don't need a scanner to use it. a CA from a call channel, a post, a friend's message: tell the bot \"check <CA>\" and it runs one line. what comes back looks like this (example shape, not a real token):",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 34,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "fehm5",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 35,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "b2nf2",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 36,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "dnmd5",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 37,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "b7e3n",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "5ijbo",
+      "text": "13. three routines, one sentence each",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "9h08",
+      "text": "no workflow builder. you tell the bot each routine once, in a sentence, and it shows you the next run. these are mine, word for word:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 38,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "a38kk",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 39,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "34jqh",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 40,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "am40c",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 42,
+         "text": "report.py",
+         "toIndex": 51
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "f3js",
+      "text": "the two files those routines run. save as report.py:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 41,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "2258i",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 4,
+         "text": "scan.py",
+         "toIndex": 11
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ukgr",
+      "text": "and scan.py, the optional lead source. it pulls fresh Solana tokens that just paid for a DexScreener profile. a paid profile is not a quality signal, it only means the dev spent money. the filter decides the rest:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 42,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "9uvk2",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "e0k8t",
+      "text": "last thing tonight: Settings, General, Auto-review. add two Ask first rules, they stop the action and wait for you no matter what any routine thinks:",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 43,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "1vjr7",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 44,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "8a9fs",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 45,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "d8af2",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 46,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "fm1tc",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "6nlc6",
+      "text": "14. a week on paper before a single dollar",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "4o5ib",
+      "text": "PAPER = True means the desk does everything for real except the money. real tokens, real prices, real exits, fake fills. after seven days, open checks.csv and read it like a stranger wrote it.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "fj1hm",
+      "text": "what you're looking for: which check kills the most, whether the BUYs would have been ones you'd buy, and whether any SKIP reason looks wrong. a paper fill happens at the screen price, a live fill never does, so treat the paper result as the ceiling, not the forecast.",
+      "type": "unstyled"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 85,
+         "text": "check.py",
+         "toIndex": 93
+        },
+        {
+         "fromIndex": 220,
+         "text": "watch.py",
+         "toIndex": 228
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "fdrc6",
+      "text": "when you go live, flip PAPER to False and nothing else changes except the last step. check.py stops buying and posts an approval line instead: buy $25 yourself in your own wallet, then one command puts it in the book so watch.py starts guarding it.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 47,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "el7mn",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "codl7",
+      "text": "when it breaks",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "fnnk0",
+      "text": "this touches money, so every failure has one answer written down before it happens.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 48,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "6othb",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 49,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "6hqn",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ficvk",
+      "text": "the bill",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "ei0mu",
+      "text": "everything before the judge is free: the limits, Rugcheck, DexScreener. the only paid step is one Grok call per token that survived all 13 checks, with X search on.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 50,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "am8hb",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 81,
+         "text": "scan.py",
+         "toIndex": 88
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "benq6",
+      "text": "the part people get wrong: the bill scales with survivors, not with the scanner. scan.py can feed the desk 240 tokens a day and most of them die for free before Grok ever hears about them.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 51,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "3a627",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 52,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "eeo85",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "6f8ne",
+      "text": "important part",
+      "type": "header-two"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "3hvga",
+      "text": "this is my setup, not your strategy.",
+      "type": "unstyled"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 16,
+         "text": "config.py",
+         "toIndex": 25
+        }
+       ]
+      },
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "cbj1u",
+      "text": "every number in config.py is mine, picked for a $25 ticket and my own tolerance for watching something go to zero. most memecoins do go to zero, and most people who trade them lose money. the filter doesn't make a token good. it removes the obvious ways to lose, and it makes you read why every token died.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "c9a7f",
+      "text": "run a week on paper. read the kills. move the numbers where you disagree, in writing. copy the shape, not the constants. not financial advice.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [
+       {
+        "key": 53,
+        "length": 1,
+        "offset": 0
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "c17a6",
+      "text": " ",
+      "type": "atomic"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "64qlk",
+      "text": "code kills, Grok reads X, you sign. a script never gets a judgment call, Grok never gets a calculator, and nobody but you ever gets the wallet.",
+      "type": "unstyled"
+     },
+     {
+      "data": {},
+      "entityRanges": [],
+      "inlineStyleRanges": [],
+      "key": "88fus",
+      "text": "save this before your next buy. follow if you're planning on running the same thing, more of this coming 🫶",
+      "type": "unstyled"
+     },
+     {
+      "data": {
+       "urls": [
+        {
+         "fromIndex": 8,
+         "text": "t.me/+8wAXS0nHWgA2MGEy",
+         "toIndex": 30
+        },
+        {
+         "fromIndex": 43,
+         "text": "github.com/0xboan",
+         "toIndex": 60
+        },
+        {
+         "fromIndex": 74,
+         "text": "fomo.family/r/0xboan",
+         "toIndex": 94
+        }
+       ]
+      },
+      "entityRanges": [
+       {
+        "key": 54,
+        "length": 17,
+        "offset": 43
+       }
+      ],
+      "inlineStyleRanges": [],
+      "key": "91gna",
+      "text": "my tg - t.me/+8wAXS0nHWgA2MGEy\nmy github - github.com/0xboan\ntrade here - fomo.family/r/0xboan",
+      "type": "unstyled"
+     }
+    ],
+    "entityMap": [
+     {
+      "key": "45",
+      "value": {
+       "data": {
+        "entityKey": "e7d746b8-7b2b-48fd-b20d-fe3f2bc0ce74",
+        "mediaItems": [
+         {
+          "localMediaId": "17",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111495235670888448"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "34",
+      "value": {
+       "data": {
+        "markdown": "```json\n{\n  \"verdict\": \"SKIP\",\n  \"confidence\": 0.78,\n  \"why\": \"passes every hard check, but the first 30 posts came from accounts created this week, same wording.\",\n  \"x_read\": \"one real account, a wave of fresh ones, no CA mismatch\",\n  \"main_risk\": \"bought hype, the buyers leave when the posting stops\",\n  \"stage\": \"grok\",\n  \"symbol\": \"EXAMPLE\",\n  \"reason\": \"passes every hard check, but the first 30 posts came from accounts created this week, same wording.\"\n}\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "12",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "51",
+      "value": {
+       "data": {
+        "entityKey": "0ef248ee-27bb-48ff-bda1-717082c0af1b",
+        "mediaItems": [
+         {
+          "localMediaId": "24",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111498613096333312"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "8",
+      "value": {
+       "data": {
+        "entityKey": "277f85ae-3db8-4bda-9399-505d862219e1",
+        "mediaItems": [
+         {
+          "localMediaId": "3",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111487562837614592"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "19",
+      "value": {
+       "data": {
+        "markdown": "```\nLIQUIDITY FIRST. a pulled pool beats every other rule, even on a green position.\nTHE TRAIL ARMS AFTER THE FIRST TAKE. before that, -35% is the only floor.\nDEAD MONEY IS A LOSS TOO. six flat hours free the slot for the next token.\nSILENCE IS A STATUS. watch.py prints nothing when nothing changed, so a quiet chat means you don't have to look.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "23",
+      "value": {
+       "data": {
+        "entityKey": "12069131-e456-49a1-b89c-a199d141e62e",
+        "mediaItems": [
+         {
+          "localMediaId": "7",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111491194161078272"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "4",
+      "value": {
+       "data": {
+        "entityKey": "044bc281-2279-4d16-93fa-800bdba8ebbe",
+        "mediaItems": [
+         {
+          "localMediaId": "1",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111486129505521664"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "40",
+      "value": {
+       "data": {
+        "markdown": "```\nEvery day at 21:30, in /workspace/desk run python report.py and post the output here.\nAdd one thing that worked today and one number in config.py you would question, with the reason.\nNever change that number yourself.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "15",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "11",
+      "value": {
+       "data": {
+        "entityKey": "9f85615f-5a44-4cb3-95d6-f6f6a7eb2c6b",
+        "mediaItems": [
+         {
+          "localMediaId": "5",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111489026532233217"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "9",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "44",
+      "value": {
+       "data": {
+        "entityKey": "7140f53b-ea0a-4821-a0c2-d47c8335c953",
+        "mediaItems": [
+         {
+          "localMediaId": "15",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111494708652314624"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "33",
+      "value": {
+       "data": {
+        "markdown": "```python\n# check.py\n# one contract address in, one verdict out. runs every time a token crosses your desk.\nimport csv, json, os, sys, time\nfrom config import LOG, MIN_CONFIDENCE, PAPER, TICKET_USD\nfrom rugcheck import report, fact_kill\nfrom market import pool, market_kill\nfrom grok import ask\nfrom prompts import JUDGE_PROMPT\nimport book\n\n\ndef log(row: dict):\n    new = not os.path.exists(LOG)\n    with open(LOG, \"a\", newline=\"\") as f:\n        w = csv.DictWriter(f, fieldnames=[\"time\", \"mint\", \"symbol\", \"stage\", \"verdict\",\n                                          \"confidence\", \"reason\"])\n        if new:\n            w.writeheader()\n        w.writerow({k: row.get(k) for k in w.fieldnames})\n\n\ndef check(mint: str) -> dict:\n    if (g := book.guard(mint)):                                  # limits, free\n        return {\"stage\": \"limits\", \"verdict\": \"SKIP\", \"reason\": g}\n\n    try:\n        token = report(mint)                                     # rug filter, free\n    except Exception as e:\n        return {\"stage\": \"facts\", \"verdict\": \"SKIP\", \"reason\": f\"rugcheck failed: {e}\"}\n    if (k := fact_kill(token)):\n        return {\"stage\": \"facts\", \"verdict\": \"SKIP\", \"reason\": k, \"symbol\": token[\"symbol\"]}\n\n    try:\n        m = pool(mint)                                           # pool, free\n    except Exception as e:\n        return {\"stage\": \"pool\", \"verdict\": \"SKIP\", \"reason\": f\"dexscreener failed: {e}\"}\n    if (k := market_kill(m)):\n        return {\"stage\": \"pool\", \"verdict\": \"SKIP\", \"reason\": k, \"symbol\": token[\"symbol\"]}\n\n    try:\n        ans = ask(JUDGE_PROMPT, {\"token\": token, \"pool\": m}, read_x=True)   # the only paid step\n    except Exception as e:\n        return {\"stage\": \"grok\", \"verdict\": \"SKIP\", \"reason\": f\"grok failed: {e}\"}\n\n    verdict, conf = ans.get(\"verdict\"), ans.get(\"confidence\") or 0\n    if verdict == \"BUY\" and conf < MIN_CONFIDENCE:\n        verdict = \"SKIP\"\n        ans[\"why\"] = f\"low confidence {conf}\"\n    return {**ans, \"stage\": \"grok\", \"verdict\": verdict, \"symbol\": m[\"symbol\"] or token[\"symbol\"],\n            \"reason\": ans.get(\"why\"), \"price\": m[\"price\"], \"liq_usd\": m[\"liq_usd\"], \"url\": m[\"url\"]}\n\n\nif __name__ == \"__main__\":\n    mint = sys.argv[1].strip()\n    v = check(mint)\n    log({\"time\": time.strftime(\"%Y-%m-%d %H:%M\"), \"mint\": mint, **v})\n    if v[\"verdict\"] == \"BUY\":\n        if PAPER:\n            book.open_position(mint, v[\"symbol\"], v[\"price\"], v[\"liq_usd\"])\n            v[\"action\"] = f\"PAPER BUY ${TICKET_USD} at {v['price']}\"\n        else:\n            v[\"action\"] = (f\"APPROVAL NEEDED: buy ${TICKET_USD} of {v['symbol']} in your own wallet, \"\n                           f\"then run: python book.py add {mint} {TICKET_USD} <fill price> {v['liq_usd']}\")\n    print(json.dumps(v, indent=2))\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "22",
+      "value": {
+       "data": {
+        "markdown": "| # | check | kills when | why |\n| --- | --- | --- | --- |\n| 1 | already rugged | Rugcheck marks it rugged | someone already did it |\n| 2 | mint authority | still open | the dev can print new supply into your bag |\n| 3 | freeze authority | still open | the dev can freeze your tokens, you can't sell |\n| 4 | danger flags | any danger-level risk | Rugcheck already saw something you'd have to prove wrong |\n| 5 | risk score | above 40/100 | small warnings add up |\n| 6 | LP lock | biggest pool under 90% locked or burned | unlocked liquidity is a pull button |\n| 7 | top 10 holders | over 30%, pools and lockers excluded | ten wallets can end your trade together |\n| 8 | dev wallet | creator still holds over 5% | the dev is the first seller |\n| 9 | insiders / bundles | any insider holder or insider graph hit | wallets funded together sell together |\n| 10 | pool depth | under $30k liquidity | you'd be someone's exit |\n| 11 | ticket share | your $25 is over 1% of the pool | your own buy moves the price |\n| 12 | age | under 30 min or over 72h | too fresh for any report, or the move already happened |\n| 13 | sells exist | 20+ buys in the last hour, zero sells | that's the shape of a honeypot |\n| 14 | X read (Grok) | no posts, copycat CA, bought hype, rug history | the part no API returns |"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "26",
+      "value": {
+       "data": {
+        "entityKey": "31c36589-963d-4d5a-a59b-92b582cb9a86",
+        "mediaItems": [
+         {
+          "localMediaId": "11",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111492859186544640"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "50",
+      "value": {
+       "data": {
+        "markdown": "```\ncost_per_token = input_tokens / 1_000_000 * price_per_M_input\n               + output_tokens / 1_000_000 * price_per_M_output\n               + posts_fetched / 1_000 * 5          # X search: $5 per 1,000 posts fetched\n\nmax_turns = 2 keeps the search to two rounds, so posts_fetched stays small.\nevery response reports its own x_posts_fetched, so day one tells you the real number.\n\nprice: [price from console.x.ai]\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "37",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "13",
+      "value": {
+       "data": {
+        "markdown": "```python\n# config.py\n# every number on the desk lives here. when you retune, you edit this file and nothing else.\n\nMODEL = \"grok-4.7\"          # check console.x.ai -> Models if the API rejects it\nPAPER = True                # week one: fake fills at real prices. flip only after you read the log\n\nTICKET_USD = 25             # flat. never sized off the last win\nMAX_OPEN = 4                # 4 x $25 = $100 in the market, max\nMAX_ENTRIES_PER_DAY = 6\nDAILY_LOSS_HALT_USD = 50    # realized loss today hits this -> no new entries until tomorrow\nCOOLDOWN_HOURS = 24         # no re-entry into a token you just left\n\nFACTS = {                   # the rug filter. code only, no model\n    \"max_risk_score\": 40,       # rugcheck score_normalised, 0-100, higher = riskier\n    \"min_lp_locked_pct\": 90,    # biggest pool: LP locked or burned\n    \"max_top10_pct\": 30,        # top 10 holders, pools and lockers excluded\n    \"max_dev_pct\": 5,           # supply still sitting in the creator wallet\n    \"max_insiders\": 0,          # insider-flagged holders + insider graph hits\n    \"min_liquidity_usd\": 30000,\n    \"max_ticket_share\": 0.01,   # your ticket is never more than 1% of the pool\n    \"min_age_min\": 30,          # younger than this, every report is still guessing\n    \"max_age_hours\": 72,\n}\n\nMIN_CONFIDENCE = 0.7        # Grok says BUY below this -> treated as SKIP\n\nEXIT = {\n    \"stop_pct\": -35,                        # hard stop from entry\n    \"ladder\": [(100, 0.50), (200, 0.25)],   # +100% sells half, +200% sells a quarter\n    \"trail_pct\": 30,                        # the rest: out when price falls 30% from its peak\n    \"time_stop_hours\": 6,                   # not up 20% after 6 hours -> out, dead money\n    \"time_stop_min_pct\": 20,\n    \"liq_drop_pct\": 40,                     # pool liquidity down 40% from entry -> out now\n}\n\nLOG = \"checks.csv\"\nPOSITIONS = \"positions.json\"\nTRADES = \"trades.csv\"\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "46",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "24",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "35",
+      "value": {
+       "data": {
+        "entityKey": "c1bbfa06-ab2a-4011-845e-3ab653def2cb",
+        "mediaItems": [
+         {
+          "localMediaId": "13",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111493665373691904"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "16",
+      "value": {
+       "data": {
+        "markdown": "```python\n# book.py\n# positions, trades, limits. the desk's memory lives in two files you can open yourself.\nimport csv, json, os, sys, time\nfrom config import (POSITIONS, TRADES, TICKET_USD, MAX_OPEN, MAX_ENTRIES_PER_DAY,\n                    DAILY_LOSS_HALT_USD, COOLDOWN_HOURS)\n\n\ndef load() -> dict:\n    return json.load(open(POSITIONS)) if os.path.exists(POSITIONS) else {}\n\n\ndef save(book: dict):\n    json.dump(book, open(POSITIONS, \"w\"), indent=2)\n\n\ndef trades() -> list[dict]:\n    return list(csv.DictReader(open(TRADES))) if os.path.exists(TRADES) else []\n\n\ndef record(mint, symbol, action, usd, pnl, reason):\n    new = not os.path.exists(TRADES)\n    with open(TRADES, \"a\", newline=\"\") as f:\n        w = csv.DictWriter(f, fieldnames=[\"time\", \"mint\", \"symbol\", \"action\", \"usd\", \"pnl\", \"reason\"])\n        if new:\n            w.writeheader()\n        w.writerow({\"time\": time.strftime(\"%Y-%m-%d %H:%M\"), \"mint\": mint, \"symbol\": symbol,\n                    \"action\": action, \"usd\": round(usd, 2), \"pnl\": round(pnl, 2), \"reason\": reason})\n\n\ndef today_pnl() -> float:\n    day = time.strftime(\"%Y-%m-%d\")\n    return sum(float(t[\"pnl\"]) for t in trades() if t[\"time\"].startswith(day))\n\n\ndef guard(mint: str) -> str | None:\n    \"\"\"Limits run before any network call. A blocked entry costs nothing.\"\"\"\n    day = time.strftime(\"%Y-%m-%d\")\n    book = load()\n    if today_pnl() <= -DAILY_LOSS_HALT_USD:                      return \"halted_daily_loss\"\n    if mint in book:                                             return \"already_open\"\n    if len(book) >= MAX_OPEN:                                    return \"max_open\"\n    opens = [t for t in trades() if t[\"action\"] == \"open\" and t[\"time\"].startswith(day)]\n    if len(opens) >= MAX_ENTRIES_PER_DAY:                        return \"max_entries_today\"\n    cutoff = time.strftime(\"%Y-%m-%d %H:%M\", time.localtime(time.time() - COOLDOWN_HOURS * 3600))\n    if any(t[\"mint\"] == mint and t[\"action\"] == \"close\" and t[\"time\"] >= cutoff for t in trades()):\n        return \"cooldown\"\n    return None\n\n\ndef open_position(mint, symbol, price, liq_usd, usd=TICKET_USD):\n    book = load()\n    book[mint] = {\"symbol\": symbol, \"entry\": price, \"qty0\": usd / price, \"qty\": usd / price,\n                  \"peak\": price, \"liq0\": liq_usd, \"opened\": time.time(), \"steps\": 0}\n    save(book)\n    record(mint, symbol, \"open\", usd, 0, \"entry\")\n\n\ndef sell(mint, frac_of_original, price, reason) -> float:\n    \"\"\"Sells a fraction of the ORIGINAL size (1.0 = everything left). Returns realized pnl.\"\"\"\n    book = load()\n    p = book[mint]\n    q = min(p[\"qty\"], p[\"qty0\"] * frac_of_original)\n    pnl = q * (price - p[\"entry\"])\n    p[\"qty\"] -= q\n    action = \"close\" if p[\"qty\"] <= p[\"qty0\"] * 1e-6 else \"partial\"\n    record(mint, p[\"symbol\"], action, q * price, pnl, reason)\n    if action == \"close\":\n        del book[mint]\n    save(book)\n    return pnl\n\n\nif __name__ == \"__main__\":\n    # live mode: after you buy in your own wallet ->  python book.py add <mint> <usd> <price> <liq_usd>\n    # after you sell by hand                     ->  python book.py close <mint> <price>\n    cmd = sys.argv[1]\n    if cmd == \"add\":\n        mint, usd, price, liq = sys.argv[2], float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])\n        open_position(mint, mint[:6], price, liq, usd)\n    elif cmd == \"close\":\n        print(round(sell(sys.argv[2], 1.0, float(sys.argv[3]), \"manual\"), 2))\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "5",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "10",
+      "value": {
+       "data": {
+        "markdown": "```\n0. LEAD     a CA from anywhere: a call, a post, scan.py    -> one mint\n1. LIMITS   book.py: daily loss, open slots, cooldown      -> free, no network at all\n2. FACTS    rugcheck.py: 10 hard kills                     -> open mint, unlocked LP, fat top 10 die here\n3. POOL     market.py: depth, age, sells                   -> thin pools and honeypots die here\n4. JUDGE    grok.py + X search, one call                   -> BUY or SKIP, one reason, one risk\n5. FILL     paper: book.py at the live price               -> live: you sign it yourself\n6. WATCH    watch.py every 10 minutes                      -> stop, ladder, trail, time stop\n7. REPORT   report.py at 21:30                             -> what died, what paid, what to question\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "48",
+      "value": {
+       "data": {
+        "markdown": "```\n401 from xAI              -> bad key. Take over, rewrite .env, run the curl from step 03 again.\n400 / 404 from xAI        -> model name changed. fix MODEL in config.py, nothing else.\n429 from xAI              -> rate limit. that token is a SKIP, the next run moves on. never loop it.\nerror about x_search      -> your MODEL can't search X. pick one that can on console.x.ai -> Models.\nGrok answers in prose     -> ValueError, logged, SKIP. never turn a paragraph into a trade.\nrugcheck 404 or empty     -> too fresh to index. SKIP. fresh is not clean.\nlp_unlocked on everything -> some pool types have no LP token at all. open one on rugcheck yourself\n                             before you touch that number, and change it in writing.\nno_pool                   -> not trading on a DEX yet, or not Solana. SKIP.\nroutines went quiet       -> Grok Bot pauses routines after you've been away a long time.\n                             open Routines and switch them back on.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "21",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "54",
+      "value": {
+       "data": {
+        "url": "https://t.co/br4A69K61P"
+       },
+       "mutability": "Mutable",
+       "type": "LINK"
+      }
+     },
+     {
+      "key": "43",
+      "value": {
+       "data": {
+        "markdown": "```\nAsk first before any wallet connection, signature, swap or transfer.\nAsk first before editing any file named config.py.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "32",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "49",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "6",
+      "value": {
+       "data": {
+        "markdown": "```bash\nmkdir -p /workspace/desk && cd /workspace/desk\nread -rs -p \"xai key: \" K && printf 'XAI_API_KEY=%s\\n' \"$K\" > .env && unset K\nchmod 600 .env\npip install requests\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "36",
+      "value": {
+       "data": {
+        "markdown": "```\nFACTS BEFORE OPINIONS. Grok never decides whether a mint is open.\nA FAILED CALL IS A SKIP. Rugcheck down, DexScreener down, Grok down, bad JSON: SKIP.\nNULL IS NOT CLEAN. a field that didn't come back kills the token, it never passes it.\nONE VERDICT PER TOKEN. never re-run until it says BUY. if you disagree, you disagree with config.py.\nREAD THE KILLS, NOT THE BUYS. the buys feel good. the kill reasons tell you if the filter works.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "1",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "39",
+      "value": {
+       "data": {
+        "markdown": "```\nEvery 30 minutes, in /workspace/desk run python scan.py.\nPost only BUY verdicts: symbol, confidence, x_read.\nIf Rugcheck or DexScreener is down, say which one once, not every run.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "17",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "25",
+      "value": {
+       "data": {
+        "markdown": "```python\n# rugcheck.py\n# one report per token, trimmed to the fields the desk reads. Grok never sees the raw report.\nimport requests\nfrom config import FACTS\n\nRC = \"https://api.rugcheck.xyz/v1/tokens\"\n\n\ndef report(mint: str) -> dict:\n    r = requests.get(f\"{RC}/{mint}/report\", timeout=20)\n    r.raise_for_status()\n    d = r.json()\n    token = d.get(\"token\") or {}\n    known = d.get(\"knownAccounts\") or {}\n\n    def is_pool(h):  # AMM vaults and lockers sit in top holders, they are not whales\n        tag = known.get(h.get(\"owner\")) or known.get(h.get(\"address\")) or {}\n        return str(tag.get(\"type\", \"\")).upper() in (\"AMM\", \"LOCKER\")\n\n    holders = [h for h in (d.get(\"topHolders\") or []) if not is_pool(h)]\n    markets = sorted(d.get(\"markets\") or [],\n                     key=lambda m: ((m.get(\"lp\") or {}).get(\"baseUSD\") or 0)\n                                 + ((m.get(\"lp\") or {}).get(\"quoteUSD\") or 0),\n                     reverse=True)\n    lp = (markets[0].get(\"lp\") or {}) if markets else {}\n    supply = token.get(\"supply\") or 0\n    risks = d.get(\"risks\") or []\n\n    return {\n        \"mint\": mint,\n        \"symbol\": (d.get(\"tokenMeta\") or {}).get(\"symbol\"),\n        \"rugged\": bool(d.get(\"rugged\")),\n        \"risk_score\": d.get(\"score_normalised\"),\n        \"danger\": [x.get(\"name\") for x in risks if x.get(\"level\") == \"danger\"],\n        \"warn\": [x.get(\"name\") for x in risks if x.get(\"level\") == \"warn\"],\n        \"mint_authority\": token.get(\"mintAuthority\", d.get(\"mintAuthority\")),\n        \"freeze_authority\": token.get(\"freezeAuthority\", d.get(\"freezeAuthority\")),\n        \"lp_locked_pct\": lp.get(\"lpLockedPct\", d.get(\"lpLockedPct\")),\n        \"top10_pct\": round(sum(h.get(\"pct\") or 0 for h in holders[:10]), 2) if holders else None,\n        \"dev_pct\": round((d.get(\"creatorBalance\") or 0) / supply * 100, 2) if supply else None,\n        \"insiders\": sum(1 for h in holders if h.get(\"insider\")) + (d.get(\"graphInsidersDetected\") or 0),\n        \"holders\": d.get(\"totalHolders\"),\n    }\n\n\ndef fact_kill(t: dict) -> str | None:\n    \"\"\"Plain comparisons. First failure wins, the reason gets logged.\"\"\"\n    if t[\"risk_score\"] is None:                                  return \"no_report\"\n    if t[\"rugged\"]:                                              return \"already_rugged\"\n    if t[\"mint_authority\"]:                                      return \"mint_open\"\n    if t[\"freeze_authority\"]:                                    return \"freeze_open\"\n    if t[\"danger\"]:                                              return \"danger:\" + t[\"danger\"][0]\n    if t[\"risk_score\"] > FACTS[\"max_risk_score\"]:                return \"risk_score\"\n    if t[\"lp_locked_pct\"] is None or t[\"lp_locked_pct\"] < FACTS[\"min_lp_locked_pct\"]:\n        return \"lp_unlocked\"\n    if t[\"top10_pct\"] is None or t[\"top10_pct\"] > FACTS[\"max_top10_pct\"]:\n        return \"top10_heavy\"\n    if t[\"dev_pct\"] is None or t[\"dev_pct\"] > FACTS[\"max_dev_pct\"]:\n        return \"dev_holds\"\n    if t[\"insiders\"] > FACTS[\"max_insiders\"]:                    return \"insiders\"\n    return None\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "14",
+      "value": {
+       "data": {
+        "markdown": "```\nFLAT TICKET. the size never grows because the last three won.\nTHE BOT READS config.py, IT NEVER WRITES IT. a number moves when you move it.\nA FILTER IS LOOSENED IN WRITING. you change a number, you say why in the chat, same day.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "47",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "31",
+      "value": {
+       "data": {
+        "markdown": "```python\n# prompts.py\n# the one Grok prompt on the desk. this is the file you will actually reread.\n\nJUDGE_PROMPT = \"\"\"\nYou are RUG DESK. A Solana memecoin just passed every hard check in code:\nauthorities, LP, holders, dev wallet, insiders, pool depth, age.\nDo not re-check those numbers. You decide if one flat ticket goes in.\nYou never size, you never pick exits.\n\nINPUT: {\"token\": {...rugcheck facts...}, \"pool\": {...dexscreener facts...}}\n\nSTEP 1. Search X for the ticker and for the contract address, last 72 hours.\nSTEP 2. Judge only what code can't see:\n  - do the warn-level risks stack into something worse together\n  - who posted first: the dev, a real account with history, or a wave of fresh accounts\n  - organic or bought: same wording, same minute, accounts with no past\n  - is the contract address in those posts the same one as in INPUT\n  - has this ticker name or this dev been tied to a rug before\n\nRETURN ONLY JSON:\n{\"verdict\": \"BUY\" | \"SKIP\", \"confidence\": 0.0-1.0,\n \"why\": \"two lines max\", \"x_read\": \"one line on what X looks like\",\n \"main_risk\": \"one line\"}\n\nZero posts on X is an answer: nobody knows it exists. SKIP.\nAnother contract address under the same ticker on X: copycat risk. SKIP.\nNEVER answer BUY when a field you needed is null.\nNEVER mention price targets. You don't know them.\n\"\"\"\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "53",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "42",
+      "value": {
+       "data": {
+        "markdown": "```python\n# scan.py\n# optional lead source: fresh Solana tokens that just paid for a DexScreener profile.\n# a paid profile is not a quality signal, it just means the dev spent money. the filter decides.\nimport csv, os, subprocess, sys\nimport requests\nfrom config import LOG\n\nseen = {r[\"mint\"] for r in csv.DictReader(open(LOG))} if os.path.exists(LOG) else set()\nr = requests.get(\"https://api.dexscreener.com/token-profiles/latest/v1\", timeout=15)\nr.raise_for_status()\nfresh = [t[\"tokenAddress\"] for t in r.json()\n         if t.get(\"chainId\") == \"solana\" and t.get(\"tokenAddress\") not in seen]\n\nfor mint in fresh[:5]:                   # five per run, so one busy hour can't drain the API budget\n    subprocess.run([sys.executable, \"check.py\", mint])\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "0",
+      "value": {
+       "data": {
+        "tweetId": "2092226208234647626"
+       },
+       "mutability": "Immutable",
+       "type": "TWEET"
+      }
+     },
+     {
+      "key": "20",
+      "value": {
+       "data": {
+        "entityKey": "f36031d4-b931-4071-b851-14fc47edce1c",
+        "mediaItems": [
+         {
+          "localMediaId": "9",
+          "mediaCategory": "DraftTweetImage",
+          "mediaId": "2111491855640666112"
+         }
+        ]
+       },
+       "mutability": "Immutable",
+       "type": "MEDIA"
+      }
+     },
+     {
+      "key": "27",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "2",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "38",
+      "value": {
+       "data": {
+        "markdown": "```\nEvery 10 minutes, in /workspace/desk run python watch.py.\nIf it prints nothing, say nothing. If it prints anything, post it here word for word.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "18",
+      "value": {
+       "data": {
+        "markdown": "```python\n# watch.py\n# every open position, every 10 minutes. prints nothing when nothing changed.\nimport time\nfrom config import EXIT, PAPER\nfrom market import pool\nimport book\n\n\ndef watch() -> list[str]:\n    events = []\n    for mint, p in list(book.load().items()):\n        try:\n            m = pool(mint)\n        except Exception as e:\n            events.append(f\"{p['symbol']}: price feed down ({e}), holding, will retry\")\n            continue\n        if not m or m[\"price\"] <= 0:\n            events.append(f\"{p['symbol']}: pool gone. treat as rugged, sell what you can\")\n            book.sell(mint, 1.0, 0.0, \"pool_gone\")\n            continue\n\n        price = m[\"price\"]\n        b = book.load(); s = b[mint]\n        s[\"peak\"] = max(s[\"peak\"], price); book.save(b)\n        pct = (price / s[\"entry\"] - 1) * 100\n        hours = (time.time() - s[\"opened\"]) / 3600\n\n        def out(frac, why):\n            pnl = book.sell(mint, frac, price, why)\n            verb = \"sold\" if PAPER else \"SELL NOW in your wallet\"\n            size = \"the rest\" if frac >= 1 else f\"{int(frac * 100)}%\"\n            events.append(f\"{s['symbol']}: {verb} {size} at {pct:+.0f}% ({why}), pnl ${pnl:+.2f}\")\n\n        if m[\"liq_usd\"] < s[\"liq0\"] * (1 - EXIT[\"liq_drop_pct\"] / 100):\n            out(1.0, \"liquidity_pulled\"); continue\n        if pct <= EXIT[\"stop_pct\"]:\n            out(1.0, \"stop\"); continue\n        ladder = EXIT[\"ladder\"]\n        if s[\"steps\"] < len(ladder) and pct >= ladder[s[\"steps\"]][0]:\n            out(ladder[s[\"steps\"]][1], f\"take_profit_{ladder[s['steps']][0]}\")\n            b = book.load()\n            if mint in b:\n                b[mint][\"steps\"] += 1; book.save(b)\n            continue\n        if s[\"steps\"] > 0 and price <= s[\"peak\"] * (1 - EXIT[\"trail_pct\"] / 100):\n            out(1.0, \"trailing_stop\"); continue\n        if hours >= EXIT[\"time_stop_hours\"] and pct < EXIT[\"time_stop_min_pct\"]:\n            out(1.0, \"time_stop\")\n    return events\n\n\nif __name__ == \"__main__\":\n    for e in watch():\n        print(e)\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "30",
+      "value": {
+       "data": {
+        "markdown": "```python\n# grok.py\n# the only file that holds the key and the only place the desk talks to xAI.\nimport os, json, datetime, requests\nfrom config import MODEL\n\nURL = \"https://api.x.ai/v1/responses\"\n\n\ndef _key() -> str:\n    k = os.environ.get(\"XAI_API_KEY\")\n    if not k and os.path.exists(\".env\"):\n        for line in open(\".env\"):\n            if line.startswith(\"XAI_API_KEY=\"):\n                k = line.split(\"=\", 1)[1].strip().strip('\"')\n    if not k:\n        raise RuntimeError(\"no XAI_API_KEY in the environment or in .env\")\n    return k\n\n\ndef _text(resp: dict) -> str:\n    if isinstance(resp.get(\"output_text\"), str):\n        return resp[\"output_text\"]\n    parts = []\n    for item in resp.get(\"output\") or []:\n        if item.get(\"type\") == \"message\":\n            for c in item.get(\"content\") or []:\n                if c.get(\"type\") in (\"output_text\", \"text\"):\n                    parts.append(c.get(\"text\") or \"\")\n    return \"\\n\".join(parts)\n\n\ndef ask(system: str, payload: dict, read_x: bool = False) -> dict:\n    \"\"\"One call, JSON in, JSON out. Anything that isn't JSON raises, and a raise is a SKIP upstream.\"\"\"\n    body = {\"model\": MODEL,\n            \"input\": [{\"role\": \"system\", \"content\": system},\n                      {\"role\": \"user\", \"content\": json.dumps(payload)}]}\n    if read_x:\n        since = (datetime.date.today() - datetime.timedelta(days=3)).isoformat()\n        body[\"tools\"] = [{\"type\": \"x_search\", \"from_date\": since}]\n        body[\"max_turns\"] = 2          # two rounds of searching, then it has to answer\n    r = requests.post(URL, timeout=180, json=body,\n                      headers={\"Authorization\": f\"Bearer {_key()}\"})\n    r.raise_for_status()\n    text = _text(r.json())\n    start, end = text.find(\"{\"), text.rfind(\"}\")\n    if start == -1:\n        raise ValueError(f\"no json in answer: {text[:200]}\")\n    return json.loads(text[start:end + 1])\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "7",
+      "value": {
+       "data": {
+        "markdown": "```bash\ncurl -s https://api.x.ai/v1/responses \\\n  -H \"Authorization: Bearer $(cut -d= -f2 .env)\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"model\":\"grok-4.7\",\"input\":\"reply with OK\"}'\n\n-> ... \"type\":\"output_text\",\"text\":\"OK\" ...\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "29",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "41",
+      "value": {
+       "data": {
+        "markdown": "```python\n# report.py\n# the evening report. everything in it comes from checks.csv and trades.csv, nothing from memory.\nimport csv, os, time\nfrom collections import Counter\nfrom config import LOG, PAPER\nimport book\n\nday = time.strftime(\"%Y-%m-%d\")\nchecks = [r for r in csv.DictReader(open(LOG))] if os.path.exists(LOG) else []\nchecks = [r for r in checks if r[\"time\"].startswith(day)]\ndone = [t for t in book.trades() if t[\"time\"].startswith(day) and t[\"action\"] != \"open\"]\n\nby_stage = Counter(r[\"stage\"] for r in checks if r[\"verdict\"] == \"SKIP\")\nbuys = [r for r in checks if r[\"verdict\"] == \"BUY\"]\nwins = [t for t in done if float(t[\"pnl\"]) > 0]\nreasons = Counter(r[\"reason\"] for r in checks if r[\"stage\"] in (\"facts\", \"pool\"))\n\nprint(f\"EVENING REPORT {day} {'(PAPER)' if PAPER else '(LIVE)'}\")\nprint(f\"checked: {len(checks)}\")\nprint(f\"killed by rug filter: {by_stage['facts']} | by pool: {by_stage['pool']} | \"\n      f\"by Grok: {by_stage['grok']} | by limits: {by_stage['limits']}\")\nprint(f\"bought: {len(buys)} | open now: {len(book.load())}\")\nprint(f\"realized pnl today: ${book.today_pnl():+.2f}\")\nif done:\n    print(f\"green exits: {len(wins)}/{len(done)}\")\n    best = max(done, key=lambda t: float(t[\"pnl\"]))\n    worst = min(done, key=lambda t: float(t[\"pnl\"]))\n    print(f\"best: {best['symbol']} ${float(best['pnl']):+.2f} | worst: {worst['symbol']} ${float(worst['pnl']):+.2f}\")\nif reasons:\n    top, n = reasons.most_common(1)[0]\n    print(f\"most common kill: {top} ({n}x)\")\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "3",
+      "value": {
+       "data": {
+        "markdown": "```\nName: RUG DESK\nJob: Solana memecoin desk, paper first\nDescription: Build and run the desk in /workspace/desk from the article I paste.\nEvery token goes through check.py, no exceptions, no shortcuts.\nYou never buy, sell, sign or move funds. You never edit config.py unless I ask\nin this chat. You never lower a filter number to let a token through.\nReport every kill with its reason, not your opinion of the token.\nWhen a source is down, say which one and skip. Never guess a missing number.\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     },
+     {
+      "key": "52",
+      "value": {
+       "data": {},
+       "mutability": "Immutable",
+       "type": "DIVIDER"
+      }
+     },
+     {
+      "key": "28",
+      "value": {
+       "data": {
+        "markdown": "```python\n# market.py\n# the pool itself: depth, age, price, and whether anyone can actually sell.\nimport time\nimport requests\nfrom config import FACTS, TICKET_USD\n\nDS = \"https://api.dexscreener.com/tokens/v1/solana\"\n\n\ndef pool(mint: str) -> dict | None:\n    r = requests.get(f\"{DS}/{mint}\", timeout=15)\n    r.raise_for_status()\n    data = r.json()\n    pairs = data if isinstance(data, list) else (data.get(\"pairs\") or [])\n    pairs = [p for p in pairs if (p.get(\"baseToken\") or {}).get(\"address\") == mint]\n    if not pairs:\n        return None\n    p = max(pairs, key=lambda x: (x.get(\"liquidity\") or {}).get(\"usd\") or 0)\n    h1 = (p.get(\"txns\") or {}).get(\"h1\") or {}\n    born = p.get(\"pairCreatedAt\")\n    return {\n        \"symbol\": (p.get(\"baseToken\") or {}).get(\"symbol\"),\n        \"price\": float(p.get(\"priceUsd\") or 0),\n        \"liq_usd\": (p.get(\"liquidity\") or {}).get(\"usd\") or 0,\n        \"age_min\": round((time.time() * 1000 - born) / 60000) if born else None,\n        \"buys_1h\": h1.get(\"buys\", 0),\n        \"sells_1h\": h1.get(\"sells\", 0),\n        \"vol_1h\": (p.get(\"volume\") or {}).get(\"h1\"),\n        \"url\": p.get(\"url\"),\n    }\n\n\ndef market_kill(m: dict | None) -> str | None:\n    if not m:                                                    return \"no_pool\"\n    if m[\"price\"] <= 0:                                          return \"no_price\"\n    if m[\"liq_usd\"] < FACTS[\"min_liquidity_usd\"]:                return \"thin_pool\"\n    if TICKET_USD / m[\"liq_usd\"] > FACTS[\"max_ticket_share\"]:    return \"ticket_too_big\"\n    if m[\"age_min\"] is None or m[\"age_min\"] < FACTS[\"min_age_min\"]:\n        return \"too_fresh\"\n    if m[\"age_min\"] > FACTS[\"max_age_hours\"] * 60:               return \"too_old\"\n    if m[\"buys_1h\"] >= 20 and m[\"sells_1h\"] == 0:                return \"nobody_can_sell\"\n    return None\n```"
+       },
+       "mutability": "Mutable",
+       "type": "MARKDOWN"
+      }
+     }
+    ]
+   },
+   "media_entities": [
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2Gp9GXoAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111491855640666112",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 88.66,
+         "rgb": {
+          "blue": 252,
+          "green": 252,
+          "red": 252
+         }
+        },
+        {
+         "percentage": 3.83,
+         "rgb": {
+          "blue": 196,
+          "green": 128,
+          "red": 222
+         }
+        },
+        {
+         "percentage": 2.5,
+         "rgb": {
+          "blue": 130,
+          "green": 163,
+          "red": 211
+         }
+        },
+        {
+         "percentage": 1.89,
+         "rgb": {
+          "blue": 207,
+          "green": 126,
+          "red": 134
+         }
+        },
+        {
+         "percentage": 1.63,
+         "rgb": {
+          "blue": 149,
+          "green": 112,
+          "red": 220
+         }
+        }
+       ]
+      },
+      "original_img_height": 1103,
+      "original_img_url": "https://pbs.twimg.com/media/HU2Gp9GXoAATX2J.jpg",
+      "original_img_width": 1426
+     },
+     "media_key": "3_2111491855640666112"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2JQBZWkAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111494708652314624",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 88.57,
+         "rgb": {
+          "blue": 249,
+          "green": 248,
+          "red": 247
+         }
+        },
+        {
+         "percentage": 3.73,
+         "rgb": {
+          "blue": 199,
+          "green": 128,
+          "red": 223
+         }
+        },
+        {
+         "percentage": 2.49,
+         "rgb": {
+          "blue": 130,
+          "green": 167,
+          "red": 223
+         }
+        },
+        {
+         "percentage": 1.77,
+         "rgb": {
+          "blue": 214,
+          "green": 126,
+          "red": 136
+         }
+        },
+        {
+         "percentage": 1.72,
+         "rgb": {
+          "blue": 142,
+          "green": 118,
+          "red": 223
+         }
+        }
+       ]
+      },
+      "original_img_height": 1103,
+      "original_img_url": "https://pbs.twimg.com/media/HU2JQBZWkAAyqOq.jpg",
+      "original_img_width": 1426
+     },
+     "media_key": "3_2111494708652314624"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2GDc5WIAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111491194161078272",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 79.68,
+         "rgb": {
+          "blue": 14,
+          "green": 12,
+          "red": 11
+         }
+        },
+        {
+         "percentage": 6.75,
+         "rgb": {
+          "blue": 183,
+          "green": 183,
+          "red": 183
+         }
+        },
+        {
+         "percentage": 3.12,
+         "rgb": {
+          "blue": 24,
+          "green": 73,
+          "red": 28
+         }
+        },
+        {
+         "percentage": 1.75,
+         "rgb": {
+          "blue": 36,
+          "green": 128,
+          "red": 52
+         }
+        },
+        {
+         "percentage": 0.86,
+         "rgb": {
+          "blue": 74,
+          "green": 247,
+          "red": 127
+         }
+        }
+       ]
+      },
+      "original_img_height": 1402,
+      "original_img_url": "https://pbs.twimg.com/media/HU2GDc5WIAABmrj.jpg",
+      "original_img_width": 1122
+     },
+     "media_key": "3_2111491194161078272"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2EFR2W0AEKAAIc9wVGxFcwAAAA",
+     "media_id": "2111489026532233217",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 80.9,
+         "rgb": {
+          "blue": 0,
+          "green": 0,
+          "red": 0
+         }
+        },
+        {
+         "percentage": 6.65,
+         "rgb": {
+          "blue": 19,
+          "green": 65,
+          "red": 5
+         }
+        },
+        {
+         "percentage": 3.33,
+         "rgb": {
+          "blue": 7,
+          "green": 6,
+          "red": 47
+         }
+        },
+        {
+         "percentage": 2.6,
+         "rgb": {
+          "blue": 15,
+          "green": 13,
+          "red": 93
+         }
+        },
+        {
+         "percentage": 1.22,
+         "rgb": {
+          "blue": 36,
+          "green": 34,
+          "red": 191
+         }
+        }
+       ]
+      },
+      "original_img_height": 941,
+      "original_img_url": "https://pbs.twimg.com/media/HU2EFR2W0AEk80b.jpg",
+      "original_img_width": 1672
+     },
+     "media_key": "3_2111489026532233217"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2MzSlWQAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111498613096333312",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 97.61,
+         "rgb": {
+          "blue": 249,
+          "green": 247,
+          "red": 246
+         }
+        },
+        {
+         "percentage": 1.68,
+         "rgb": {
+          "blue": 146,
+          "green": 133,
+          "red": 132
+         }
+        },
+        {
+         "percentage": 0.62,
+         "rgb": {
+          "blue": 245,
+          "green": 138,
+          "red": 77
+         }
+        }
+       ]
+      },
+      "original_img_height": 764,
+      "original_img_url": "https://pbs.twimg.com/media/HU2MzSlWQAAQ8Nd.png",
+      "original_img_width": 766
+     },
+     "media_key": "3_2111498613096333312"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2HkXmWgAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111492859186544640",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 47.57,
+         "rgb": {
+          "blue": 247,
+          "green": 248,
+          "red": 247
+         }
+        },
+        {
+         "percentage": 27.83,
+         "rgb": {
+          "blue": 39,
+          "green": 30,
+          "red": 27
+         }
+        },
+        {
+         "percentage": 7.59,
+         "rgb": {
+          "blue": 53,
+          "green": 37,
+          "red": 138
+         }
+        },
+        {
+         "percentage": 5.33,
+         "rgb": {
+          "blue": 125,
+          "green": 171,
+          "red": 235
+         }
+        },
+        {
+         "percentage": 3.72,
+         "rgb": {
+          "blue": 198,
+          "green": 128,
+          "red": 223
+         }
+        }
+       ]
+      },
+      "original_img_height": 1103,
+      "original_img_url": "https://pbs.twimg.com/media/HU2HkXmWgAApBTj.jpg",
+      "original_img_width": 1426
+     },
+     "media_key": "3_2111492859186544640"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2ITS4WIAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111493665373691904",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 87.85,
+         "rgb": {
+          "blue": 249,
+          "green": 249,
+          "red": 249
+         }
+        },
+        {
+         "percentage": 3.87,
+         "rgb": {
+          "blue": 199,
+          "green": 127,
+          "red": 226
+         }
+        },
+        {
+         "percentage": 2.51,
+         "rgb": {
+          "blue": 128,
+          "green": 166,
+          "red": 224
+         }
+        },
+        {
+         "percentage": 1.66,
+         "rgb": {
+          "blue": 148,
+          "green": 111,
+          "red": 227
+         }
+        },
+        {
+         "percentage": 1.6,
+         "rgb": {
+          "blue": 213,
+          "green": 126,
+          "red": 128
+         }
+        }
+       ]
+      },
+      "original_img_height": 1103,
+      "original_img_url": "https://pbs.twimg.com/media/HU2ITS4WIAASkqM.jpg",
+      "original_img_width": 1426
+     },
+     "media_key": "3_2111493665373691904"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2BcplXUAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111486129505521664",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 86.2,
+         "rgb": {
+          "blue": 251,
+          "green": 250,
+          "red": 250
+         }
+        },
+        {
+         "percentage": 3.84,
+         "rgb": {
+          "blue": 196,
+          "green": 129,
+          "red": 220
+         }
+        },
+        {
+         "percentage": 2.7,
+         "rgb": {
+          "blue": 130,
+          "green": 168,
+          "red": 215
+         }
+        },
+        {
+         "percentage": 2.04,
+         "rgb": {
+          "blue": 204,
+          "green": 147,
+          "red": 135
+         }
+        },
+        {
+         "percentage": 1.65,
+         "rgb": {
+          "blue": 146,
+          "green": 113,
+          "red": 219
+         }
+        }
+       ]
+      },
+      "original_img_height": 1103,
+      "original_img_url": "https://pbs.twimg.com/media/HU2BcplXUAACpQJ.jpg",
+      "original_img_width": 1426
+     },
+     "media_key": "3_2111486129505521664"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2CwFKXYAAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111487562837614592",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 48.28,
+         "rgb": {
+          "blue": 24,
+          "green": 22,
+          "red": 21
+         }
+        },
+        {
+         "percentage": 39.49,
+         "rgb": {
+          "blue": 249,
+          "green": 249,
+          "red": 248
+         }
+        },
+        {
+         "percentage": 3.52,
+         "rgb": {
+          "blue": 196,
+          "green": 129,
+          "red": 221
+         }
+        },
+        {
+         "percentage": 2.56,
+         "rgb": {
+          "blue": 129,
+          "green": 162,
+          "red": 212
+         }
+        },
+        {
+         "percentage": 1.8,
+         "rgb": {
+          "blue": 147,
+          "green": 116,
+          "red": 223
+         }
+        }
+       ]
+      },
+      "original_img_height": 1103,
+      "original_img_url": "https://pbs.twimg.com/media/HU2CwFKXYAAr90J.jpg",
+      "original_img_width": 1426
+     },
+     "media_key": "3_2111487562837614592"
+    },
+    {
+     "id": "QXBpTWVkaWE6DAAFCgABHU2JussX0AAKAAIc9wVGxFcwAAAA",
+     "media_id": "2111495235670888448",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 88.24,
+         "rgb": {
+          "blue": 250,
+          "green": 249,
+          "red": 249
+         }
+        },
+        {
+         "percentage": 3.88,
+         "rgb": {
+          "blue": 196,
+          "green": 129,
+          "red": 224
+         }
+        },
+        {
+         "percentage": 1.92,
+         "rgb": {
+          "blue": 131,
+          "green": 167,
+          "red": 225
+         }
+        },
+        {
+         "percentage": 1.87,
+         "rgb": {
+          "blue": 211,
+          "green": 128,
+          "red": 132
+         }
+        },
+        {
+         "percentage": 1.62,
+         "rgb": {
+          "blue": 146,
+          "green": 112,
+          "red": 224
+         }
+        }
+       ]
+      },
+      "original_img_height": 1103,
+      "original_img_url": "https://pbs.twimg.com/media/HU2JussX0AA1thk.jpg",
+      "original_img_width": 1426
+     },
+     "media_key": "3_2111495235670888448"
+    }
+   ]
+  },
+  "twitter_card": "tweet",
+  "color": null,
+  "provider": "twitter",
+  "reposted_by": null
+ }
+}
