@@ -1,0 +1,23 @@
+name: riset-probe
+
+# Cek cepat apakah API yang dipakai riset bisa diakses dari GitHub Actions. Hanya branch strat100k.
+on:
+  push:
+    branches: [strat100k]
+    paths: [.github/workflows/riset-probe.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          M=$(curl -sS https://api.dexscreener.com/token-profiles/latest/v1 | python3 -c "import json,sys;d=json.load(sys.stdin);s=[x['tokenAddress'] for x in d if x.get('chainId')=='solana'];print(len(d),len(s));open('m','w').write(s[0] if s else '')")
+          echo "profil: $M"
+          T=$(cat m)
+          curl -sS -o /dev/null -w "dexscreener token %{http_code}\n" "https://api.dexscreener.com/tokens/v1/solana/$T"
+          curl -sS -o r.json -w "rugcheck report %{http_code}\n" "https://api.rugcheck.xyz/v1/tokens/$T/report"
+          head -c 300 r.json; echo
