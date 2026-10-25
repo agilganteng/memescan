@@ -1,0 +1,34 @@
+name: riset-cristal
+
+# Riset sekali jalan: tiru setup "Grok Bot Robinhood meme sniper" (artikel @0xCristal) di rekaman
+# koin pump.fun + cek RPC Robinhood Chain. Hanya baca cache, tidak menyentuh bot atau data.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/cristal.py, .github/workflows/riset-cristal.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-cristal
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Tiru setup Grok Bot @0xCristal
+        run: python3 -u riset/cristal.py --data data
