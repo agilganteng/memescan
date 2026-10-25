@@ -2,7 +2,6 @@
 ke riset/tweet/<id>/ supaya bisa dibaca dari luar GitHub Actions. Pakai: python3 riset/baca_tweet.py <user> <id>"""
 import json
 import os
-import subprocess
 import sys
 import urllib.request
 
@@ -46,8 +45,3 @@ for i, (kind, u) in enumerate(urls):
     fn = os.path.join(out, f"media{i}{ext}")
     open(fn, "wb").write(get(u))
     print("media", kind, u, os.path.getsize(fn))
-    if ext == ".mp4":
-        os.makedirs(os.path.join(out, f"frames{i}"), exist_ok=True)
-        subprocess.run(["ffmpeg", "-loglevel", "error", "-i", fn, "-vf", "fps=1/2,scale=540:-2",
-                        os.path.join(out, f"frames{i}", "f_%03d.jpg")], check=False)
-        os.remove(fn)
