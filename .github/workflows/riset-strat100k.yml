@@ -31,5 +31,5 @@ jobs:
           key: memescan-data-none
           restore-keys: memescan-data-
       - run: pip install -q numpy
-      - name: Uji 200.000 strategi baru (set 2, beda dari 100.000 sebelumnya)
-        run: python3 -u riset/strat100k.py --data data --target 200000 --set 2
+      - name: Uji trailing stop (set 3, 100.000 strategi)
+        run: python3 -u riset/strat100k.py --data data --target 100000 --set 3

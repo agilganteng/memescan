@@ -3,6 +3,7 @@ paling besar dengan modal $200, tanpa bocor ke masa depan.
 
 Strategi = umur masuk x filter (1-2 syarat fitur, set 2: 1-3) x aturan jual (TP/SL/batas waktu).
 Set 2 (--set 2) memakai umur 10 menit tambahan dan aturan jual yang TP/SL-nya tidak ada di set 1.
+Set 3 (--set 3) memakai aturan jual trailing stop (jual kalau turun X% dari puncak).
 Data dibagi menurut waktu: 70% lama untuk MEMILIH, 30% terbaru untuk MENGUJI sekali saja.
   1. Semua strategi dinilai di data lama: untung kotor kalau tiap sinyal dibeli $20.
   2. 500 teratas disimulasikan penuh di data lama ($200, $20 per trade, satu posisi sekaligus,
@@ -33,6 +34,42 @@ EXITS = ms.RES_EXITS
 AGES2 = ms.RES_AGES + (600,)
 EXITS2 = [(tp, sl, T) for tp in (1.2, 1.4, 1.75, 2.5, 4.0, 6.0) for sl in (0.1, 0.15, 0.25, 0.3, 0.4)
           for T in (60, 180, 600, 1800)]
+# set 3: trailing stop. ("trail", jarak trail, aktif setelah naik, SL keras, batas waktu)
+EXITS3 = [("trail", tr, act, sl, T) for tr in (0.1, 0.2, 0.3, 0.5) for act in (0.0, 0.2, 0.5, 1.0)
+          for sl in (0.25, 0.5) for T in (120, 300, 900)]
+
+
+def trail_trade(cs, end, entry_age, m_snap, trail, act, sl, T, cfg, size):
+    """Seperti memescan.res_trade, tapi keluar dengan trailing stop: setelah harga naik `act`
+    dari harga masuk, jual kalau turun `trail` dari puncak tertinggi. Sebelum aktif berlaku SL
+    keras. Urutan di dalam satu candle dibuat merugikan: stop dihitung dari puncak SEBELUM candle
+    itu, puncak baru baru dipakai di candle berikutnya. Isi stop paling bagus di close candle."""
+    fee, slip, prio = cfg["FEE_PCT"], cfg["SLIPPAGE"], cfg["PRIORITY_FEE"]
+    te = entry_age + cfg["EXEC_DELAY"]
+    p, k = m_snap, 0
+    while k < len(cs) and cs[k][0] <= te:
+        p = cs[k][4]
+        k += 1
+    if te >= end:
+        return None
+    entry = p * (1 + size / ms.v_sol_at(p)) / ((1 - fee) * (1 - slip))
+    sl_px, arm_px = entry * (1 - sl), entry * (1 + act)
+    peak, armed = p, act <= 0
+    out, t_out, last = None, min(end, te + T), p
+    for a, b, h, lo, c in cs[k:]:
+        if a >= te + T:
+            break
+        stop = max(sl_px, peak * (1 - trail)) if armed else sl_px
+        if lo <= stop:
+            out, t_out = min(stop, c), b
+            break
+        peak = max(peak, h)
+        armed = armed or peak >= arm_px
+        last = c
+    if out is None:
+        out = last
+    sell = out * (1 - fee) * (1 - slip) / (1 + size / ms.v_sol_at(out))
+    return sell / entry - 2 * prio / size, t_out
 SIZE = 0.1
 STAKE, START, STOP = 20.0, 200.0, 40.0
 G = {}
@@ -90,8 +127,11 @@ def sim_age(A):
     for j, i in enumerate(idx.tolist()):
         cs = [tuple(c) for c in C[starts[i]:stops[i]].tolist()]
         m0 = float(V[j, 0])
-        for e, (tp, sl, T) in enumerate(EXITS):
-            r = ms.res_trade(cs, float(ends[i]), A, m0, tp, sl, T, cfg, SIZE)
+        for e, ex in enumerate(EXITS):
+            if ex[0] == "trail":
+                r = trail_trade(cs, float(ends[i]), A, m0, *ex[1:], cfg, SIZE)
+            else:
+                r = ms.res_trade(cs, float(ends[i]), A, m0, *ex, cfg, SIZE)
             if r:
                 M[e, j], H[e, j] = r[0], r[1] - A
     return A, idx, X, M, H
@@ -123,11 +163,13 @@ def main():
     ap.add_argument("--target", type=int, default=100_000)
     ap.add_argument("--train", type=float, default=0.7)
     ap.add_argument("--stage2", type=int, default=500)
-    ap.add_argument("--set", type=int, default=1, choices=[1, 2])
+    ap.add_argument("--set", type=int, default=1, choices=[1, 2, 3])
     a = ap.parse_args()
     global AGES, EXITS
     if a.set == 2:
         AGES, EXITS = AGES2, EXITS2
+    elif a.set == 3:
+        AGES, EXITS = AGES2, EXITS3
     t_start = time.time()
     cfg = ms.load_config(a.data)
     t0_all, ends, starts, stops, C, snaps = load(a.data)
@@ -230,6 +272,10 @@ def main():
             break
 
     def ex_lab(e):
+        if EXITS[e][0] == "trail":
+            _, tr, act, sl, T = EXITS[e]
+            return (f"trailing -{tr:.0%} dari puncak{f' (aktif setelah +{act:.0%})' if act else ''}, "
+                    f"SL -{sl:.0%}, maks {T / 60:g} menit")
         tp, sl, T = EXITS[e]
         return f"TP {tp:g}x, SL -{sl:.0%}, maks {T / 60:g} menit"
 
