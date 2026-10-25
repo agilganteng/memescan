@@ -1,0 +1,23 @@
+name: riset-cek
+
+# Cek sekali: bedah koin yang lolos kandidat strategi (baca cache data memescan, tidak mengubah apa pun).
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/cek_kandidat.py, .github/workflows/riset-cek.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: python3 -u riset/cek_kandidat.py data
