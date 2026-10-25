@@ -1,0 +1,41 @@
+name: riset-rugdesk
+
+# Satu run (~5 jam 40 menit, tanpa rantai, tanpa jadwal): rekam token Solana yang bayar profil
+# DexScreener, filter rugcheck + pool persis artikel @0xboan, harga tiap menit, lalu laporan.
+# Paper saja, tidak ada wallet atau kunci. Hanya jalan di branch strat100k.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/rugdesk.py, .github/workflows/riset-rugdesk.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-rugdesk
+  cancel-in-progress: true
+
+jobs:
+  rekam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: rugdesk-data-${{ github.run_id }}
+          restore-keys: rugdesk-data-
+      - name: Rekam
+        run: python3 -u riset/rugdesk.py run --data data --duration 20400
+      - name: Laporan
+        if: always()
+        run: python3 riset/rugdesk.py report --data data || true
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: data
+          key: rugdesk-data-${{ github.run_id }}
