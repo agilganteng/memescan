@@ -1,0 +1,23 @@
+name: riset-rugdesk-cek
+
+# Cek data rekaman rugdesk (harga 0 nyata atau salah ambil). Hanya branch strat100k.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/rugdesk_cek.py, .github/workflows/riset-rugdesk-cek.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: rugdesk-data-none
+          restore-keys: rugdesk-data-
+      - run: python3 riset/rugdesk_cek.py data
