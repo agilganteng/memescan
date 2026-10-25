@@ -1,0 +1,39 @@
+name: riset-baru
+
+# Riset sekali jalan (25 Okt 2026): strategi yang belum pernah dicoba (masuk dipicu kejadian, jam rilis,
+# kondisi pasar, copycat) dan copy trade wallet dengan banyak syarat. Hanya baca cache, tidak
+# menyentuh bot atau data. Hanya jalan di branch strat100k. Hasil di log.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/event.py, riset/wallet2.py, .github/workflows/riset-baru.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-baru
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    strategy:
+      fail-fast: false
+      matrix:
+        script: [event, wallet2]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Riset ${{ matrix.script }}
+        run: python3 -u riset/${{ matrix.script }}.py --data data
