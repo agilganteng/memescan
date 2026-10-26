@@ -1,0 +1,34 @@
+name: riset-nevsky
+
+# Riset sekali jalan: uji aturan post X @0xNevsky (beli saat k dari top N wallet masuk koin sama) di rekaman
+# wallet 5 menit pertama koin pump.fun. Hanya baca cache, tidak menyentuh bot atau data.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/nevsky.py, .github/workflows/riset-nevsky.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-nevsky
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Uji konsensus wallet @0xNevsky
+        run: python3 -u riset/nevsky.py --data data
