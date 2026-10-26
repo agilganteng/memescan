@@ -1,0 +1,2776 @@
+{
+ "code": 200,
+ "message": "OK",
+ "tweet": {
+  "url": "https://x.com/woody_research/status/2114372210269782303",
+  "id": "2114372210269782303",
+  "text": "I LAUNCHED A GROK BOT TERMINAL OVERNIGHT, GAVE IT $44.82 AND STOPPED ASKING AI WHAT IT WOULD DO. BY MORNING IT HAD $11,643.21 AND SIX AGENTS LOGGING EVERY TRADE\n\nI spent a year asking agents what they'd trade and watching the chat scroll. Last weekend I built the thing that actually trades, in Grok Bot, with no code I touched by hand.\n\nThe six agents share one screen, each one job:\n\n> scanner reads new token pairs and volume spikes\n> rug check filters suspicious tokens before anything executes\n> sizer sets position from account equity, not a fixed ticket\n> executor opens and closes with slippage tracking\n> logger writes the reason behind every trade\n> equity curve updates on every close\n\nI went to bed on $44.82 and left the laptop open on the dashboard. By morning the balance read $11,643.21. Every trade on the activity feed had a reason next to it and a line in the log.\n\nThat's the shift I didn't see coming. Not that an agent made money overnight. That I stopped being the one asking \"would you long this?\" and started being the one reading the log of what already happened.\n\nStarting balance: $44.82\nCurrent balance: $11,643.21\n\nGrok Bot built the terminal, the agent architecture and the dashboard. I described what I wanted and the thing went live.\n\nThe full build is in the article below ↓",
+  "raw_text": {
+   "text": "I LAUNCHED A GROK BOT TERMINAL OVERNIGHT, GAVE IT $44.82 AND STOPPED ASKING AI WHAT IT WOULD DO. BY MORNING IT HAD $11,643.21 AND SIX AGENTS LOGGING EVERY TRADE\n\nI spent a year asking agents what they'd trade and watching the chat scroll. Last weekend I built the thing that actually trades, in Grok Bot, with no code I touched by hand.\n\nThe six agents share one screen, each one job:\n\n> scanner reads new token pairs and volume spikes\n> rug check filters suspicious tokens before anything executes\n> sizer sets position from account equity, not a fixed ticket\n> executor opens and closes with slippage tracking\n> logger writes the reason behind every trade\n> equity curve updates on every close\n\nI went to bed on $44.82 and left the laptop open on the dashboard. By morning the balance read $11,643.21. Every trade on the activity feed had a reason next to it and a line in the log.\n\nThat's the shift I didn't see coming. Not that an agent made money overnight. That I stopped being the one asking \"would you long this?\" and started being the one reading the log of what already happened.\n\nStarting balance: $44.82\nCurrent balance: $11,643.21\n\nGrok Bot built the terminal, the agent architecture and the dashboard. I described what I wanted and the thing went live.\n\nThe full build is in the article below ↓",
+   "display_text_range": [
+    0,
+    1308
+   ],
+   "facets": [
+    {
+     "type": "media",
+     "indices": [
+      275,
+      298
+     ],
+     "id": "2114372154389073920",
+     "display": "pic.x.com/QAOhHc5tdb",
+     "original": "https://t.co/QAOhHc5tdb",
+     "replacement": "https://x.com/woody_research/status/2114372210269782303/video/1"
+    }
+   ]
+  },
+  "author": {
+   "screen_name": "woody_research",
+   "url": "https://x.com/woody_research",
+   "id": "1746505318714986496",
+   "followers": 21977,
+   "following": 54,
+   "likes": 13157,
+   "media_count": 2391,
+   "name": "Woody",
+   "description": "𝐫𝐞𝐬𝐞𝐚𝐫𝐜𝐡𝐞𝐬 | 𝐠𝐮𝐢𝐝𝐞𝐬 | 𝐢𝐧𝐯𝐞𝐬𝐭𝐦𝐞𝐧𝐭𝐬\nhttps://github.com/woodyxresearch",
+   "raw_description": {
+    "text": "𝐫𝐞𝐬𝐞𝐚𝐫𝐜𝐡𝐞𝐬 | 𝐠𝐮𝐢𝐝𝐞𝐬 | 𝐢𝐧𝐯𝐞𝐬𝐭𝐦𝐞𝐧𝐭𝐬\nhttps://t.co/P2LrVh9COi",
+    "facets": [
+     {
+      "type": "url",
+      "indices": [
+       34,
+       57
+      ],
+      "original": "https://t.co/P2LrVh9COi",
+      "replacement": "https://github.com/woodyxresearch",
+      "display": "github.com/woodyxresearch"
+     }
+    ]
+   },
+   "location": "Alpha TG  ➛",
+   "banner_url": "https://pbs.twimg.com/profile_banners/1746505318714986496/1705922282",
+   "avatar_url": "https://pbs.twimg.com/profile_images/1749390914919804928/zqPiskJl_200x200.jpg",
+   "joined": "Sun Jan 14 12:11:39 +0000 2024",
+   "protected": false,
+   "website": {
+    "url": "https://t.me/woody_research",
+    "display_url": "t.me/woody_research"
+   },
+   "verification": {
+    "verified": true,
+    "verified_at": null,
+    "type": "individual"
+   },
+   "avatar_color": null
+  },
+  "replies": 217,
+  "retweets": 198,
+  "likes": 1794,
+  "bookmarks": 3384,
+  "quotes": 19,
+  "created_at": "Sun Oct 25 15:03:12 +0000 2026",
+  "created_timestamp": 1792940592,
+  "possibly_sensitive": false,
+  "views": 389866,
+  "is_note_tweet": true,
+  "community_note": null,
+  "lang": "en",
+  "replying_to": null,
+  "replying_to_status": null,
+  "media": {
+   "all": [
+    {
+     "id": "2114372154389073920",
+     "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/1080x1350/h-ZUEZRN-FK7frDr.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/amplify_video_thumb/2114372154389073920/img/AXsu8Oia8_MuJ_E-.jpg",
+     "duration": 20,
+     "width": 1080,
+     "height": 1350,
+     "format": "video/mp4",
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/pl/nxybb58ZDa3KEDBB.m3u8?tag=29&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/320x400/WKh6Ix65pttkVNse.mp4?tag=29",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/480x600/vMTv0HLsvvTXBNap.mp4?tag=29",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/720x900/7kRSNH-fuunGgZLX.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/1080x1350/h-ZUEZRN-FK7frDr.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ],
+     "publisher": null,
+     "variants": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/pl/nxybb58ZDa3KEDBB.m3u8?tag=29&v=cfc",
+       "bitrate": 0,
+       "content_type": "application/x-mpegURL"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/320x400/WKh6Ix65pttkVNse.mp4?tag=29",
+       "bitrate": 632000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/480x600/vMTv0HLsvvTXBNap.mp4?tag=29",
+       "bitrate": 950000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/720x900/7kRSNH-fuunGgZLX.mp4?tag=29",
+       "bitrate": 2176000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/1080x1350/h-ZUEZRN-FK7frDr.mp4?tag=29",
+       "bitrate": 10368000,
+       "content_type": "video/mp4"
+      }
+     ]
+    }
+   ],
+   "videos": [
+    {
+     "id": "2114372154389073920",
+     "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/1080x1350/h-ZUEZRN-FK7frDr.mp4?tag=29",
+     "thumbnail_url": "https://pbs.twimg.com/amplify_video_thumb/2114372154389073920/img/AXsu8Oia8_MuJ_E-.jpg",
+     "duration": 20,
+     "width": 1080,
+     "height": 1350,
+     "format": "video/mp4",
+     "type": "video",
+     "formats": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/pl/nxybb58ZDa3KEDBB.m3u8?tag=29&v=cfc",
+       "container": "m3u8"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/320x400/WKh6Ix65pttkVNse.mp4?tag=29",
+       "bitrate": 632000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/480x600/vMTv0HLsvvTXBNap.mp4?tag=29",
+       "bitrate": 950000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/720x900/7kRSNH-fuunGgZLX.mp4?tag=29",
+       "bitrate": 2176000,
+       "container": "mp4",
+       "codec": "h264"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/1080x1350/h-ZUEZRN-FK7frDr.mp4?tag=29",
+       "bitrate": 10368000,
+       "container": "mp4",
+       "codec": "h264"
+      }
+     ],
+     "publisher": null,
+     "variants": [
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/pl/nxybb58ZDa3KEDBB.m3u8?tag=29&v=cfc",
+       "bitrate": 0,
+       "content_type": "application/x-mpegURL"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/320x400/WKh6Ix65pttkVNse.mp4?tag=29",
+       "bitrate": 632000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/480x600/vMTv0HLsvvTXBNap.mp4?tag=29",
+       "bitrate": 950000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/720x900/7kRSNH-fuunGgZLX.mp4?tag=29",
+       "bitrate": 2176000,
+       "content_type": "video/mp4"
+      },
+      {
+       "url": "https://video.twimg.com/amplify_video/2114372154389073920/vid/avc1/1080x1350/h-ZUEZRN-FK7frDr.mp4?tag=29",
+       "bitrate": 10368000,
+       "content_type": "video/mp4"
+      }
+     ]
+    }
+   ]
+  },
+  "quote": {
+   "url": "https://x.com/0xKiyoro/status/2107135100911563017",
+   "id": "2107135100911563017",
+   "text": "https://x.com/i/article/2107115662032142336",
+   "raw_text": {
+    "text": "https://t.co/dkBQ8zChBv",
+    "display_text_range": [
+     0,
+     23
+    ],
+    "facets": [
+     {
+      "type": "url",
+      "indices": [
+       0,
+       23
+      ],
+      "original": "https://t.co/dkBQ8zChBv",
+      "replacement": "https://x.com/i/article/2107115662032142336",
+      "display": "x.com/i/article/2107…"
+     }
+    ]
+   },
+   "author": {
+    "screen_name": "0xKiyoro",
+    "url": "https://x.com/0xKiyoro",
+    "id": "1214245254217363457",
+    "followers": 8627,
+    "following": 282,
+    "likes": 8964,
+    "media_count": 1764,
+    "name": "Kiyoro",
+    "description": "Alpha hunter🥷",
+    "raw_description": {
+     "text": "Alpha hunter🥷",
+     "facets": []
+    },
+    "location": "👉",
+    "banner_url": "https://pbs.twimg.com/profile_banners/1214245254217363457/1738618083",
+    "avatar_url": "https://pbs.twimg.com/profile_images/1886527034257534976/gPioSjjr_200x200.jpg",
+    "joined": "Mon Jan 06 18:00:10 +0000 2020",
+    "protected": false,
+    "website": {
+     "url": "https://t.me/KiyoroAlpha",
+     "display_url": "t.me/KiyoroAlpha"
+    },
+    "verification": {
+     "verified": true,
+     "verified_at": null,
+     "type": "individual"
+    },
+    "avatar_color": null
+   },
+   "replies": 147,
+   "retweets": 58,
+   "likes": 476,
+   "bookmarks": 1912,
+   "quotes": 19,
+   "created_at": "Mon Oct 05 15:45:31 +0000 2026",
+   "created_timestamp": 1791215131,
+   "possibly_sensitive": false,
+   "views": 803616,
+   "is_note_tweet": false,
+   "community_note": null,
+   "lang": null,
+   "replying_to": null,
+   "replying_to_status": null,
+   "article": {
+    "created_at": "2026-10-05T15:45:31.000Z",
+    "modified_at": "2026-10-05T15:45:31.000Z",
+    "id": "2107115662032142336",
+    "title": "How to Build a 24/7 AI Trading Desk With Grok Bot + Jev (Full Course) ",
+    "preview_text": "Stop asking your bot to trade. Ask it six questions instead.\nEvery failed AI trading bot I've looked at was built around one question: \"here's the chart, what should I do?\"\nThat question has no good",
+    "cover_media": {
+     "id": "QXBpTWVkaWE6DAAFCgABHT36mxhXIAAKAAIQ2d2gF9RwAQAA",
+     "media_id": "2107115744714498048",
+     "media_info": {
+      "__typename": "ApiImage",
+      "color_info": {
+       "palette": [
+        {
+         "percentage": 88.86,
+         "rgb": {
+          "blue": 14,
+          "green": 9,
+          "red": 8
+         }
+        },
+        {
+         "percentage": 2.3,
+         "rgb": {
+          "blue": 218,
+          "green": 209,
+          "red": 206
+         }
+        },
+        {
+         "percentage": 1.65,
+         "rgb": {
+          "blue": 50,
+          "green": 50,
+          "red": 27
+         }
+        },
+        {
+         "percentage": 1.5,
+         "rgb": {
+          "blue": 168,
+          "green": 98,
+          "red": 111
+         }
+        },
+        {
+         "percentage": 0.89,
+         "rgb": {
+          "blue": 101,
+          "green": 142,
+          "red": 217
+         }
+        }
+       ]
+      },
+      "original_img_height": 1200,
+      "original_img_url": "https://pbs.twimg.com/media/HT36mxhXIAAg8kv.jpg",
+      "original_img_width": 3000
+     },
+     "media_key": "3_2107115744714498048"
+    },
+    "content": {
+     "blocks": [
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "3l9sm",
+       "text": "Stop asking your bot to trade. Ask it six questions instead.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "8u197",
+       "text": "Every failed AI trading bot I've looked at was built around one question: \"here's the chart, what should I do?\"",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4bfoc",
+       "text": "That question has no good answer at any speed. A chat model takes 3 to 30 seconds to reason about an order book, and by the time it answers, the book has moved dozens of times. It writes you a paragraph. Your code parses the paragraph into \"buy\". And you paid generation prices for a word that was always going to end up in an if-statement.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "3jsc6",
+       "text": "The bots that survive are built differently. They never ask a model to trade. They split the desk into jobs: code calculates, a decision model judges, a frontier model designs the strategy once, and a human signs anything irreversible.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "u2h0",
+       "text": "This is the full build. Three kinds of bots, one desk, the exact questions each bot asks, the risk engine that overrules all of them, and the ladder a bot has to climb before it touches real money. At the end there's a prompt that builds the skeleton for you in Claude Code.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "eh6pb",
+       "text": "Bookmark it. You'll want the diagrams later.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 0,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "13hhd",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "b962s",
+       "text": "1. Why chat models lose at trading",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "abm8m",
+       "text": "Speed and cost, in that order.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "a2jlu",
+       "text": "On-chain order books run at block cadence. Monad produces a block every 300 ms, Solana a slot roughly every 400 ms. An LLM that needs seconds to answer is always trading on a stale picture of the market.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "3btrb",
+       "text": "On September 15, TypeSafe AI came out of stealth with a $40M seed led by DCVC and released Jev, built by a team led by Diogo Almeida, a co-author of InstructGPT. Jev is not a chatbot. It can't write a sentence. You send it a state (any JSON, like an order book snapshot) and typed questions, and it returns typed answers with probabilities.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "235i",
+       "text": "The numbers that matter for a desk:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 32,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "cu42g",
+       "text": "$0.042 per million input tokens. Output is free.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 31,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "50m4s",
+       "text": "About 70 to 500 ms per decision, by TypeSafe's own figures.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 21,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "f38au",
+       "text": "Three question types. Noul answers yes or no as a probability between 0 and 1. Choice picks one option from up to 255. Score rates the state on a rubric of up to 10 levels you define. In code terms: a Noul becomes an if, a Choice becomes a switch, a Score becomes a sort key. Nobody reads a paragraph.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 43,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "5abbs",
+       "text": "Questions run in parallel and in isolation. Ask six at once and you pay roughly the latency of one. TypeSafe's own cookbook ran 13 questions both ways: batched into one call was 12.2x cheaper and 10x faster.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 25,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "ct4ri",
+       "text": "Calibrated probabilities. Jev is trained with RLCD, reinforcement learning for calibrated decisions. The intent: answers tagged 0.8 should be right about 80% of the time across many decisions. That's what lets code act on the number at 3am.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "cf2tk",
+       "text": "The proof it fits trading came fast. Within days of launch there was already jev-trader: a market-making bot on Monad that reads the Kuru MON-USDC order book, asks Jev for a decision every 300 ms block, and posts a real post-only limit order one tick inside the touch. Decisions landed in about 81 ms.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "a7vdf",
+       "text": "That's the whole reason this desk exists. One decision every block, around the clock, costs roughly $10 to $25 a month on Jev. The same loop on a frontier model runs $50 to $150 an hour.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 1,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "eijup",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "36g0q",
+       "text": "2. The split that separates systems from demos",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4u984",
+       "text": "One rule carries the whole build:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 82,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "bv6p0",
+       "text": "Jev should not own the trading system. It should own selected judgments inside it.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "7prjm",
+       "text": "Here's who does what on the desk:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 4,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "7jh97",
+       "text": "Code owns prices, spreads, volatility, inventory, drawdown, position size, stops, every hard limit. Never touches: judgment calls.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 3,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "da1f4",
+       "text": "Jev owns regime, toxicity, setup quality, \"skilled or lucky\", \"keep or kill\". Never touches: arithmetic, dates, the final trigger.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 8,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "eqotl",
+       "text": "Opus 5.5 owns designing the strategy once, turning it into questions, reviewing logs weekly. Never touches: live decisions.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 3,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "b4984",
+       "text": "You own anything that signs, moves funds or changes a risk limit. Never touches: the routine.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 8,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "btngd",
+       "text": "Grok Bot owns running the desk: the roles, routines, reports and handoffs between them. Never touches: private keys.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "2vpsu",
+       "text": "Five rules shape every question you'll write.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 18,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "319n8",
+       "text": "Keep math in code. Jev reads dates as text and miscounts at scale. Mid price, spread, imbalance, realized vol: compute them and pass the numbers in. Never spend a decision call on arithmetic.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 26,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "5nps3",
+       "text": "One judgment per question. \"Is this a strong long setup in a trending market with low risk\" is three questions. Ask each one separately and combine them in code with your own weights. When your priorities change, you edit a coefficient, not a prompt.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 20,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "9nq6s",
+       "text": "Keep the state lean. Send named fields, and only the ones your questions actually read. Accuracy drops as the state fills with material that has nothing to do with the decision. When you compare ten candidates, send each one as a two-line summary built from answers Jev already gave, not ten full dossiers. A fat state costs confidence.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 41,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "372gn",
+       "text": "A Choice is relative, a Noul is absolute. A Choice always tells you which option wins, even when every option is bad. A Noul can come back low for all of them. So every \"which one\" Choice ships next to a \"worth doing at all\" Noul. And never run a Choice over a single option: it picks the only thing there, with high confidence, and proves nothing.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 23,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "43m2",
+       "text": "Missing is not neutral. A field that came back null stays null, and the question gets to see it. Give \"unknown\" its own option and its own consequence. Often that consequence is a smaller ticket, not a skip.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4kbfi",
+       "text": "The loop that results:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 128,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "7rc83",
+       "text": "Code calculates the state → Jev answers the battery → code applies policy → the risk engine checks → execution places the order.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 2,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "r8ig",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 3,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "a3u8a",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "7adns",
+       "text": "3. Three bots, one desk",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "es3bl",
+       "text": "There are three fundamentally different ways a bot can make money, and they need different questions. So the desk runs three bots: one that bets on direction, one that gets paid whatever the price does, and one that copies wallets that already have an edge. It's the cleanest way to design the decision layer.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 4,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "da2gv",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 38,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "hpn0",
+       "text": "Bot 1: The Gambler (bets on direction)",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "8rv8o",
+       "text": "How it makes money: being right about where price goes next.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "t68j",
+       "text": "What code computes: returns over 3 windows, realized volatility, order book imbalance, spread, funding, distance to recent high and low.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 34,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "ajq6k",
+       "text": "The battery (one call, every bar):",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 7,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "4iehb",
+       "text": "Choice: What regime is this? trending / mean-reverting / chaotic / other",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 5,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "7gbs3",
+       "text": "Noul: Is buying pressure building right now?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 12,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "9ue00",
+       "text": "Score (0–3): How well does this match the setup in my rulebook?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 7,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "5eru",
+       "text": "Choice: Best action: long / short / hold",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 5,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "ft2pt",
+       "text": "Noul: Has execution quality degraded in the last minutes?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 23,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "do5f7",
+       "text": "What code does with it: enter only if regime is trending, setup scores 2 or higher and action confidence clears your threshold. Size from your rules, never from the model.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 14,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "19dpe",
+       "text": "How it breaks: a string of wrong reads in a row. A bot that made a day's target can give it back in an afternoon. That's why the daily loss limit lives in code, not in the strategy.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 47,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "2js9k",
+       "text": "Bot 2: The House (doesn't care about direction)",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "2uont",
+       "text": "How it makes money: activity itself. Market making, grids, or fees on volume.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "57aj",
+       "text": "The cleanest example is a grid. One demo run that's been circulating used twelve resting orders, $250 apart, 0.025 BTC each, across the range BTC was stuck in. Every drop through a level bought, every climb through the next one sold. 152 round trips at $6.25 each turned $1,650 into $2,600 in one session, with BTC going nowhere.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "egl3t",
+       "text": "The interesting detail: the most exciting minute was the least profitable. Price ripped through six levels and came straight back, which paid six round trips, $37.50. The other $912 came from the boring hours.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "efaja",
+       "text": "And the catch, in the same run's own words: it ran on 20x, and a clean breakout out of the range would leave it on the wrong side of every level. Chop is the meal. A trend is the risk.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4i3v4",
+       "text": "That catch is exactly where Jev earns its seat.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "8t5qg",
+       "text": "What code computes: distance to range edges, inventory, fill rate, spread, gas cost per cancel-replace, the deterministic quote. For market making, the reservation price and spread come from Avellaneda-Stoikov math, which has been around for decades and stays in code.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 12,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "alcj7",
+       "text": "The battery:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 7,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "2sbv3",
+       "text": "Choice: Range state: inside / testing an edge / breaking out / other",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 5,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "9k5tn",
+       "text": "Noul: Is the incoming flow toxic (informed traders picking you off)?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 12,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "898ke",
+       "text": "Score (0–3): Is this an environment worth quoting into at all?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 5,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "foe2k",
+       "text": "Noul: Is volume still flowing through this market?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 23,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "5p64r",
+       "text": "What code does with it: pause the grid when \"breaking out\" crosses your threshold. Widen or pull quotes when flow looks toxic. Kill the market when volume dies.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 14,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "cbaph",
+       "text": "How it breaks: the breakout nobody priced in, and the math nobody ran. Naive every-block cancel-replace on Monad has been shown losing roughly 428 MON per hour in gas against a 3.5 bps spread. Run that math before your first live order.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "7jd29",
+       "text": "Bot 3: The Spy (copies an edge that already exists)",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "fre0d",
+       "text": "How it makes money: following wallets that are already good, the moment they move.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "dau7n",
+       "text": "What code computes: each wallet's history. Win rate, realized PnL, holding times, size consistency, how many tokens it's been early on. Plus contract flags for every token: holder concentration, mint authority, liquidity lock.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 12,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "eai3p",
+       "text": "The battery:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 7,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "27mg2",
+       "text": "Choice: This wallet's record looks: skilled / lucky / bot-like / insider-like / other",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 5,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "45nig",
+       "text": "Noul: Is this move consistent with how this wallet usually trades?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 7,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "ab0al",
+       "text": "Choice: Mirror it: full / partial / skip",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 5,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "eegae",
+       "text": "Noul: Given the flags code found, does this token look like a rug?",
+       "type": "ordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 23,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "54fpv",
+       "text": "What code does with it: hard contract flags veto before Jev is even asked. Then mirror only skilled wallets, only on consistent moves, sized by your rules.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 14,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "cljr2",
+       "text": "How it breaks: latency. One version of this bot flagged one of its best wallets a few minutes late and missed the start of that wallet's biggest move. For a copy bot, a late signal is a different trade.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "fggra",
+       "text": "Before any bot asks: the funnel",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "dgh0g",
+       "text": "A Spy or a token scanner sees hundreds of candidates a cycle. Asking Jev about all of them is the most expensive way to say no. So the desk kills in order of cost, and every pass has to kill harder than the one after it.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 5,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "dqdqt",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "e85ig",
+       "text": "Three rules make it work:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 28,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "db3ig",
+       "text": "Facts kill before judgments. A honeypot flag or an open mint authority is a comparison in code, not a question for Jev. Ask the model how dangerous the concentration is. Let code handle the plain facts.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 30,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "f8jk2",
+       "text": "Bench by reason, not by token. A rejected token stays rejected for a while, and the reason sets how long. A honeypot never stops being a honeypot. \"Too early to tell\" becomes tellable in twenty minutes. Bench everything for the same hour and you'll keep paying to re-check honeypots while missing the token that was simply five minutes too young.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 21,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "del40",
+       "text": "No trade is a result. Log every rejection with the check that fired. If the filter rejects almost nothing all day, the filter is broken, not the market. A desk that trades every cycle is a desk with no filter.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 6,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "arjqq",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "7g46",
+       "text": "4. The desk itself: running it on Grok Bot",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "3dtek",
+       "text": "The three bots are strategies. Grok Bot is how you run them as a desk instead of three scripts.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "5h6e7",
+       "text": "The best desk setup I've seen is an eight-agent memecoin floor. The parts worth stealing:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 41,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "ajbaj",
+       "text": "Hire the coordinator first, not a trader. HEAD OF DESK goes in first and never trades. It routes work, enforces the protocol and brings you the one decision that needs a human. Test it on an errand you can check in thirty seconds before it gets anywhere near a wallet.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 37,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "9b75u",
+       "text": "Fund a wallet you're willing to lose. Fresh, used for nothing else. The ceiling on damage is one you picked in advance.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 26,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "3ptim",
+       "text": "No agent ever holds a key. It gets a session after you've clicked through the connection yourself. That includes the Jev key: it lives on one small service, the judge, and that service is the only thing on the desk that talks to Jev. Bots call the judge with a desk secret. The judge makes no trading decision of any kind and sends the answers back raw, because the caller owns the threshold. Test the link from a bot's own terminal, not your laptop: passing on your machine and failing on theirs is how this setup dies quietly.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 28,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "4qckk",
+       "text": "Write charters, not prompts. Every role ends with the line it never crosses. From that desk: \"you never sign anything without my literal APPROVE, not a summary, not a paraphrase.\"",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 22,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "48kbc",
+       "text": "Start with four seats. HEAD, SEARCH, RISK, EXIT: find it, check it, hold it, get out of it. Add the rest only after those four have bored you for a week.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 19,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "72oo0",
+       "text": "One message format. Every message carries a lead ID, and the same contract address has to show up at every stage. A hallucinated address gets caught by comparison between two bots instead of by your wallet.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 40,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "9c2l",
+       "text": "Draw the approval line at the signature. Anything reversible, the desk does alone and logs. Anything that signs a transaction, moves funds or changes a risk limit stops and waits for you.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "61btq",
+       "text": "Now wire the decision layer into those seats. This is the part nobody connects:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 7,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "3kl1k",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "22s02",
+       "text": "Every seat asks narrow questions. Every answer comes back typed. Every threshold lives in a file you can review.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "arp9m",
+       "text": "Put one paragraph above the prompt of every seat that judges anything. In short: \"You don't form opinions about trades. You build a state, call the judge once and act on the numbers. If the judge is unreachable, nothing passes on your say-so.\" That one paragraph is what takes the bot's own opinion out of the loop.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "f5rmd",
+       "text": "Two more rules keep the seats honest:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 24,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "cqdiv",
+       "text": "Nobody re-reads the why. The answers that produced an order travel with it for the log, not as an input. Size doesn't go up because confidence was 0.91. The exit doesn't wait because confidence was high. Once the judgment is done, what's left is arithmetic.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 23,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "8kio4",
+       "text": "One position at a time. While a position is open, the scan doesn't run at all. Without that guard, the cycle picks a second token while the first is still open, then a third, and by evening RISK is managing a portfolio nobody sized. Only the seat that closed the position frees the book.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 8,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "3ccol",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "55hcc",
+       "text": "5. The risk engine never delegates",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "fiakf",
+       "text": "This is the layer that keeps the other four honest.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 9,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "7koj3",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "6k2lo",
+       "text": "Hard-coded, deterministic, checked before every order, no model gets a vote:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 17,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "3umdo",
+       "text": "Max position size per market and in total",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 16,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "8rors",
+       "text": "Daily loss limit that halts the desk and waits for you",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 12,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "18bii",
+       "text": "Leverage cap, enforced in code, not in a prompt",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 11,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "4vqbd",
+       "text": "Range guard for grids: price leaves the band, the grid stops",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 15,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "aok00",
+       "text": "Economics check: if expected edge per trade is below fees plus gas, no trade. Minimum fees bite small tickets hardest: a $20 entry against a $0.95 minimum fee loses 4.75% on the entry alone, before price moves at all",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 11,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "31sno",
+       "text": "Version pin: the model version answering must match the one your thresholds were tuned on. Log the exact version string that comes back, never the alias: aliases move when a release ships",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 16,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "sk7n",
+       "text": "Exit on a number: one rule, final authority. For example, volume over the last 6 hours falls below 20% of its daily pace, and the position closes fully within 60 seconds. If the data stops coming, retry twice and close anyway. A position you can't measure is a position you don't hold",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "chdbg",
+       "text": "Two rules decide whether a \"24/7\" bot is actually 24/7.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 18,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "5rag2",
+       "text": "The deadline rule. If the decision hasn't come back before the next block, hold. Never quote on stale state.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 20,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "fbq2s",
+       "text": "The fallback ladder. API slow: hold. API down: pull quotes and flatten to your safe state. Repeated errors: halt and message you. Rate limited or overloaded: back off and retry. A malformed-question error: never retry it, the question is wrong and will stay wrong. Without the ladder, your bot is AI-powered until the first network outage at 2am.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 29,
+         "offset": 32,
+         "style": "Bold"
+        }
+       ],
+       "key": "63qqj",
+       "text": "And one rule above all of them: confidence is not permission. A confident answer doesn't prove an order filled or a file saved. Check outcomes in code, separately.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 10,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "dhs0k",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "1vs98",
+       "text": "6. The trust ladder: how a bot earns real money",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "a1on2",
+       "text": "Most people go from \"the backtest looks good\" to \"live with real size\" in one evening. That's the step that blows up accounts.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "5sc4",
+       "text": "A bot climbs one rung at a time, and every rung has an exit test.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 11,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "1if7",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "ehs5f",
+       "text": "Shadow mode is the rung people skip, and it's the one that matters most. One builder ran their decision gate in shadow mode for two days before it was allowed to block anything. It disagreed with them eleven times. Nine of those were their thresholds, not the model's judgment.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "e74m6",
+       "text": "How to check calibration on your own data: log every state, every answer and every outcome. Bucket the answers by probability. If the decisions tagged 0.8 don't come true about 80% of the time on your venue, the number isn't ready to drive size. TypeSafe calibrates on its own distribution, not yours. A reliability curve, a Brier score and a little Platt scaling in the policy layer fix most of it.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "2gehv",
+       "text": "Two rules for the climb:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 58,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "8jv2v",
+       "text": "Never raise size and change the strategy in the same week. If something breaks, you won't know which change did it.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 52,
+         "offset": 0,
+         "style": "Bold"
+        }
+       ],
+       "key": "4tpl0",
+       "text": "Fractional Kelly only after calibration is verified. A sizing formula built on probabilities is only as honest as the probabilities.",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 12,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "3gqkg",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "26oc6",
+       "text": "7. What the decision layer costs",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 13,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "3r7uk",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "80egk",
+       "text": "One decision every block, around the clock: $50–150 an hour on a frontier model, $10–25 a month on Jev. 3–30 seconds per answer against 70–500 ms. A paragraph your code has to parse against a typed answer with a probability. Six questions as six calls against one call with the latency of one.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "780r2",
+       "text": "Treat vendor benchmarks as a ceiling, not a promise, but the direction isn't subtle.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "7ve21",
+       "text": "The money you save isn't the point. The point is that a decision every block becomes affordable, so the desk can actually check before it acts instead of acting on a schedule.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 14,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "atbnt",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "56fop",
+       "text": "8. What Jev won't do for you",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "2no2h",
+       "text": "This is the section most guides skip, and it's the reason the rest is believable.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 3,
+         "offset": 4,
+         "style": "Bold"
+        }
+       ],
+       "key": "2gqp8",
+       "text": "Jev can: return typed, calibrated decisions in a fraction of a second, run a full battery of questions per block, replace fuzzy rules, LLM classifiers and heuristic scoring, and sit inside a 300 ms loop.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [
+        {
+         "length": 5,
+         "offset": 4,
+         "style": "Bold"
+        }
+       ],
+       "key": "agsgi",
+       "text": "Jev can't:",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4g0qs",
+       "text": "design your strategy or find your edge",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "4g854",
+       "text": "do arithmetic, compare dates or count reliably",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "bs640",
+       "text": "chain dependent judgments in one call (questions can't read each other's answers; a dependency is a second request)",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "ci1vg",
+       "text": "compete in the microsecond lane, where colocated firms own top equities",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "bg8n2",
+       "text": "treat its input as hostile: text inside the state can move the answer, so hard rules run before it",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "8s7m5",
+       "text": "turn a losing strategy into a winning one",
+       "type": "unordered-list-item"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "68jg5",
+       "text": "Where retail can realistically run this today: on-chain order books at block cadence and prediction markets with wide spreads. Don't bring a 300 ms loop to a microsecond fight.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "cg03l",
+       "text": "Jev makes decisions fast and cheap. Edge is still your job.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 15,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "3a7fc",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "cvtjk",
+       "text": "9. The setup prompt",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "65l9t",
+       "text": "Paste this into Claude Code in an empty folder. It builds the skeleton of the desk, never places a live order, and stops for you before anything sensitive.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 16,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "5fbap",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [
+        {
+         "key": 17,
+         "length": 1,
+         "offset": 0
+        }
+       ],
+       "inlineStyleRanges": [],
+       "key": "6fg1j",
+       "text": " ",
+       "type": "atomic"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "33ntu",
+       "text": "What this actually changes",
+       "type": "header-two"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "anil8",
+       "text": "Most people are still sending their order book to a chat model and waiting eight seconds for prose.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "15f6q",
+       "text": "The desk that wins does something less exciting. It computes everything computable in code. It asks a few narrow questions, all at once, and gets calibrated answers back before the next block lands. It lets a hard risk engine overrule everything. And it makes every bot climb the ladder before it earns real size.",
+       "type": "unstyled"
+      },
+      {
+       "data": {},
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "1v6j0",
+       "text": "Grok Bot runs the desk. Jev makes the calls. Code pulls the trigger. You sign what can't be undone.",
+       "type": "unstyled"
+      },
+      {
+       "data": {
+        "mentions": [
+         {
+          "fromIndex": 49,
+          "text": "0xKiyoro",
+          "toIndex": 58
+         }
+        ]
+       },
+       "entityRanges": [],
+       "inlineStyleRanges": [],
+       "key": "58kjv",
+       "text": "If you found this useful, bookmark it and follow @0xKiyoro. I post bots, builds and breakdowns like this every day.",
+       "type": "unstyled"
+      }
+     ],
+     "entityMap": [
+      {
+       "key": "12",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "8",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "4",
+       "value": {
+        "data": {
+         "entityKey": "7c0f440e-d1c7-41e0-aca7-2a9ae0dd7eb2",
+         "mediaItems": [
+          {
+           "localMediaId": "8",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2107118606869831680"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "15",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "11",
+       "value": {
+        "data": {
+         "entityKey": "43822213-787c-4e6a-acb1-5aed7938f03b",
+         "mediaItems": [
+          {
+           "localMediaId": "16",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2107119130520309760"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "9",
+       "value": {
+        "data": {
+         "entityKey": "506e7671-bc62-473f-821e-148c0bd469a1",
+         "mediaItems": [
+          {
+           "localMediaId": "14",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2107119021824905216"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "13",
+       "value": {
+        "data": {
+         "entityKey": "44d81b5e-2b7c-409d-a629-07d2559496b0",
+         "mediaItems": [
+          {
+           "localMediaId": "18",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2107119224090923008"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "16",
+       "value": {
+        "data": {
+         "markdown": "```\nBuild me the skeleton of a 24/7 AI trading desk. Paper trading only. Never place a live order.\n\n1. Structure\n- state/: deterministic code that turns raw market data into a compact snapshot under 400 tokens (mid, spread, imbalance, realized vol, returns over 3 windows, inventory, drawdown). Every field uses only data from before the decision.\n- questions/: one file per bot type (gambler, house, spy) holding its question battery for Jev. One judgment per question. Every Choice has an \"other\" option.\n- policy/: thresholds and combination weights in code, one threshold per action, scaled to what being wrong costs.\n- risk/: hard vetoes checked before every order: max position, daily loss limit, leverage cap, range guard, fees-plus-gas check, model version check. No model can override them.\n- broker/: a paper broker only, with the same interface a live one would use.\n- filter/: the funnel, cheapest check first: free cut on data already in hand, then one-call checks, then hard facts in code, then Jev, then one final pick. Every rejection is logged with the check that fired.\n- book/: one open position at a time (no scan while one is open), plus a bench for rejected candidates where the reason sets how long they stay benched.\n- logs/: every snapshot, every question, every answer with its probabilities, and the outcome, so I can measure calibration later.\n\n2. Jev\n- Put the Jev key on one small judge service. Bots call the judge with a separate desk secret and never see the key. The judge returns answers raw and makes no trading decision.\n- Use the official TypeSafe skill and SDK. Ask each bot's full battery in one call per decision.\n- Pin the model version and log the exact version string from every response. Don't use jev-latest.\n- If a decision hasn't returned before the next block, hold. Back off on rate limits, never retry a malformed-question error.\n\n3. Modes\n- shadow mode: Jev labels every decision, the policy logs what it would have done, nothing executes.\n- paper mode: the policy executes against the paper broker.\n\n4. Reports\n- a calibration report: predicted probability vs actual outcome per bucket, Brier score, and a reliability chart.\n- a daily summary: decisions made, trades taken, PnL after fees, every risk veto that fired.\n\n5. Rules for you\n- Ask me before adding any API key. Keys must be trading-only with withdrawals disabled.\n- Keep secrets out of code and logs.\n- Show me every file as a diff before writing it.\n```"
+        },
+        "mutability": "Mutable",
+        "type": "MARKDOWN"
+       }
+      },
+      {
+       "key": "5",
+       "value": {
+        "data": {
+         "entityKey": "a74ce510-c6b8-4e74-ab9e-e3a826fe6c22",
+         "mediaItems": [
+          {
+           "localMediaId": "10",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2107118741813084160"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "10",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "6",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "1",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "17",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "14",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "0",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      },
+      {
+       "key": "2",
+       "value": {
+        "data": {
+         "entityKey": "df54ce65-a9b6-4d96-bb21-d4a1b1e07139",
+         "mediaItems": [
+          {
+           "localMediaId": "6",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2107118327780798464"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "7",
+       "value": {
+        "data": {
+         "entityKey": "159226f0-0ddd-415a-a17e-a985a309369e",
+         "mediaItems": [
+          {
+           "localMediaId": "12",
+           "mediaCategory": "DraftTweetImage",
+           "mediaId": "2107118920645660672"
+          }
+         ]
+        },
+        "mutability": "Immutable",
+        "type": "MEDIA"
+       }
+      },
+      {
+       "key": "3",
+       "value": {
+        "data": {},
+        "mutability": "Immutable",
+        "type": "DIVIDER"
+       }
+      }
+     ]
+    },
+    "media_entities": [
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHT39r2oX0AAKAAIQ2d2gF9RwAQAA",
+      "media_id": "2107119130520309760",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 97.09,
+          "rgb": {
+           "blue": 27,
+           "green": 18,
+           "red": 15
+          }
+         },
+         {
+          "percentage": 0.69,
+          "rgb": {
+           "blue": 173,
+           "green": 169,
+           "red": 168
+          }
+         },
+         {
+          "percentage": 0.62,
+          "rgb": {
+           "blue": 116,
+           "green": 71,
+           "red": 70
+          }
+         },
+         {
+          "percentage": 0.43,
+          "rgb": {
+           "blue": 66,
+           "green": 69,
+           "red": 35
+          }
+         },
+         {
+          "percentage": 0.31,
+          "rgb": {
+           "blue": 41,
+           "green": 59,
+           "red": 69
+          }
+         }
+        ]
+       },
+       "original_img_height": 1800,
+       "original_img_url": "https://pbs.twimg.com/media/HT39r2oX0AAEGGu.jpg",
+       "original_img_width": 3200
+      },
+      "media_key": "3_2107119130520309760"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHT39foyW0AAKAAIQ2d2gF9RwAQAA",
+      "media_id": "2107118920645660672",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 95.11,
+          "rgb": {
+           "blue": 24,
+           "green": 16,
+           "red": 14
+          }
+         },
+         {
+          "percentage": 1.16,
+          "rgb": {
+           "blue": 63,
+           "green": 64,
+           "red": 33
+          }
+         },
+         {
+          "percentage": 0.93,
+          "rgb": {
+           "blue": 184,
+           "green": 179,
+           "red": 178
+          }
+         },
+         {
+          "percentage": 0.78,
+          "rgb": {
+           "blue": 42,
+           "green": 31,
+           "red": 56
+          }
+         },
+         {
+          "percentage": 0.77,
+          "rgb": {
+           "blue": 45,
+           "green": 50,
+           "red": 68
+          }
+         }
+        ]
+       },
+       "original_img_height": 1800,
+       "original_img_url": "https://pbs.twimg.com/media/HT39foyW0AAk-0Y.jpg",
+       "original_img_width": 3200
+      },
+      "media_key": "3_2107118920645660672"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHT389IMW8AAKAAIQ2d2gF9RwAQAA",
+      "media_id": "2107118327780798464",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 94.89,
+          "rgb": {
+           "blue": 28,
+           "green": 18,
+           "red": 16
+          }
+         },
+         {
+          "percentage": 1.69,
+          "rgb": {
+           "blue": 167,
+           "green": 162,
+           "red": 161
+          }
+         },
+         {
+          "percentage": 1.02,
+          "rgb": {
+           "blue": 60,
+           "green": 62,
+           "red": 31
+          }
+         },
+         {
+          "percentage": 0.85,
+          "rgb": {
+           "blue": 42,
+           "green": 58,
+           "red": 71
+          }
+         },
+         {
+          "percentage": 0.41,
+          "rgb": {
+           "blue": 166,
+           "green": 100,
+           "red": 102
+          }
+         }
+        ]
+       },
+       "original_img_height": 1800,
+       "original_img_url": "https://pbs.twimg.com/media/HT389IMW8AAvnfW.jpg",
+       "original_img_width": 3200
+      },
+      "media_key": "3_2107118327780798464"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHT39xTNWEAAKAAIQ2d2gF9RwAQAA",
+      "media_id": "2107119224090923008",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 94.82,
+          "rgb": {
+           "blue": 28,
+           "green": 19,
+           "red": 16
+          }
+         },
+         {
+          "percentage": 1.54,
+          "rgb": {
+           "blue": 168,
+           "green": 163,
+           "red": 162
+          }
+         },
+         {
+          "percentage": 0.81,
+          "rgb": {
+           "blue": 164,
+           "green": 96,
+           "red": 105
+          }
+         },
+         {
+          "percentage": 0.62,
+          "rgb": {
+           "blue": 61,
+           "green": 65,
+           "red": 32
+          }
+         },
+         {
+          "percentage": 0.55,
+          "rgb": {
+           "blue": 47,
+           "green": 49,
+           "red": 65
+          }
+         }
+        ]
+       },
+       "original_img_height": 1800,
+       "original_img_url": "https://pbs.twimg.com/media/HT39xTNWEAAFf_u.jpg",
+       "original_img_width": 3200
+      },
+      "media_key": "3_2107119224090923008"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHT39VOlWQAAKAAIQ2d2gF9RwAQAA",
+      "media_id": "2107118741813084160",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 97.27,
+          "rgb": {
+           "blue": 20,
+           "green": 12,
+           "red": 11
+          }
+         },
+         {
+          "percentage": 0.55,
+          "rgb": {
+           "blue": 154,
+           "green": 100,
+           "red": 90
+          }
+         },
+         {
+          "percentage": 0.52,
+          "rgb": {
+           "blue": 172,
+           "green": 168,
+           "red": 167
+          }
+         },
+         {
+          "percentage": 0.51,
+          "rgb": {
+           "blue": 56,
+           "green": 65,
+           "red": 29
+          }
+         },
+         {
+          "percentage": 0.4,
+          "rgb": {
+           "blue": 39,
+           "green": 50,
+           "red": 59
+          }
+         }
+        ]
+       },
+       "original_img_height": 1800,
+       "original_img_url": "https://pbs.twimg.com/media/HT39VOlWQAAA_uI.jpg",
+       "original_img_width": 3200
+      },
+      "media_key": "3_2107118741813084160"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHT39NX4XoAAKAAIQ2d2gF9RwAQAA",
+      "media_id": "2107118606869831680",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 94.19,
+          "rgb": {
+           "blue": 28,
+           "green": 19,
+           "red": 16
+          }
+         },
+         {
+          "percentage": 1.28,
+          "rgb": {
+           "blue": 51,
+           "green": 38,
+           "red": 72
+          }
+         },
+         {
+          "percentage": 1.18,
+          "rgb": {
+           "blue": 56,
+           "green": 58,
+           "red": 29
+          }
+         },
+         {
+          "percentage": 1.1,
+          "rgb": {
+           "blue": 176,
+           "green": 172,
+           "red": 171
+          }
+         },
+         {
+          "percentage": 0.38,
+          "rgb": {
+           "blue": 159,
+           "green": 195,
+           "red": 88
+          }
+         }
+        ]
+       },
+       "original_img_height": 1800,
+       "original_img_url": "https://pbs.twimg.com/media/HT39NX4XoAAlCob.jpg",
+       "original_img_width": 3200
+      },
+      "media_key": "3_2107118606869831680"
+     },
+     {
+      "id": "QXBpTWVkaWE6DAAFCgABHT39lhtXkAAKAAIQ2d2gF9RwAQAA",
+      "media_id": "2107119021824905216",
+      "media_info": {
+       "__typename": "ApiImage",
+       "color_info": {
+        "palette": [
+         {
+          "percentage": 95.21,
+          "rgb": {
+           "blue": 28,
+           "green": 18,
+           "red": 16
+          }
+         },
+         {
+          "percentage": 1.28,
+          "rgb": {
+           "blue": 55,
+           "green": 42,
+           "red": 84
+          }
+         },
+         {
+          "percentage": 0.86,
+          "rgb": {
+           "blue": 51,
+           "green": 53,
+           "red": 27
+          }
+         },
+         {
+          "percentage": 0.67,
+          "rgb": {
+           "blue": 171,
+           "green": 167,
+           "red": 166
+          }
+         },
+         {
+          "percentage": 0.59,
+          "rgb": {
+           "blue": 48,
+           "green": 76,
+           "red": 93
+          }
+         }
+        ]
+       },
+       "original_img_height": 1800,
+       "original_img_url": "https://pbs.twimg.com/media/HT39lhtXkAA1veQ.jpg",
+       "original_img_width": 3200
+      },
+      "media_key": "3_2107119021824905216"
+     }
+    ]
+   },
+   "twitter_card": "tweet",
+   "color": null,
+   "provider": "twitter",
+   "reposted_by": null
+  },
+  "twitter_card": "player",
+  "color": null,
+  "provider": "twitter",
+  "reposted_by": null
+ }
+}
