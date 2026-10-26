@@ -7,6 +7,7 @@ on:
   push:
     branches: [strat100k]
     paths: [riset/rugdesk.py, .github/workflows/riset-rugdesk.yml]
+  workflow_dispatch:
 
 permissions:
   contents: read
