@@ -286,7 +286,7 @@ def main():
               f"{np.median(e):.2%}, > 10% di {np.mean(e > 0.10):.1%} candle (sisa selisih dikoreksi di tiap close).")
 
     # ---------- kejadian KOL beli (beli pertama tiap KOL per koin) + jual KOL
-    ev, n_bad, n_early = [], 0, 0
+    ev, n_bad, n_early, early = [], 0, 0, []
     n_kol_coins = 0
     per_kol = {}
     for ci, c in enumerate(coins):
@@ -306,6 +306,9 @@ def main():
             if not (c.kfrom <= ag < c.kbad and ag < c.tbad):
                 n_bad += 1
                 n_early += ag < c.kfrom
+                if ag < c.kfrom and c.kbad == math.inf and c.tbad == math.inf and c.kfrom < math.inf:
+                    early.append(dict(ci=ci, j=j, w=w, age=ag, sol=c.w[j][3], t=c.t0 + ag,
+                                      sells=sorted(sells.get(w, []))))
                 continue
             ev.append(dict(ci=ci, j=j, w=w, rank=rank + 1, age=ag, sol=c.w[j][3], t=c.t0 + ag,
                            sells=sorted(sells.get(w, []))))
@@ -363,6 +366,32 @@ def main():
         for ex in ("ikut jual KOL (maks 30 mnt)", "tahan 10 dtk", "tahan 60 dtk", "TP 2.0x SL 35% maks 300s", best):
             print(report(f"{ex}{' [exit terbaik, dipilih setelah lihat data]' if ex == best else ''}",
                          trades(allk, L, ex, "1,25%")))
+
+    # ---------- KOL beli < 10 dtk (sniper). Kurva dicek pakai SELURUH data koin (info masa depan): hasil di sini
+    # cenderung TERLALU BAGUS (koin yang belakangan ketahuan tidak standar sudah dibuang), jadi hanya batas atas.
+    if early:
+        ea = np.array([e["age"] for e in early])
+        print(f"\n== KOL BELI < 10 DTK: {len(early):,} kejadian (median umur {np.median(ea):.1f} dtk). Kurva dicek pakai "
+              f"info masa depan, jadi hasil ini TERLALU OPTIMIS (batas atas). Biaya 1,25%/sisi:")
+        ep = [Path(coins[e["ci"]], e["j"]) for e in early]
+        base_e = np.array([p.entry(0.0) for p in ep])
+        for dt in (0.4, 1, 3, 9, 60):
+            r = np.array([p.price_at(e["age"] + dt) for p, e in zip(ep, early)]) / base_e
+            print(f"   harga +{dt} dtk: median {np.median(r):.3f}x, rata {np.mean(r):.3f}x")
+        for L in LATS:
+            res = {}
+            for ex in EXITS:
+                tr = []
+                for p, e in zip(ep, early):
+                    r = sim(p, L, ex, e["sells"])
+                    if r:
+                        tr.append((p.c.t0 + e["age"] + L, mult(r[0], r[1], "1,25%"), p.c.t0 + r[2]))
+                res[ex] = tr
+            best = max(res, key=lambda ex: np.mean([x for _, x, _ in res[ex]] or [0]))
+            n_pos = sum(bool(v) and np.mean([x for _, x, _ in v]) > 1 for v in res.values())
+            print(f" jeda {L} dtk{' (MUSTAHIL)' if L == 0 else ''}: {n_pos} dari {len(EXITS)} cara jual rata-rata untung")
+            for ex in ("tahan 10 dtk", "TP 2.0x SL 35% maks 300s", best):
+                print(report(f"{ex}{' [terbaik, dipilih setelah lihat data]' if ex == best else ''}", res[ex]))
 
     # ---------- pembanding: wallet acak non-KOL, umur & ukuran beli mirip
     rng = random.Random(7)
