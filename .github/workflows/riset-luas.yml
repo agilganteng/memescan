@@ -36,4 +36,6 @@ jobs:
           restore-keys: memescan-data-
       - run: pip install -q numpy
       - name: Pencarian luas
-        run: python3 -u riset/luas.py --data data
+        run: |
+          python3 -u riset/luas.py --data data --floor causal
+          python3 -u riset/luas.py --data data --floor cap

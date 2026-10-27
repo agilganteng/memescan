@@ -397,10 +397,15 @@ def fmt_sim(s):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data")
+    ap.add_argument("--floor", default="lookahead", choices=("lookahead", "causal", "cap"),
+                    help="lookahead: buang koin yang kapan pun di bawah lantai kurva (pakai info masa depan); "
+                         "causal: buang sinyal setelah harga di bawah lantai terlihat, hasil trade apa adanya; "
+                         "cap: seperti causal, tapi untung dari koin itu dipotong jadi maks 1,0x")
     a = ap.parse_args()
     t0 = time.time()
     cfg = ms.load_config(a.data)
-    coins, wid, n_bad = deep.load(a.data)
+    coins, wid, n_bad = deep.load(a.data, "lookahead" if a.floor == "lookahead" else "causal")
+    print(f"== MODE LANTAI: {a.floor}")
     N = len(coins)
     W, PT = coins[:N // 4], coins[N // 4:]
     nP = N // 2 - N // 4
@@ -419,6 +424,8 @@ def main():
     isP[:nP] = True
     wcp = wallet_cp(PT, beh)
     t0abs = np.array([c.t0 for c in PT])
+    tbad = np.array([c.tbad for c in PT])
+    print(f"   Koin P+T yang pernah di bawah lantai kurva: {int(np.isfinite(tbad).sum()):,} dari {len(PT):,}")
     print(f"   Grid + fitur wallet siap ({time.time() - t0:.0f} dtk).")
 
     events = [(f"umur {x} dtk", ev_age(x), "teknikal") for x in (30, 60, 120, 180, 300, 480)]
@@ -437,6 +444,7 @@ def main():
     perm_rng = np.random.default_rng(99)
     for ei, (ename, fn, kind) in enumerate(events):
         sig = fn(G, PT)
+        sig = np.where(sig >= tbad, np.nan, sig)     # bot sudah melihat harga di bawah lantai -> lewati
         cols = np.nonzero(~np.isnan(sig))[0]
         if len(cols) < 60:
             print(f"  [{ename}] {len(cols)} sinyal, dilewati")
@@ -460,6 +468,8 @@ def main():
         for xi, (xname, X) in enumerate(EXITS):
             rng = np.random.default_rng(ei * 100 + xi)
             gx, te, tx = run_exit(Gs, loc, sig[cols], rng, X)
+            if a.floor == "cap":
+                gx = np.where(np.isfinite(tbad[cols]), np.minimum(gx, 1.0), gx)
             valid = ~np.isnan(gx)
             x25 = np.where(valid, gx * (1 - COSTS["2,5%"]) / (1 + COSTS["2,5%"]), 0.0)
             x6 = np.where(valid, gx * (1 - COSTS["6%"]) / (1 + COSTS["6%"]), 0.0)
@@ -549,6 +559,11 @@ def main():
         print(f"\n {label} {events[ei][0]} | filter: {fmeta[ci][0]} | exit: {EXITS[xi][0]}")
         print(f"    P: {int(nP_[i])} sinyal rata {mP[i]:.3f}x | T: {int(nT_[i])} sinyal rata {mT[i]:.3f}x "
               f"(CI bawah {loT[i]:.3f}), biaya 6% {mT6[i]:.3f}x")
+        g = np.sort(gx[m])
+        k5 = max(1, len(g) // 20)
+        nb = int(np.isfinite(tbad[cols][m]).sum())
+        print(f"    T kotor: median {np.median(g):.3f}x, rata tanpa 5% trade terbaik {np.mean(g[:-k5]):.3f}x, "
+              f"5 terbesar {', '.join(f'{v:.1f}x' for v in g[-5:][::-1])}; koin pernah di bawah lantai: {nb}")
         res = {}
         for cn, c in COSTS.items():
             xx = gx[m] * (1 - c) / (1 + c)

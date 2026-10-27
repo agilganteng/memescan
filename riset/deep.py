@@ -46,10 +46,13 @@ N_TESTED = 0
 
 # ---------------------------------------------------------------- data
 class Coin:
-    __slots__ = ("i", "t0", "end", "m0", "cs", "starts", "cum_b", "cum_s", "ends", "buys", "sells", "dev", "snaps")
+    __slots__ = ("i", "t0", "end", "m0", "cs", "starts", "cum_b", "cum_s", "ends", "buys", "sells", "dev", "snaps",
+                 "tbad")
 
 
-def load(data_dir):
+def load(data_dir, floor="lookahead"):
+    """floor: 'lookahead' = buang koin yang KAPAN PUN harganya di bawah lantai kurva (pakai info masa depan);
+    'causal' = simpan koinnya, catat c.tbad = detik pertama harga di bawah lantai terlihat (inf kalau tidak pernah)."""
     d = os.path.join(data_dir, "rec")
     wid, coins, n_bad = {}, [], 0
     for fn in sorted(os.listdir(d)) if os.path.isdir(d) else []:
@@ -75,9 +78,12 @@ def load(data_dir):
                         cv.append(vs)
                     # Harga di bawah lantai kurva pump.fun standar (~28 SOL mcap, cadangan virtual 30 SOL) mustahil
                     # di kurva standar: koin kurva tidak standar / salah baca. Hasilnya palsu (contoh 477x dari 1 SOL).
-                    if min(x[3] for x in cs) < FLOOR_MCAP or min(float(s[1]) for s in r["snaps"]) < FLOOR_MCAP:
+                    tb = min([x[1] for x in cs if x[3] < FLOOR_MCAP] +
+                             [float(s[0]) for s in r["snaps"] if float(s[1]) < FLOOR_MCAP] + [math.inf])
+                    if floor == "lookahead" and tb < math.inf:
                         n_bad += 1
                         continue
+                    c.tbad = tb
                     c.cs, c.cum_b, c.cum_s = cs, cb, cv
                     c.starts = [x[0] for x in cs]
                     c.ends = [x[1] for x in cs]
