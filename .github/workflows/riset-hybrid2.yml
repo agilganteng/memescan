@@ -35,5 +35,5 @@ jobs:
           key: memescan-data-none
           restore-keys: memescan-data-
       - run: pip install -q numpy
-      - name: Backtest Hybrid v2 ketat
-        run: python3 -u riset/hybrid2.py --data data --rugdesk data-rd
+      - name: Backtest Hybrid v2.5
+        run: python3 -u riset/hybrid2.py --data data --rugdesk data-rd --preset v25

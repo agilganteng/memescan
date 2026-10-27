@@ -32,6 +32,7 @@ START, STAKE_PCT, MAX_STAKE, MAX_DAY = 200.0, 0.07, 14.0, 5
 SL, TP1, TP1_FRAC, ARM, TRAIL = 0.18, 0.25, 0.30, 0.30, 0.12
 LAT = (4.0, 9.0)
 TOP10_MAX, MIN_AGE, WHALE_SOL = 0.25, 60.0, 2.0
+LIQ_DEX, DUMP_X = 30000, 0.75
 CP = (0.0125, 0.0125)    # biaya beli, jual (2,5% pulang-pergi)
 
 
@@ -52,6 +53,8 @@ def filt(c, t, solusd, liq_min, vol_min):
 
 
 def first_money(c, smart, use_whale):
+    if use_whale is None:      # pembanding tanpa syarat smart money/whale
+        return 0.0
     ts = [bl[0][0] for w, bl in c.buys.items() if smart[w]]
     if use_whale:
         ts += [t for bl in c.buys.values() for t, sol in bl if sol >= WHALE_SOL and t >= 2.0]
@@ -158,7 +161,7 @@ def report(label, trades):
     print(f"    Net PnL          : ${eq - START:+.2f} ({(eq - START) / START:+.1%}), akhir ${eq:.2f}")
     print(f"    Max drawdown     : {mdd:.1%}")
     print(f"    Profit factor    : {gw / gl if gl else float('inf'):.2f}")
-    print(f"    Dump parah (rugi > 25% walau SL): {sum(r[0] < 0.75 for r in rows)}; "
+    print(f"    Dump parah (rugi > {1 - DUMP_X:.0%} walau SL): {sum(r[0] < DUMP_X for r in rows)}; "
           f"terburuk {min(r[0] for r in rows) - 1:+.0%}")
     step = max(1, n // 12)
     pts = [START] + [rows[i][2] for i in range(step - 1, n, step)]
@@ -186,7 +189,7 @@ def dex(rd_dir, rng):
             r = "LP_tidak_dikunci"
         elif rc.get("top10_pct") is None or rc["top10_pct"] > TOP10_MAX * 100:
             r = "top10"
-        elif not pool or (pool.get("liq_usd") or 0) < 30000:
+        elif not pool or (pool.get("liq_usd") or 0) < LIQ_DEX:
             r = "likuiditas"
         why[r or "LOLOS"] = why.get(r or "LOLOS", 0) + 1
         if r:
@@ -210,7 +213,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data")
     ap.add_argument("--rugdesk", default="data-rd")
+    ap.add_argument("--preset", default="v2", choices=("v2", "v25"))
     a = ap.parse_args()
+    global STAKE_PCT, MAX_STAKE, MAX_DAY, SL, TP1, ARM, TRAIL, TOP10_MAX, MIN_AGE, LIQ_DEX, DUMP_X
+    if a.preset == "v25":
+        # v2.5 "Titik Tengah": liq >= $18rb, vol >= $40rb, top10 <= 27%, umur >= 40 dtk, posisi min(8%, $16),
+        # maks 7/hari, SL -15%, jual 30% di +22%, sisa trailing 11% setelah +28%, dump parah = rugi > 30%
+        STAKE_PCT, MAX_STAKE, MAX_DAY = 0.08, 16.0, 7
+        SL, TP1, ARM, TRAIL = 0.15, 0.22, 0.28, 0.11
+        TOP10_MAX, MIN_AGE, LIQ_DEX, DUMP_X = 0.27, 40.0, 18000, 0.70
     t_start = time.time()
     cfg = ms.load_config(a.data)
     wid = {}
@@ -235,6 +246,10 @@ def main():
     print(f"   Periode uji (smart money out-of-sample): {ts(t_split)} - {ts(t_max)} UTC")
     test = [c for c in coins if c.t0 >= t_split and c.has_w]
     variants = [
+        ("V2.5 PERSIS (liq >= $18rb, vol >= $40rb, smart money ATAU whale)", 18000, 40000, True),
+        ("V2.5, hanya smart money (tanpa whale) - pembanding", 18000, 40000, False),
+        ("V2.5 tanpa syarat smart/whale - pembanding, BUKAN aturan pengguna", 18000, 40000, None),
+    ] if a.preset == "v25" else [
         ("V2 PERSIS (liq >= $30rb, vol >= $60rb, smart money ATAU whale)", 30000, 60000, True),
         ("TERDEKAT YANG MUNGKIN (liq >= $15rb, vol >= $60rb, smart ATAU whale) - BUKAN aturan pengguna",
          15000, 60000, True),
