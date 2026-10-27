@@ -47,7 +47,7 @@ N_TESTED = 0
 # ---------------------------------------------------------------- data
 class Coin:
     __slots__ = ("i", "t0", "end", "m0", "cs", "starts", "cum_b", "cum_s", "ends", "buys", "sells", "dev", "snaps",
-                 "tbad")
+                 "tbad", "kfrom", "kbad")
 
 
 def load(data_dir, floor="lookahead"):
@@ -84,6 +84,17 @@ def load(data_dir, floor="lookahead"):
                         n_bad += 1
                         continue
                     c.tbad = tb
+                    # Cek kurva standar TANPA info masa depan: di kurva standar v_sol * v_tok = 30 * 1,073e9 tetap,
+                    # jadi (30 + liq)^2 * 1e9 / mcap harus ~3,219e10. Hanya dicek sebelum graduate (liq < 79 SOL).
+                    kb, kf = math.inf, math.inf
+                    for sn in r["snaps"]:
+                        liq, mc, ag = float(sn[FI["liq_sol"]]), float(sn[1]), float(sn[0])
+                        if liq >= 79 or mc <= 0:
+                            continue
+                        kf = min(kf, ag)
+                        if abs((30 + liq) ** 2 * 1e9 / mc / 3.219e10 - 1) > 0.08:
+                            kb = min(kb, ag)
+                    c.kfrom, c.kbad = kf, kb
                     c.cs, c.cum_b, c.cum_s = cs, cb, cv
                     c.starts = [x[0] for x in cs]
                     c.ends = [x[1] for x in cs]

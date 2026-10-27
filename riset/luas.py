@@ -397,10 +397,11 @@ def fmt_sim(s):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data")
-    ap.add_argument("--floor", default="lookahead", choices=("lookahead", "causal", "cap"),
+    ap.add_argument("--floor", default="lookahead", choices=("lookahead", "causal", "cap", "std"),
                     help="lookahead: buang koin yang kapan pun di bawah lantai kurva (pakai info masa depan); "
                          "causal: buang sinyal setelah harga di bawah lantai terlihat, hasil trade apa adanya; "
-                         "cap: seperti causal, tapi untung dari koin itu dipotong jadi maks 1,0x")
+                         "cap: seperti causal, tapi untung dari koin itu dipotong jadi maks 1,0x; "
+                         "std: seperti cap, plus hanya masuk kalau snapshot sebelum sinyal menunjukkan kurva standar")
     a = ap.parse_args()
     t0 = time.time()
     cfg = ms.load_config(a.data)
@@ -426,6 +427,13 @@ def main():
     t0abs = np.array([c.t0 for c in PT])
     tbad = np.array([c.tbad for c in PT])
     print(f"   Koin P+T yang pernah di bawah lantai kurva: {int(np.isfinite(tbad).sum()):,} dari {len(PT):,}")
+    kfrom = np.array([c.kfrom for c in PT])
+    kbad = np.array([c.kbad for c in PT])
+    nk, fb = np.isfinite(kbad), np.isfinite(tbad)
+    print(f"   Cek kurva dari snapshot: tidak standar {int(nk.sum()):,}; dari koin yang pernah di bawah lantai, "
+          f"{int((nk & fb).sum()):,} sudah terdeteksi tidak standar (sebelum harga di bawah lantai: "
+          f"{int((nk & fb & (kbad <= tbad)).sum()):,}); koin standar menurut cek tapi tetap di bawah lantai: "
+          f"{int((~nk & fb).sum()):,}")
     print(f"   Grid + fitur wallet siap ({time.time() - t0:.0f} dtk).")
 
     events = [(f"umur {x} dtk", ev_age(x), "teknikal") for x in (30, 60, 120, 180, 300, 480)]
@@ -445,6 +453,8 @@ def main():
     for ei, (ename, fn, kind) in enumerate(events):
         sig = fn(G, PT)
         sig = np.where(sig >= tbad, np.nan, sig)     # bot sudah melihat harga di bawah lantai -> lewati
+        if a.floor == "std":
+            sig = np.where((sig >= kfrom) & (sig < kbad), sig, np.nan)
         cols = np.nonzero(~np.isnan(sig))[0]
         if len(cols) < 60:
             print(f"  [{ename}] {len(cols)} sinyal, dilewati")
@@ -468,7 +478,7 @@ def main():
         for xi, (xname, X) in enumerate(EXITS):
             rng = np.random.default_rng(ei * 100 + xi)
             gx, te, tx = run_exit(Gs, loc, sig[cols], rng, X)
-            if a.floor == "cap":
+            if a.floor in ("cap", "std"):
                 gx = np.where(np.isfinite(tbad[cols]), np.minimum(gx, 1.0), gx)
             valid = ~np.isnan(gx)
             x25 = np.where(valid, gx * (1 - COSTS["2,5%"]) / (1 + COSTS["2,5%"]), 0.0)
@@ -501,6 +511,9 @@ def main():
         print(f"  [{ename}] {len(cols):,} sinyal (P {int(isPs.sum()):,} / T {int((~isPs).sum()):,}), "
               f"{nfilt} filter x {len(EXITS)} exit. {time.time() - t0:.0f} dtk", flush=True)
 
+    if not rows:
+        print("\n==== Tidak ada konfigurasi dengan >= 30 trade di P.")
+        return
     R = np.array([r[3:] for r in rows], np.float64)
     E = np.array([r[:3] for r in rows], np.int64)
     nP_, mP, nT_, mT, loT, mT6, mN, loN = R.T

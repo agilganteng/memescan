@@ -37,5 +37,4 @@ jobs:
       - run: pip install -q numpy
       - name: Pencarian luas
         run: |
-          python3 -u riset/luas.py --data data --floor causal
-          python3 -u riset/luas.py --data data --floor cap
+          python3 -u riset/luas.py --data data --floor std
