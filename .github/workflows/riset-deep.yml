@@ -1,0 +1,39 @@
+name: riset-deep
+
+# Riset sekali jalan: riset mendalam 6 keluarga strategi (W nilai wallet, P pilih, T uji). Hanya baca cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/deep.py, .github/workflows/riset-deep.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-deep
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: rugdesk-data-none
+          restore-keys: rugdesk-data-
+      - run: if [ -d data ]; then mv data data-rd; fi
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Riset mendalam
+        run: python3 -u riset/deep.py --data data
