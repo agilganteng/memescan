@@ -1,0 +1,39 @@
+name: riset-cekluas
+
+# Riset sekali jalan: pencarian strategi sangat luas (277 rb konfigurasi, W/P/T + uji kebetulan). Hanya baca cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/cek_luas.py, .github/workflows/riset-cekluas.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-cekluas
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: rugdesk-data-none
+          restore-keys: rugdesk-data-
+      - run: if [ -d data ]; then mv data data-rd; fi
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Pencarian luas
+        run: python3 -u riset/cek_luas.py --data data
