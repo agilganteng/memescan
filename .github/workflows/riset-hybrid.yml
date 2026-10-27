@@ -1,0 +1,40 @@
+name: riset-hybrid
+
+# Riset sekali jalan: backtest strategi "Hybrid Multi-Agent" (Scout pair baru + Copy smart money + Filter,
+# SL -10%, trailing +18%/9%, maks 1 posisi, $200) di rekaman 7 hari terakhir. Hanya baca cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/hybrid.py, .github/workflows/riset-hybrid.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-hybrid
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: rugdesk-data-none
+          restore-keys: rugdesk-data-
+      - run: if [ -d data ]; then mv data data-rd; fi
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Backtest Hybrid Multi-Agent
+        run: python3 -u riset/hybrid.py --data data --rugdesk data-rd
