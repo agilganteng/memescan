@@ -6,10 +6,8 @@ Aturan pengguna (dipakai persis):
   Risk: posisi min(7% modal, $14), maks 1 posisi, maks 5 trade per hari (UTC), SL -18%,
         jual 30% di +25%, sisanya trailing 12% setelah harga sampai +30%, biaya 2,5% pulang-pergi,
         jeda masuk dan keluar acak 4-9 dtk.
-Data dan cara sama dengan riset/hybrid.py (v1). Catatan penting: kurva pump.fun graduate di ~85 SOL
-asli, jadi likuiditas maksimum di kurva = 2 x 85 x harga SOL (~$18rb di harga $104). Syarat $30rb
-TIDAK MUNGKIN terpenuhi di kurva; setelah graduate perekam kita tidak merekam lagi. Karena itu
-ditambah varian "terdekat yang mungkin" (likuiditas >= $15rb, ~85% jalan ke graduation), diberi
+Data dan cara sama dengan riset/hybrid.py (v1). Likuiditas = 2 x SOL di kurva dari harga (x*y=k).
+Ditambah varian "terdekat" (likuiditas >= $15rb) dan filter v1 + exit v2 sebagai pembanding, diberi
 label jelas, BUKAN aturan pengguna.
 
 Smart money = 256 wallet dari kriteria v1 (dinilai 50% awal data wallet). Whale = wallet yang sekali
