@@ -5,7 +5,7 @@ name: riset-kol
 on:
   push:
     branches: [strat100k]
-    paths: [riset/kol.py, riset/kol_wallets.txt, .github/workflows/riset-kol.yml]
+    paths: [riset/kol.py, riset/kol_cek.py, riset/kol_wallets.txt, .github/workflows/riset-kol.yml]
   workflow_dispatch:
 
 permissions:
@@ -30,5 +30,7 @@ jobs:
           key: memescan-data-none
           restore-keys: memescan-data-
       - run: pip install -q numpy
+      - name: Diagnosa dulu
+        run: python3 -u riset/kol_cek.py data
       - name: Uji copy KOL
         run: python3 -u riset/kol.py --data data
