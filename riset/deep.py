@@ -39,6 +39,7 @@ FI = w2.FI
 DAYS = 7
 LAT = (3.0, 9.0)
 COSTS = {"2,5%": (0.0125, 0.0125), "6%": (0.03, 0.03)}
+FLOOR_MCAP = 27.0
 START, STAKE_PCT, MAX_STAKE = 200.0, 0.10, 20.0
 N_TESTED = 0
 
@@ -72,6 +73,11 @@ def load(data_dir):
                         vs += float(x[5])
                         cb.append(vb)
                         cv.append(vs)
+                    # Harga di bawah lantai kurva pump.fun standar (~28 SOL mcap, cadangan virtual 30 SOL) mustahil
+                    # di kurva standar: koin kurva tidak standar / salah baca. Hasilnya palsu (contoh 477x dari 1 SOL).
+                    if min(x[3] for x in cs) < FLOOR_MCAP or min(float(s[1]) for s in r["snaps"]) < FLOOR_MCAP:
+                        n_bad += 1
+                        continue
                     c.cs, c.cum_b, c.cum_s = cs, cb, cv
                     c.starts = [x[0] for x in cs]
                     c.ends = [x[1] for x in cs]
