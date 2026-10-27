@@ -1,0 +1,34 @@
+name: riset-kol
+
+# Riset sekali jalan: copy 93 wallet KOL kolscan di rekaman 5 menit pertama koin pump.fun, jeda 0-9 dtk,
+# ~70 cara jual, A/B/C + pembanding wallet acak. Hanya baca cache, tidak menyentuh bot atau data.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/kol.py, riset/kol_wallets.txt, .github/workflows/riset-kol.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-kol
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Uji copy KOL
+        run: python3 -u riset/kol.py --data data
