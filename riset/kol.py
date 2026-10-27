@@ -122,11 +122,20 @@ class Path:
         v = math.sqrt(K_CURVE * p_anc)
         self.anchor = p_anc
         self.tt, self.tp = [], []
+        # Close tiap candle = harga absolut nyata. Setelah semua trade sampai akhir candle diterapkan, harga dipasang
+        # ulang ke close itu, supaya trade yang terlewat perekam (RPC putus) tidak membuat jalur harga melenceng.
+        ends = [(x[1], x[4]) for x in c.cs if x[1] > b_end and x[1] <= c.cov]
+        q = 0
         for i, (ag, _, isb, sol) in enumerate(c.w):
             if ag <= b_end and i < j:
                 continue
             if ag > c.cov:
                 break
+            while q < len(ends) and ends[q][0] < ag:
+                v = math.sqrt(K_CURVE * ends[q][1])
+                self.tt.append((ends[q][0], -1))
+                self.tp.append(ends[q][1])
+                q += 1
             v = v + sol if isb else max(1e-6, v - sol)
             self.tt.append((ag, i))
             self.tp.append(v * v / K_CURVE)
@@ -139,7 +148,7 @@ class Path:
         a = c.w[j][0]
         p = self.anchor
         for (ag, i), pr in zip(self.tt, self.tp):
-            if i <= j or ag <= a + lat:
+            if (0 <= i <= j) or (ag <= a and i < 0) or ag <= a + lat:
                 p = pr
             else:
                 break
@@ -257,23 +266,27 @@ def main():
     print(f"== {len(coins):,} koin pump.fun dengan rekaman wallet, {ts(coins[0].t0)} - {ts(coins[-1].t0)} UTC. "
           f"{len(kol)} wallet KOL kolscan. Baca {time.time() - t_start:.0f} dtk.")
 
-    # ---------- validasi rekonstruksi harga (tick vs close candle yang tercakup penuh)
+    # ---------- validasi: dari close candle sebelumnya + trade di candle ini, apakah sama dengan close candle ini?
     errs = []
-    for c in coins[:: max(1, len(coins) // 3000)]:
-        if len(c.w) < 3:
+    for c in coins[:: max(1, len(coins) // 20000)]:
+        if not (c.kfrom < math.inf and c.kbad == math.inf and c.tbad == math.inf):
             continue
-        p = Path(c, 0)
-        for a0, b, hi, lo, cl in c.cs:
-            if b > c.cov or b <= c.w[0][0] or b < 5:
+        for k in range(1, len(c.cs)):
+            e0, e1 = c.cs[k - 1][1], c.cs[k][1]
+            if e1 > c.cov or c.cs[k][0] != e0:
                 continue
-            errs.append(abs(p.price_at(b - 1e-6) / cl - 1))
+            v = math.sqrt(K_CURVE * c.cs[k - 1][4])
+            for ag, w, isb, sol in c.w:
+                if e0 < ag <= e1:
+                    v = v + sol if isb else max(1e-6, v - sol)
+            errs.append(abs(v * v / K_CURVE / c.cs[k][4] - 1))
     if errs:
         e = np.array(errs)
-        print(f"   Cek rekonstruksi harga vs candle ({len(e):,} titik): median selisih {np.median(e):.2%}, "
-              f"selisih > 10% di {np.mean(e > 0.10):.1%} titik.")
+        print(f"   Cek rekonstruksi harga per candle ({len(e):,} candle, koin kurva standar): median selisih "
+              f"{np.median(e):.2%}, > 10% di {np.mean(e > 0.10):.1%} candle (sisa selisih dikoreksi di tiap close).")
 
     # ---------- kejadian KOL beli (beli pertama tiap KOL per koin) + jual KOL
-    ev, n_bad = [], 0
+    ev, n_bad, n_early = [], 0, 0
     n_kol_coins = 0
     per_kol = {}
     for ci, c in enumerate(coins):
@@ -292,12 +305,14 @@ def main():
             ag = c.w[j][0]
             if not (c.kfrom <= ag < c.kbad and ag < c.tbad):
                 n_bad += 1
+                n_early += ag < c.kfrom
                 continue
             ev.append(dict(ci=ci, j=j, w=w, rank=rank + 1, age=ag, sol=c.w[j][3], t=c.t0 + ag,
                            sells=sorted(sells.get(w, []))))
             per_kol[w] = per_kol.get(w, 0) + 1
     print(f"   KOL beli di 5 menit pertama: {len(ev):,} kejadian di {n_kol_coins:,} koin, dari {len(per_kol)} KOL "
-          f"({n_bad} dibuang karena kurva tidak standar terlihat sebelum sinyal).")
+          f"({n_bad} dibuang: {n_early} karena beli sebelum snapshot pertama umur 10 dtk sehingga kurva belum bisa dicek, "
+          f"sisanya kurva tidak standar).")
     if len(ev) < 60:
         print("   Terlalu sedikit untuk diuji.")
         return
