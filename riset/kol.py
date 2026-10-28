@@ -138,6 +138,9 @@ class Path:
                 self.tp.append(ends[q][1])
                 q += 1
             v = v + sol if isb else max(1e-6, v - sol)
+            if v * v / K_CURVE < FLOOR_MCAP:
+                # di bawah lantai kurva = mustahil (ada trade yang terlewat); pakai close candle saat itu
+                v = math.sqrt(K_CURVE * candle_close(c, ag))
             self.tt.append((ag, i))
             self.tp.append(v * v / K_CURVE)
         self.c, self.j = c, j

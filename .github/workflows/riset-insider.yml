@@ -4,7 +4,7 @@ name: riset-insider
 on:
   push:
     branches: [strat100k]
-    paths: [riset/insider.py, .github/workflows/riset-insider.yml]
+    paths: [riset/insider.py, riset/kol.py, .github/workflows/riset-insider.yml]
   workflow_dispatch:
 
 permissions:
