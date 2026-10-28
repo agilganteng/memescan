@@ -1,0 +1,33 @@
+name: riset-corong
+
+# Riset sekali jalan: tiru corong GMGN AI Trader + banyak filter. Hanya baca cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/corong.py, riset/deep.py, .github/workflows/riset-corong.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-corong
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Uji corong
+        run: python3 -u riset/corong.py --data data
