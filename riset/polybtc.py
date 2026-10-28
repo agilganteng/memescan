@@ -14,7 +14,7 @@ Aturan (ditulis sebelum lihat hasil). Masuk SEBELUM jendela mulai, harga beli ~5
   ambil yang tinggi).
 TRAIN = 2023-2025, TEST = 1 Jan 2026 - sekarang (dipakai SEKALI). Pilih varian terbaik di TRAIN, laporkan TEST.
 Biaya: ideal (maker, beli 50c, tanpa fee) / taker (ask 50,5c + fee ~1,56%) / realistis (ask 51c + fee 1,56%).
-Simulasi $100/$200/$1000: 5% equity per bet, dan half-Kelly (p dari TRAIN, maks 10%).
+Simulasi $100/$200/$1000: 5% equity per bet, dan half-Kelly (p dari TRAIN, maks 10%), taruhan maks $100.
 
 Pakai: python3 riset/polybtc.py
 """
@@ -36,6 +36,7 @@ FIRST = (2023, 1)
 SPLIT = calendar.timegm(time.strptime("2026-01-01", "%Y-%m-%d"))
 COSTS = {"ideal": (0.50, 0.0), "taker": (0.505, 0.0156), "realistis": (0.51, 0.0156)}
 CAPS = (100, 200, 1000)
+MAXBET = 100.0        # batas taruhan per jendela (likuiditas buku order 5 menit terbatas)
 SYMS = ("BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT")
 rng = np.random.default_rng(7)
 
@@ -96,7 +97,10 @@ def wilson(k, n, z=1.96):
 
 def prep(a):
     t, o, c = a[:, 0].astype(np.int64), a[:, 1], a[:, 2]
-    up = (c >= o).astype(np.int8)                      # Polymarket: akhir >= awal = Up
+    # Polymarket (Chainlink, banyak desimal) hampir tidak pernah seri. Di Binance harga dibulatkan ke tick, jadi
+    # candle seri (close == open) cukup sering untuk SOL/XRP. Seri = jendela dibuang, bukan dihitung Up.
+    sgn = np.sign(c - o).astype(np.int8)
+    up = (sgn > 0).astype(np.int8)
     r = np.log(c / o)
     slot = (t % 86400) // 300                          # 0..287
     dh = ((t // 86400 + 3) % 7) * 24 + (t % 86400) // 3600   # hari (0=Senin) x jam
@@ -110,13 +114,13 @@ def prep(a):
     for k in (1, 2, 3):
         s = np.zeros(len(t), np.int8)
         for j in range(1, k + 1):
-            sh = np.roll(up, j).astype(np.int16) * 2 - 1
+            sh = np.roll(sgn, j).astype(np.int16)
             sh[:j] = 0
             s = s + sh
         prev[k] = np.where(np.abs(s) == k, np.sign(s), 0)
     # candle harus berurutan (lewati jendela setelah gap data)
-    gap = np.concatenate([[True], np.diff(t) != 300])
-    return dict(t=t, up=up, slot=slot, dh=dh, vol=vol, prev=prev, gap=gap)
+    gap = np.concatenate([[True], np.diff(t) != 300]) | (sgn == 0)
+    return dict(tie=(sgn == 0), t=t, up=up, slot=slot, dh=dh, vol=vol, prev=prev, gap=gap)
 
 
 def pnl_unit(win, cost):
@@ -137,7 +141,7 @@ def sim(win, cap, cost, frac):
     eq, peak, dd = float(cap), float(cap), 0.0
     u = pnl_unit(win, cost)
     for x in u:
-        eq += eq * frac * x
+        eq += min(eq * frac, MAXBET) * x
         peak = max(peak, eq)
         dd = max(dd, 1 - eq / peak)
         if eq < 1:
@@ -183,8 +187,9 @@ def rule_bayes(D, thr, a0=50.0):
         sl = slot[s0:s1]
         mask[s0:s1] = np.abs(pm[sl] - 0.5) >= thr
         side[s0:s1] = np.where(pm[sl] >= 0.5, 1, -1)
-        np.add.at(a, sl, up[s0:s1])
-        np.add.at(b, sl, 1 - up[s0:s1])
+        real = ~D["tie"][s0:s1]
+        np.add.at(a, sl, up[s0:s1] * real)
+        np.add.at(b, sl, (1 - up[s0:s1]) * real)
     return mask, side
 
 
@@ -229,6 +234,7 @@ def analyse(sym, a):
     up = D["up"]
     print(f"\n=================== {sym}: {tr.sum():,} jendela TRAIN 2023-2025, {te.sum():,} jendela TEST 2026 "
           f"(s/d {time.strftime('%Y-%m-%d %H:%M', time.gmtime(int(D['t'][-1])))} UTC)")
+    print(f"Candle seri (close == open, dibuang): {D['tie'].mean()*100:.2f}%")
     print(f"Base rate Up: TRAIN {up[tr].mean()*100:.2f}%  TEST {up[te].mean()*100:.2f}%")
     # klaim '>65%': berapa slot yang segitu, dibanding acak
     _, _, rate_tr = rule_cells(D, "slot", 288, tr, 0)
@@ -260,6 +266,10 @@ def analyse(sym, a):
     print("\nTop-10 dipilih di TRAIN (urut batas bawah CI win rate, n>=2000) -> hasil TEST:")
     for name, sa, sb, _, _ in elig[:10]:
         print(f"  {name:<40} TRAIN {fmt(sa)}\n  {'':<40} TEST  {fmt(sb)}")
+    print("Semua varian momentum/reversal (R3), TRAIN -> TEST:")
+    for name, sa, sb, _, _ in res:
+        if name.startswith("R3") and name.endswith("semua"):
+            print(f"  {name:<40} TRAIN {fmt(sa)} | TEST {fmt(sb)}")
     prof_te = sum(1 for r in res if r[2]["n"] >= 30 and r[2]["lo"] > COSTS["taker"][0] / (1 - COSTS["taker"][1]))
     prof_both = sum(1 for r in res if r[1]["n"] >= 30 and r[2]["n"] >= 30 and r[1]["ev"] > 0 and r[2]["ev"] > 0)
     print(f"Varian dengan CI bawah TEST > breakeven taker: {prof_te} dari {len(res)}. "
