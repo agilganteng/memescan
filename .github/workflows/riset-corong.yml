@@ -30,4 +30,4 @@ jobs:
           restore-keys: memescan-data-
       - run: pip install -q numpy
       - name: Uji corong
-        run: python3 -u riset/corong.py --data data
+        run: python3 -u riset/corong.py --data data --modal 1000 --no-smart

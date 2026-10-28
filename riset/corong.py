@@ -34,7 +34,10 @@ import deep  # noqa: E402
 FI, ms = deep.FI, deep.ms
 AGES = (10, 20, 30, 45, 60, 90, 120, 180)
 LAT = (3.0, 9.0)
-C1, C3 = 0.0175, 0.035
+C1, C3 = 0.0125, 0.03          # fee per sisi; priority fee & dampak harga dihitung terpisah (netx)
+SOLUSD = 200.0
+STAKE_SOL = 0.1                # diubah oleh --modal (10% modal per trade)
+PRIO = 0.0005
 EXITS = ["tahan 60 dtk", "tahan 5 mnt", "TP 2x / SL 50% / 30 mnt", "TP +30% / SL 20% / 5 mnt",
          "trail 20% aktif +30% / SL 30% / 30 mnt", "TP +50% / SL 30% / 10 mnt"]
 # kolom fitur
@@ -43,6 +46,13 @@ BUND, DEV, TOP10, CONS, RUGS, PREV, GROW, HOLD = range(8)
 
 def net(g, c):
     return g * (1 - c) / (1 + c)
+
+
+def netx(g, mc, c):
+    """Hasil bersih: fee per sisi + priority fee 2x + dampak harga order kita sendiri di kurva (v_sol = sqrt(K*mcap))."""
+    v_in = np.sqrt(32.19 * np.maximum(mc, 1.0))
+    v_out = v_in * np.sqrt(np.maximum(g, 1e-6))
+    return g * (1 - c) / (1 + c) / ((1 + STAKE_SOL / v_in) * (1 + STAKE_SOL / v_out)) - 2 * PRIO / STAKE_SOL
 
 
 def outcomes(c, a):
@@ -109,14 +119,60 @@ def own_res(c, w):
 
 
 def sim(rows, cost):
-    tr = [(t, net(gg, cost), tx) for t, gg, tx in rows]
+    tr = [(t, float(netx(gg, mc, cost)), tx) for t, gg, tx, mc in rows]
     out, mdd = deep.sim200(tr)
     n = len(out)
     w = sum(x[0] > 1 for x in out)
     lo, hi = ms.wilson(w, n)
-    eq = out[-1][2] if out else 200.0
+    eq = out[-1][2] if out else deep.START
     tag = "" if n >= 30 else " (<30 trade, tidak bisa disimpulkan)"
-    return f"{n} trade, menang {w / n if n else 0:.0%} (CI {lo:.0%}-{hi:.0%}), $200 -> ${eq:.2f}, MDD {mdd:.0%}{tag}"
+    return (f"{n} trade, menang {w / n if n else 0:.0%} (CI {lo:.0%}-{hi:.0%}), ${deep.START:,.0f} -> ${eq:,.2f}, "
+            f"MDD {mdd:.0%}{tag}")
+
+
+def wallet_board(coins, iA, inv):
+    """Wallet yang hasil SENDIRI-nya untung terus di A: dev, bundler/sniper detik pertama, trader lain.
+    Lalu: apakah mereka tetap untung di koin sesudahnya (B+C)? Hasil sendiri = harga beli/jual mereka, bukan hasil copy."""
+    A, R, devn, fast = {}, {}, {}, {}
+    for idx, c in enumerate(coins):
+        tgt = A if idx < iA else R
+        if idx < iA and c.dev >= 0:
+            devn[c.dev] = devn.get(c.dev, 0) + 1
+        for w, bl in c.buys.items():
+            x = own_res(c, w)
+            if x is None:
+                continue
+            tgt.setdefault(w, []).append(min(x, 1000.0))
+            if idx < iA and w != c.dev and min(t for t, _ in bl) < 1.0:
+                fast[w] = fast.get(w, 0) + 1
+    cats = {
+        "DEV (pembuat >= 3 koin di A, hasil di koinnya sendiri)": lambda w: devn.get(w, 0) >= 3,
+        "BUNDLER/SNIPER (beli < 1 dtk di >= 5 koin A)": lambda w: fast.get(w, 0) >= 5 and devn.get(w, 0) < 3,
+        "TRADER LAIN / smart wallet (>= 10 koin di A)": lambda w: fast.get(w, 0) < 5 and devn.get(w, 0) < 3
+        and len(A.get(w, [])) >= 10,
+    }
+    print("\n==== PAPAN WALLET: hasil SENDIRI di A, lalu di koin sesudahnya (B+C). Alamat = 10 huruf awal (batas rekaman).")
+    for name, fn in cats.items():
+        ws = [w for w in A if fn(w) and len(A[w]) >= (3 if name.startswith("DEV") else 5)]
+        if not ws:
+            continue
+        allA = np.concatenate([A[w] for w in ws])
+        good = [w for w in ws if np.mean(A[w]) >= 1.2 and np.mean(np.array(A[w]) > 1) >= 0.5]
+        cont = [w for w in good if len(R.get(w, [])) >= 3]
+        stay = [w for w in cont if np.mean(R[w]) > 1.0]
+        pool = np.concatenate([R[w] for w in cont]) if cont else np.array([])
+        print(f"\n  {name}: {len(ws):,} wallet, rata hasil sendiri di A {allA.mean():.3f}x (median {np.median(allA):.3f}x)")
+        print(f"    'untung terus' di A (rata >= 1,2x & menang >= 50%): {len(good):,} wallet. Yang masih aktif di B+C "
+              f"(>= 3 koin): {len(cont):,}; tetap untung di B+C: {len(stay):,} ({len(stay) / max(1, len(cont)):.0%}). "
+              + (f"Gabungan semua trade mereka di B+C: rata {pool.mean():.3f}x, median {np.median(pool):.3f}x, "
+                 f"untung {np.mean(pool > 1):.0%} (n={len(pool):,})" if len(pool) else ""))
+        top = sorted(good, key=lambda w: -(np.median(A[w]) * min(len(A[w]), 50)))[:12]
+        print(f"    {'wallet':12s} {'koin A':>6s} {'rata A':>8s} {'menang A':>8s} | {'koin B+C':>8s} {'rata B+C':>8s} "
+              f"{'menang B+C':>10s}")
+        for w in top:
+            a, r = np.array(A[w]), np.array(R.get(w, []))
+            rb = f"{len(r):8d} {r.mean():8.2f}x {np.mean(r > 1):10.0%}" if len(r) else f"{0:8d} {'-':>9s} {'-':>10s}"
+            print(f"    {inv.get(w, '?')[:10]:12s} {len(a):6d} {a.mean():7.2f}x {np.mean(a > 1):8.0%} | {rb}")
 
 
 def stat(x):
@@ -129,7 +185,14 @@ def stat(x):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data")
+    ap.add_argument("--modal", type=float, default=200.0)
+    ap.add_argument("--no-smart", action="store_true", help="tanpa syarat smart wallet/KOL sama sekali")
     args = ap.parse_args()
+    global STAKE_SOL
+    deep.START, deep.MAX_STAKE = args.modal, args.modal * 0.10
+    STAKE_SOL = args.modal * 0.10 / SOLUSD
+    print(f"== Modal ${args.modal:,.0f}, 10% per trade = {STAKE_SOL:.2f} SOL (SOL ${SOLUSD:.0f}). "
+          f"Syarat smart wallet: {'TIDAK dipakai' if args.no_smart else 'ikut diuji'}")
     t_start = time.time()
     coins, wid, n_bad = deep.load(args.data, floor="causal")
     N = len(coins)
@@ -156,6 +219,7 @@ def main():
                 kol_pref.add(line.split()[0][:10])
     kol = {i for i, w in inv.items() if w[:10] in kol_pref}
     sk = smart | kol
+    wallet_board(coins, iA, inv)
     print(f"   smart wallet dari A: {len(smart):,} (dari {sum(len(x) >= 5 for x in res.values()):,} wallet >= 5 koin); "
           f"KOL ditemukan di data: {len(kol)}. Baca {time.time() - t_start:.0f} dtk.")
 
@@ -163,6 +227,7 @@ def main():
     F = np.full((N, nK, 8), np.nan)
     V = np.zeros((N, nK), dtype=bool)
     G = np.full((N, nK, 6), np.nan)
+    MC = np.full((N, nK), 30.0)
     TX = np.zeros((N, nK, 6))
     TE = np.zeros((N, nK))
     for i, c in enumerate(coins[iA:], start=iA):
@@ -189,6 +254,7 @@ def main():
                        float(s[FI["creator_prev_rugs"]]), float(s[FI["creator_prev_tokens"]]),
                        float(s[FI["growth"]]), float(s[FI["holders"]]))
             TE[i, k] = c.t0 + o[0]
+            MC[i, k] = max(float(deep.price_at(c, o[0])), 1.0)
             G[i, k] = o[1]
             TX[i, k] = [c.t0 + x for x in o[2]]
     t0s = np.array([c.t0 for c in coins])
@@ -201,10 +267,10 @@ def main():
     for k0 in (0, 2):
         for e in (1, 2):
             m = isC & V[:, k0]
-            print(f"   PEMBANDING beli SEMUA koin umur {AGES[k0]} dtk, {EXITS[e]}, C: {stat(net(G[m, k0, e], C1))}")
+            print(f"   PEMBANDING beli SEMUA koin umur {AGES[k0]} dtk, {EXITS[e]}, C: {stat(netx(G[m, k0, e], MC[m, k0], C1))}")
 
     grid = dict(
-        bund=(0.10, 0.30, 9.0), dev=(0.05, 0.10, 9.0), top10=(0.20, 0.30, 0.55, 9.0), cons=(0, 1, 2, 3),
+        bund=(0.10, 0.30, 9.0), dev=(0.05, 0.10, 9.0), top10=(0.20, 0.30, 0.55, 9.0), cons=(0,) if args.no_smart else (0, 1, 2, 3),
         rep=("semua", "tanpa rug", "dev baru"), heat=(1.5, 3.0, 1e9), hold=(0, 10, 25), minage=(10, 30, 60))
     keys = list(grid)
     configs = list(itertools.product(*[grid[k] for k in keys]))
@@ -227,7 +293,7 @@ def main():
             kk = first[sel]
             for e in range(len(EXITS)):
                 g = G[sel, kk, e]
-                rows.append((cf, e, part, len(g), float(net(g, C1).mean()) if len(g) else float("nan")))
+                rows.append((cf, e, part, len(g), float(netx(g, MC[sel, kk], C1).mean()) if len(g) else float("nan")))
     R = {}
     for cf, e, part, n, m in rows:
         R.setdefault((cf, e), {})[part] = (n, m)
@@ -261,18 +327,18 @@ def main():
         for part, msk in (("B", isB), ("C", isC)):
             sel = np.where(has & msk)[0]
             kk = first[sel]
-            print(f"   {part}: {stat(net(G[sel, kk, e], C1))}")
+            print(f"   {part}: {stat(netx(G[sel, kk, e], MC[sel, kk], C1))}")
         sel = np.where(has & isC)[0]
         kk = first[sel]
-        rws = [(TE[i, k], G[i, k, e], TX[i, k, e]) for i, k in zip(sel, kk)]
-        print(f"   $200 sim C biaya 1,25%+prio: {sim(rws, C1)}")
-        print(f"   $200 sim C biaya 3%+prio:    {sim(rws, C3)}")
+        rws = [(TE[i, k], G[i, k, e], TX[i, k, e], MC[i, k]) for i, k in zip(sel, kk)]
+        print(f"   sim modal C biaya 1,25%+prio+dampak: {sim(rws, C1)}")
+        print(f"   sim modal C biaya 3%+prio+dampak:    {sim(rws, C3)}")
 
     # 1. aturan demo GMGN apa adanya
     print("\n==== ATURAN DEMO GMGN AI TRADER (bundle <= 30%, dev <= 10%, top10 <= 55%, >= 1 smart/KOL, dev tanpa rug, "
           "bukan overheated <= 3x)")
     for e in range(len(EXITS)):
-        detail(f"demo #{e + 1}", (0.30, 0.10, 0.55, 1, "tanpa rug", 3.0, 0, 10), e)
+        detail(f"demo #{e + 1}", (0.30, 0.10, 0.55, 0 if args.no_smart else 1, "tanpa rug", 3.0, 0, 10), e)
     # 2. lima terbaik di B, diuji di C
     valid.sort(key=lambda kv: -kv[1]["B"][1])
     print("\n==== 5 STRATEGI TERBAIK DI B (dipilih tanpa melihat C), diuji di C")
