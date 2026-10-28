@@ -1,0 +1,19 @@
+name: riset-polyprobe
+
+# Probe sekali: format pasar Polymarket 5 menit (API publik, tanpa key, tanpa trading).
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/polyprobe.py, .github/workflows/riset-polyprobe.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -u riset/polyprobe.py
