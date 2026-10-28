@@ -1,0 +1,28 @@
+name: riset-perps2
+
+# Riset sekali jalan: uji ketahanan RSI 25/50 long-only (arsip publik Binance futures 2023-sekarang, tanpa key, tanpa trading).
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/perps2.py, .github/workflows/riset-perps2.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-perps22
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy
+      - name: Uji ketahanan RSI
+        run: python3 -u riset/perps2.py
