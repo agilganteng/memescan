@@ -97,6 +97,17 @@ def main():
                     done.add(g)
                     sells = sorted(x[0] for x in c.w if x[1] == w and not x[2])
                     ev[g].append((ci, j, sells))
+    # Batasi: maks 4000 sinyal B + 6000 sinyal C per kelompok (sampel acak tetap), supaya muat waktu.
+    rs = np.random.default_rng(1)
+    for g, E in ev.items():
+        Bx = [e for e in E if e[0] < iB]
+        Cx = [e for e in E if e[0] >= iB]
+        if len(Bx) > 4000:
+            Bx = [Bx[i] for i in sorted(rs.choice(len(Bx), 4000, replace=False))]
+        if len(Cx) > 6000:
+            Cx = [Cx[i] for i in sorted(rs.choice(len(Cx), 6000, replace=False))]
+        print(f"   {g}: {len(E):,} sinyal di B+C, dipakai {len(Bx) + len(Cx):,}")
+        ev[g] = Bx + Cx
     paths = {}
 
     def P(ci, j):
