@@ -18,25 +18,36 @@ def get(u):
 
 now = int(time.time())
 base = now - now % 300 - 3600
-for coin in ("btc", "eth", "sol", "xrp"):
-    for fmt in ("{c}-updown-5m-{t}", "{c}-up-or-down-5m-{t}"):
-        slug = fmt.format(c=coin, t=base)
-        m = get(f"{G}/markets?slug={slug}")
-        print(slug, "->", json.dumps(m)[:600])
-        e = get(f"{G}/events?slug={slug}")
-        print("  event ->", json.dumps(e)[:300])
-s = get(f"{G}/public-search?q=" + urllib.parse.quote("Bitcoin Up or Down 5") + "&limit_per_type=5")
-print("search ->", json.dumps(s)[:1500])
-m = get(f"{G}/markets?slug=btc-updown-5m-{base}")
-if isinstance(m, list) and m:
-    tok = json.loads(m[0]["clobTokenIds"])
-    print("outcomes", m[0].get("outcomes"), "prices", m[0].get("outcomePrices"), "start", m[0].get("startDate"), m[0].get("eventStartTime"))
-    for fid in (1,):
-        h = get(f"{C}/prices-history?market={tok[0]}&startTs={base-900}&endTs={base+600}&fidelity={fid}")
-        print("history", json.dumps(h)[:1500])
-    # tanggal pasar 5 menit pertama
-    for days in (30, 90, 180, 270):
-        t = base - days * 86400
-        mm = get(f"{G}/markets?slug=btc-updown-5m-{t}")
-        print(days, "hari lalu:", "ada" if isinstance(mm, list) and mm else "tidak", str(mm)[:120])
-    print("fee:", {k: m[0].get(k) for k in ("feesEnabled", "takerBaseFee", "makerBaseFee", "feeSchedule", "orderMinSize", "liquidityNum", "volumeNum", "spread")})
+
+
+def ev(coin, t):
+    e = get(f"{G}/events?slug={coin}-updown-5m-{t}")
+    return e[0] if isinstance(e, list) and e else None
+
+
+e = ev("btc", base)
+print("DESC NOW:", e["description"])
+m = e["markets"][0]
+print("MARKET KEYS:", sorted(m.keys()))
+print({k: m.get(k) for k in ("outcomes", "outcomePrices", "clobTokenIds", "eventStartTime", "startDate", "endDate", "feesEnabled",
+                             "takerBaseFee", "makerBaseFee", "feeSchedule", "feeType", "orderMinSize", "orderPriceMinTickSize",
+                             "volumeNum", "liquidityNum", "spread", "bestBid", "bestAsk", "lastTradePrice", "umaResolutionStatus")})
+tok = json.loads(m["clobTokenIds"])
+for fid in (1,):
+    h = get(f"{C}/prices-history?market={tok[0]}&startTs={base-900}&endTs={base+600}&fidelity={fid}")
+    print("HIST fid", fid, json.dumps(h)[:2500])
+h = get(f"{C}/prices-history?market={tok[0]}&interval=max&fidelity=1")
+print("HIST max", json.dumps(h)[:800])
+# kapan TWAP mulai dipakai + histori pasar lama
+for days in (2, 7, 14, 30, 45, 60, 90, 120, 150, 180, 210, 240):
+    t = base - days * 86400
+    x = ev("btc", t)
+    if not x:
+        print(days, "hari lalu: tidak ada")
+        continue
+    mm = x["markets"][0]
+    tk = json.loads(mm["clobTokenIds"])
+    hh = get(f"{C}/prices-history?market={tk[0]}&startTs={t-900}&endTs={t+600}&fidelity=1")
+    n = len(hh.get("history", [])) if isinstance(hh, dict) else hh
+    print(days, "hari lalu:", "TWAP" if "TWAP" in x["description"] else "start/end", mm.get("outcomePrices"), "vol", mm.get("volumeNum"),
+          "hist", n, json.dumps(hh)[:300])
