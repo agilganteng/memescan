@@ -1,0 +1,33 @@
+name: riset-pemenang
+
+# Riset sekali jalan: beli semua koin, bandingkan yang untung vs rugi. Hanya baca cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/pemenang.py, riset/deep.py, .github/workflows/riset-pemenang.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-pemenang
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Bandingkan pemenang
+        run: python3 -u riset/pemenang.py --data data
