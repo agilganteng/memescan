@@ -60,7 +60,7 @@ for T in (60, 300, 900):
 
 
 class Coin:
-    __slots__ = ("t0", "end", "m0", "cs", "starts", "w", "cov", "kfrom", "kbad", "tbad")
+    __slots__ = ("t0", "end", "m0", "cs", "starts", "w", "cov", "kfrom", "kbad", "tbad", "dev")
 
 
 def load(data_dir):
@@ -82,6 +82,7 @@ def load(data_dir):
                         continue
                     c.starts = [x[0] for x in c.cs]
                     c.w = [(float(a), w, int(b), float(s)) for a, w, b, s in r["w"]]
+                    c.dev = r.get("dev") or ""
                     c.cov = c.w[-1][0] if len(c.w) >= ms.REC_W_MAX else min(ms.REC_W_AGE, c.end)
                     # Kurva tidak standar, dicek kausal: detik pertama terlihat buruk (inf = tidak pernah).
                     tb = min([x[1] for x in c.cs if x[3] < FLOOR_MCAP] +
