@@ -83,10 +83,10 @@ def exit_name(k):
 # ---------------------------------------------------------------- data
 class Coin:
     __slots__ = ("i", "t0", "end", "m0", "cs", "starts", "ends", "cumv", "snaps", "buys", "kfrom", "kbad",
-                 "has_w", "sample")
+                 "has_w", "sample", "dev_sell", "bund_sell", "dev_snap")
 
 
-def load(data_dir, sol_min_vol):
+def load(data_dir, sol_min_vol, every=None, need_w=False):
     d = os.path.join(data_dir, "rec")
     wid, coins, n_all, n_bug = {}, [], 0, 0
     for fn in sorted(os.listdir(d)) if os.path.isdir(d) else []:
@@ -96,8 +96,10 @@ def load(data_dir, sol_min_vol):
                     r = json.loads(line)
                     n_all += 1
                     tot = sum(float(x[4]) + float(x[5]) for x in r["c"] if ms.rec_bucket_end(x[0]) <= 600)
-                    sample = n_all % SAMPLE_EVERY == 0
+                    sample = n_all % (every or SAMPLE_EVERY) == 0
                     if tot < sol_min_vol and not sample:
+                        continue
+                    if need_w and "w" not in r:
                         continue
                     if any(s[FI["inflow_sol"]] == 0 and s[FI["growth"]] > 1.05 for s in r["snaps"]):
                         n_bug += 1
@@ -127,12 +129,21 @@ def load(data_dir, sol_min_vol):
                     c.snaps = {int(s[0]): s for s in r["snaps"] if int(s[0]) <= 600}
                     b = {}
                     c.has_w = "w" in r
+                    dev = r.get("dev")
+                    first_sell = {}
                     for age, w, isbuy, sol in r.get("w", []):
                         if isbuy:
                             i = wid.setdefault(w, len(wid))
                             if i not in b:
                                 b[i] = float(age)
+                        elif w not in first_sell:
+                            first_sell[w] = float(age)
                     c.buys = b
+                    c.dev_sell = first_sell.get(dev, math.inf) if dev else math.inf
+                    bund = {w for age, w, isbuy, sol in r.get("w", []) if isbuy and float(age) < 1.0 and w != dev}
+                    c.bund_sell = min([first_sell[w] for w in bund if w in first_sell] + [math.inf])
+                    c.dev_snap = min([float(sn[0]) for sn in r["snaps"] if float(sn[FI["dev_sold_any"]]) > 0]
+                                     + [math.inf])
                 except (ValueError, KeyError, TypeError, IndexError):
                     continue
                 if c.cs and c.m0 > 0:

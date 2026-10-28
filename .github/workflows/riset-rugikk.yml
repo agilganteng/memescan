@@ -1,0 +1,34 @@
+name: riset-rugikk
+
+# Riset sekali jalan: backtest aturan bot @rugikkk (masuk awal, filter dev/rug, jual saat dev/bundler jual), modal $100/$200/$1000.
+# Hanya baca cache rekaman, tidak ada transaksi.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/rugikk.py, riset/insider4.py, .github/workflows/riset-rugikk.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-rugikk
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Backtest rugikkk
+        run: python3 -u riset/rugikk.py --data data
