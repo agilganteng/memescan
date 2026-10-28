@@ -1,0 +1,28 @@
+name: riset-perps
+
+# Riset sekali jalan: backtest leverage memecoin perps Hyperliquid (API publik, tanpa key, tanpa trading).
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/perps.py, .github/workflows/riset-perps.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-perps
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy
+      - name: Backtest perps
+        run: python3 -u riset/perps.py
