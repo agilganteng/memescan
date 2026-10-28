@@ -1,0 +1,33 @@
+name: riset-walletcek
+
+# Riset sekali jalan: bedah pola satu wallet (rekaman memescan + RPC publik). Hanya baca data publik.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/wallet_cek.py, .github/workflows/riset-walletcek.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-walletcek
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Bedah wallet
+        run: python3 -u riset/wallet_cek.py --data data --addr 7BNaxx6KdUYrjACNQZ9He26NBFoFxujQMAfNLnArLGH5 --n-tx 400
