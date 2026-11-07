@@ -26,15 +26,14 @@ urls = [
 for u in urls:
     s, b, dt = get(u)
     print(f"{s} {dt:.1f}s {u[:110]}\n   {b[:600]!r}\n")
-# GeckoTerminal OHLCV untuk pool BONK teratas
+# GeckoTerminal OHLCV untuk pool BONK teratas, berbagai jarak waktu
 s, b, dt = get(urls[3])
-try:
-    pool = json.loads(b)["data"][0]["relationships"]["top_pools"]["data"][0]["id"].split("_", 1)[1]
-    for tf in ("minute?aggregate=15", "hour?aggregate=1"):
-        u = f"https://api.geckoterminal.com/api/v2/networks/solana/pools/{pool}/ohlcv/{tf}&limit=1000&before_timestamp={int(time.time()) - 200 * 86400}"
+pool = json.loads(b)["data"][0]["relationships"]["top_pools"]["data"][0]["id"].split("_", 1)[1]
+for tf in ("minute?aggregate=15", "hour?aggregate=1", "day?aggregate=1"):
+    for back in (None, 3, 20, 60, 150):
+        q = f"&before_timestamp={int(time.time()) - back * 86400}" if back else ""
+        u = f"https://api.geckoterminal.com/api/v2/networks/solana/pools/{pool}/ohlcv/{tf}&limit=1000{q}"
         s, b, dt = get(u)
-        d = json.loads(b) if s == 200 else {}
-        l = d.get("data", {}).get("attributes", {}).get("ohlcv_list", [])
-        print(f"OHLCV {tf}: {s} {len(l)} candle, {l[-1] if l else ''} .. {l[0] if l else ''}")
-except Exception as e:  # noqa: BLE001
-    print("gecko parse gagal", e)
+        l = json.loads(b).get("data", {}).get("attributes", {}).get("ohlcv_list", []) if s == 200 else []
+        print(f"OHLCV {tf} mundur {back} hari: {s} {len(l)} candle, terlama {time.strftime('%Y-%m-%d', time.gmtime(l[-1][0])) if l else ''} {b[:150] if s != 200 else ''}")
+        time.sleep(2.5)
