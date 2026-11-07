@@ -4,7 +4,7 @@ name: riset-swing
 on:
   push:
     branches: [strat100k]
-    paths: [riset/swing.py, riset/swing_list.py, riset/swing_fetch.py, .github/workflows/riset-swing.yml]
+    paths: [riset/swing_list.py, riset/swing_fetch.py]
   workflow_dispatch:
 
 permissions:

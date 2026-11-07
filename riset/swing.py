@@ -25,6 +25,15 @@ JUAL:
   X4 CRT 4 jam (tutup < low 16 candle sebelumnya) SL 50% | X5 CRT 1 jam (4 candle) SL 50% | X6 tahan 24 jam |
   X7 tahan sampai data habis (~10 hari) | X8 TP +50% SL 20% maks 1 hari |
   X9 cuan bungkus: jual setengah di 2x, sisanya trailing 40%, SL 30% maks 7 hari
+TAMBAHAN 8 Nov (ditulis sebelum data selesai diambil, dari video yang ditonton):
+  LANTAI (Crash Trading): puncak >= $1M / $3M, harga <= 40% puncak, dan 24 / 48 jam terakhir "flored out"
+                 (high/low rentang <= 1,6x), beli. = pola run-up -> layu -> double bottom.
+  X10 baca candle (Zaf): jual saat bearish engulfing (candle merah menelan badan candle hijau sebelumnya), SL 50%.
+  X11 = X10 tapi candle merah >= 10%.  X12 Maurits: jual 50% di 2x, sisa trailing 30%, SL 25%, maks 1 hari.
+  X13 Ros: tarik modal di 2x, sisa moonbag sampai data habis (tanpa SL).
+  LP (ide sendiri): jadi penyedia likuiditas di pool PumpSwap. Nilai posisi = sqrt(harga akhir/awal) + fee,
+     fee per candle = 0,20% x volume / TVL saat setor, TVL = 2 x 0,207 x sqrt(MC_lulus x MC_setor) (pool constant
+     product tanpa LP lain, bagian kita tetap). Fee LP diuji 0,20% dan 0,02% (aturan fee PumpSwap berubah-ubah). Ini BATAS ATAS (LP lain ikut menambah likuiditas -> fee kita lebih kecil; harga dalam USD).
 MODAL: $100/$200/$1000, 2%/trade (maks 20 posisi) dan 10%/trade (maks 5).
 BATAS: GeckoTerminal gratis hanya ~180 hari ke belakang, jadi Jan - awal Jun 2026 TIDAK bisa diuji. Koin tanpa trade
   (mati) tidak punya candle -> jual di candle terakhir yang ada (bisa sedikit optimistis untuk koin yang benar-benar mati).
@@ -58,7 +67,15 @@ EXITS = {
     "X7 tahan ~10hari": dict(T=10 ** 6),
     "X8 TP+50% SL20% 1h": dict(tp=1.5, sl=0.2, T=24 * H),
     "X9 cuan bungkus": dict(half=2.0, sl=0.3, trail=0.4, arm=1.0, T=7 * 24 * H),
+    "X10 baca candle (Zaf)": dict(sl=0.5, engulf=0.0, T=7 * 24 * H),
+    "X11 baca candle besar": dict(sl=0.5, engulf=0.10, T=7 * 24 * H),
+    "X12 Maurits 50%@2x SL25%": dict(half=2.0, sl=0.25, trail=0.3, arm=1.0, T=24 * H),
+    "X13 Ros modal@2x moonbag": dict(half=2.0, T=10 ** 6),
 }
+LP_FEE = 0.002      # bagian fee untuk LP di PumpSwap (0,20% volume) -- optimistis
+LP_R0 = 0.207       # porsi supply token di pool saat lulus (~206,9 jt dari 1 miliar)
+LP_COST = 1 - 0.5 * (0.0025 + 0.01)   # setengah modal di-swap ke token (fee DEX + slippage), tiap sisi
+LP_HOLD = {"LP tahan 1h": 24 * H, "LP tahan 3h": 3 * 24 * H, "LP tahan 7h": 7 * 24 * H, "LP tahan ~10h": 10 ** 6}
 EXN = list(EXITS)
 
 
@@ -103,6 +120,14 @@ def signals(k):
             i = np.where(m)[0]
             if len(i):
                 out[f"DIP puncak>={p / 1e6:g}M sisa<={keep:.0%}"] = int(i[0])
+    for p in (1e6, 3e6):
+        for W in (96, 192):
+            fl = np.array([(h[i - W + 1:i + 1].max() / max(l[i - W + 1:i + 1].min(), 1e-9)) if i >= W - 1 else np.inf
+                           for i in range(n)])
+            m = (peak >= p) & (c <= 0.4 * peak) & (fl <= 1.6)
+            i = np.where(m)[0]
+            if len(i):
+                out[f"LANTAI puncak>={p / 1e6:g}M {W // 4}j"] = int(i[0])
     for g in (2.0, 4.0):
         prev = np.array([c[max(0, i - 96)] for i in range(n)])
         m = (c >= g * prev) & (c >= 3e5) & (np.arange(n) >= 4)
@@ -144,6 +169,10 @@ def trade(k, si, cfg):
         if cfg.get("crt") and j - cfg["crt"] >= e and c[j] < l[j - cfg["crt"]:j].min():
             p_out, j_out = (o[j + 1] if j + 1 < n else c[j]), j
             break
+        if cfg.get("engulf") is not None and j > e and c[j] < o[j] and c[j - 1] > o[j - 1] \
+                and o[j] >= c[j - 1] and c[j] <= o[j - 1] and (o[j] - c[j]) / o[j] >= cfg["engulf"]:
+            p_out, j_out = (o[j + 1] if j + 1 < n else c[j]), j
+            break
         if j - e + 1 >= T:
             p_out, j_out = c[j], j
             break
@@ -157,6 +186,22 @@ def trade(k, si, cfg):
     if got_half is not None:
         x = 0.5 * (got_half * cost / (p_in / cost)) + 0.5 * x
     return x, k["ts"][e], k["ts"][j_out] + 900
+
+
+def lp_trade(k, si, T, lpfee=LP_FEE):
+    """Setor likuiditas di open candle si+1, tarik setelah T candle. Return (multiple, t masuk, t keluar)."""
+    o, c, v = k["o"], k["c"], k["v"]
+    n = len(c)
+    e = si + 1
+    if e >= n or o[e] <= 0 or o[0] <= 0:
+        return None
+    tvl_e = 2 * LP_R0 * math.sqrt(o[0] * o[e])     # TVL saat setor (tanpa LP lain); bagian kita tetap
+    fee = 0.0
+    j = e
+    for j in range(e, min(n, e + T)):
+        fee += lpfee * v[j] / max(tvl_e, 1.0)      # fee dibayar ke kita, dinilai saat itu (tidak ikut IL)
+    x = (math.sqrt(max(c[j], 0.0) / o[e]) + fee) * LP_COST * LP_COST
+    return x, k["ts"][e], k["ts"][j] + 900
 
 
 def sim(tr, cap, frac, mp):
@@ -219,6 +264,19 @@ def main():
                 r = trade(k, si, cfg)
                 if r:
                     res.setdefault((sname, ename), {"P": [], "U": []})[part].append((r[1], r[0], r[2]))
+    lpres = {}
+    for k in coins:
+        part = "P" if k["t"] < cut else "U"
+        sg = signals(k)
+        for sname in ("LULUS", "MC>=1M", "LANTAI puncak>=1M 24j"):
+            if sname not in sg:
+                continue
+            for lname, T in LP_HOLD.items():
+                for lf in (LP_FEE, 0.0002):
+                    r = lp_trade(k, sg[sname], T, lf)
+                    if r:
+                        lpres.setdefault((sname, f"{lname} fee {lf:.2%}"), {"P": [], "U": []})[part].append(
+                            (r[1], r[0], r[2]))
     rows = []
     for key, d in res.items():
         if len(d["P"]) >= 30:
@@ -241,10 +299,17 @@ def main():
     print("\n## Aturan persis dari video (tanpa pilih-pilih):")
     for key in (("SWING mc>=1M bo12j vol>=0k", "X1 TP2x SL30% 3h"), ("MC>=1M", "X2 TP2x SL30% 7h"),
                 ("MC>=1M", "X9 cuan bungkus"), ("MC>=1M", "X4 CRT 4jam SL50%"), ("LULUS", "X8 TP+50% SL20% 1h"),
-                ("DIP puncak>=5M sisa<=30%", "X8 TP+50% SL20% 1h")):
+                ("DIP puncak>=5M sisa<=30%", "X8 TP+50% SL20% 1h"), ("LANTAI puncak>=1M 48j", "X7 tahan ~10hari"),
+                ("LANTAI puncak>=3M 48j", "X7 tahan ~10hari"), ("MC>=1M", "X10 baca candle (Zaf)"),
+                ("LULUS", "X12 Maurits 50%@2x SL25%"), ("LULUS", "X13 Ros modal@2x moonbag")):
         if key in res:
             print(f"  * {key[0]} | {key[1]}")
             print(line("PILIH+UJI", res[key]["P"] + res[key]["U"]))
+    print("\n## LP (penyedia likuiditas PumpSwap, BATAS ATAS fee) PILIH -> UJI:")
+    for key, d in lpres.items():
+        xp = np.mean([x for _, x, _ in d["P"]]) if d["P"] else float("nan")
+        print(f"  * {key[0]} | {key[1]}: PILIH {xp:.3f}x n={len(d['P'])}")
+        print(line("UJI", d["U"]))
     print(f"\nSelesai {time.time() - t0:.0f} dtk. Paper saja, tidak ada transaksi.")
 
 
