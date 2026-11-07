@@ -1,0 +1,7 @@
+ALL https://www.youtube.com/@bevanpramudt/videos
+ALL https://www.youtube.com/@bevanpramudt/shorts
+ALL https://www.youtube.com/@bevanpramudt/streams
+ytsearch60:Bevan Pramudito
+ytsearch40:Bevan Pramudito podcast
+ytsearch30:ft Bevan memecoin
+ytsearch30:Bevan memecoin crypto podcast
