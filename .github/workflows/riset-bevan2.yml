@@ -1,0 +1,33 @@
+name: riset-bevan2
+
+# Riset sekali jalan: uji database wallet ala Bevan + copy dev/sniper/teman + sniper jeda. Hanya baca cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/bevan2.py, .github/workflows/riset-bevan2.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-bevan2
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Backtest bevan2
+        run: python3 -u riset/bevan2.py --data data
