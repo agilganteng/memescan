@@ -1,0 +1,33 @@
+name: riset-zostaff
+
+# Riset sekali jalan: backtest bot pumpfunbots-reverse @zostaff. Hanya baca cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/zostaff.py, .github/workflows/riset-zostaff.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-zostaff
+  cancel-in-progress: true
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: pip install -q numpy
+      - name: Backtest zostaff
+        run: python3 -u riset/zostaff.py --data data
