@@ -38,3 +38,24 @@ Syarat lulus (semua harus terpenuhi):
 Pembanding: 70 kombinasi (10 filter × 7 exit). Kalau cuma 1–3 yang lulus, itu masih mungkin kebetulan, jadi wajib dicek ulang di data minggu berikutnya.
 
 Simulasi modal $100/$200/$1000 dengan 10% per trade, urut waktu. Data hanya mulai 8 Nov 2026; Jan–Okt 2026 tidak bisa diuji karena channel tidak menyimpan harga lama.
+
+## Tambahan 8 Nov 2026 14:31 UTC (permintaan user, ditulis SEBELUM melihat hasil)
+
+Penilaian utama sekarang memakai urutan tiga lapis. Filter lain (F1, F4, F8, F9, filter ala memescan) hanya jadi pembanding.
+
+1. **Callout** sebagai pemicu. Sumbernya:
+   - channel Telegram publik (recorder GitHub)
+   - grup Telegram yang di-join
+   - GMGN Callout Radar (GMGN + fomo + pump + X)
+2. **Latar belakang koin** sebagai filter wajib. Pakai rugcheck yang meniru Soul Scanner / SolSniffer / Bubblemaps:
+   - mint dan freeze authority sudah dicabut
+   - tidak ada risiko 'danger'
+   - top10 ≤30%
+   - insider/cluster = 0
+   - ditambah likuiditas ≥$10k
+3. **Narasi sosmed** sebagai filter wajib. Koin punya akun X sendiri (bukan link status/komunitas) dengan follower ≥1.000 dan umur akun ≥30 hari, ATAU punya X + website.
+   Batasnya: isi post X tidak bisa dibaca dari server (mirror mati). Jadi "narasi" diukur dari akun/website koin, bukan jumlah mention.
+
+Nama gabungan ini **P3 = callout → latar belakang → sosmed**. Exit dan syarat lulusnya sama dengan di atas: n di B ≥30, rata A >1, rata B >1, rata B tanpa koin terbaik >1.
+
+Kalau P3 tidak mencapai n ≥30, hasilnya dilaporkan "belum cukup data", bukan lulus atau gagal.
