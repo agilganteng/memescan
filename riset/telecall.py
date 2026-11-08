@@ -52,7 +52,7 @@ SKIP_CA = {"So11111111111111111111111111111111111111112", "EPjFWdd5AufqSSqeM2qN1
            "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY9NAZsXEbUYsWDb", "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P",
            "11111111111111111111111111111111", "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
            "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"}
-TG_RE = re.compile(r"(?:https?://)?t\.me/(?:s/)?([A-Za-z][A-Za-z0-9_]{4,31})(?:[/?\"'#]|$)")
+TG_RE = re.compile(r"(?:https?://)?t\.me/(?:s/)?([A-Za-z][A-Za-z0-9_]{4,31})(?=[\s/?\"'#<),.]|$)")
 TG_SKIP = {"joinchat", "share", "addstickers", "proxy", "socks", "iv", "c", "s", "durov", "telegram",
            "BotFather", "contest", "addlist", "boost"}
 
