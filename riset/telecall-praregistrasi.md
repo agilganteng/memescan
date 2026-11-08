@@ -59,3 +59,18 @@ Penilaian utama sekarang memakai urutan tiga lapis. Filter lain (F1, F4, F8, F9,
 Nama gabungan ini **P3 = callout → latar belakang → sosmed**. Exit dan syarat lulusnya sama dengan di atas: n di B ≥30, rata A >1, rata B >1, rata B tanpa koin terbaik >1.
 
 Kalau P3 tidak mencapai n ≥30, hasilnya dilaporkan "belum cukup data", bukan lulus atau gagal.
+
+### Tambahan 8 Nov 2026 14:55 UTC: narasi dari akun lain (permintaan user, SEBELUM hasil)
+
+Lapis 3 (sosmed) diperluas. Koin lolos kalau memenuhi **salah satu** syarat:
+- (a) punya akun X sendiri, sesuai aturan di atas; atau
+- (b) **ramai di X dari akun lain**, diukur SEBELUM waktu masuk, pakai pencarian X di Chrome user, tab Latest, dengan operator since_time/until_time:
+  - ≥5 post yang menyebut CA atau $TICKER dalam 60 menit sebelum masuk, dari ≥3 akun berbeda; ATAU
+  - ≥1 akun dengan follower ≥10.000 menyebut koin itu dalam 6 jam sebelum masuk.
+
+Pencarian X dilakukan belakangan (retroaktif) dengan batas waktu sebelum masuk, jadi tidak mengintip masa depan. Tempo dibuat pelan supaya akun user tidak kena limit.
+
+Varian yang dilaporkan:
+- P3a = callout + latar belakang + (a)
+- P3b = callout + latar belakang + (b)
+- P3 = callout + latar belakang + (a atau b) → **utama**
