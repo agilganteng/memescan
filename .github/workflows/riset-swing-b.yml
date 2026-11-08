@@ -1,0 +1,69 @@
+name: riset-swing-b
+
+# CADANGAN (8 Nov) dengan batas waktu daftar 150 mnt. Riset sekali jalan: koin pump.fun yang lulus (Jun-Nov 2026) -> candle 15 menit 10 hari -> uji swing/dip/momentum/CRT.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/swing_list2.py, .github/workflows/riset-swing-b.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riset-swing-b
+  cancel-in-progress: true
+
+jobs:
+  daftar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@v4
+      - name: Daftar koin lulus dari RPC
+        run: python3 -u riset/swing_list2.py --since 2026-06-10 --per-day 30 --out data/swing/list.json --max-minutes 150
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swingb-list
+          path: data/swing/list.json
+
+  ambil:
+    needs: daftar
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: swingb-list
+          path: data/swing
+      - name: Candle GeckoTerminal
+        run: python3 -u riset/swing_fetch.py --list data/swing/list.json --shard ${{ matrix.shard }} --of 8 --out data/swing/shard${{ matrix.shard }}.json --max-minutes 320
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swingb-shard-${{ matrix.shard }}
+          path: data/swing/shard${{ matrix.shard }}.json
+
+  uji:
+    needs: ambil
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: swingb-shard-*
+          path: data/swing
+          merge-multiple: true
+      - run: pip install -q numpy
+      - name: Uji strategi setelah lulus
+        run: python3 -u riset/swing.py --dir data/swing
