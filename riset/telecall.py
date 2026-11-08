@@ -228,7 +228,9 @@ def run(data, duration):
     os.makedirs(d, exist_ok=True)
     st_fp = os.path.join(d, "state.json")
     st = load_json(st_fp, {"channels": {}, "dead": [], "queue": []})
-    for s in SEEDS:
+    extra = os.path.join(os.path.dirname(os.path.abspath(__file__)), "telecall_seeds.txt")
+    more = [w for ln in open(extra) if not ln.startswith("#") for w in ln.split()] if os.path.exists(extra) else []
+    for s in SEEDS + more:
         if s not in st["channels"] and s not in st["dead"] and s not in st["queue"]:
             st["queue"].append(s)
     tokens = {}   # mint -> first call t
