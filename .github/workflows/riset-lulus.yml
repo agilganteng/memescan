@@ -1,0 +1,52 @@
+name: riset-lulus
+
+# Perekam maju (paper) koin pump.fun yang lulus ke PumpSwap, harga sampai 72 jam.
+# Satu run ~5 jam 45 menit. Saat mulai, run ini mengantrekan run berikutnya (rantai) sampai
+# tanggal STOP, lalu berhenti sendiri. Data dibawa antar run lewat cache. Hanya branch strat100k.
+# Paper saja: tidak ada wallet, kunci, atau login.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/lulus.py, .github/workflows/riset-lulus.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: riset-lulus
+  cancel-in-progress: false
+
+env:
+  STOP: "2026-11-23"
+
+jobs:
+  rekam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Antrekan run berikutnya (sampai tanggal STOP)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(date -u +%F)" \< "$STOP" ]; then gh workflow run riset-lulus.yml --ref "${{ github.ref_name }}" || true; else echo "lewat $STOP, rantai berhenti"; fi
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: lulus-data-${{ github.run_id }}
+          restore-keys: lulus-data-
+      - name: Rekam
+        run: python3 -u riset/lulus.py run --data data --duration 20400
+      - name: Laporan
+        if: always()
+        run: python3 riset/lulus.py status --data data || true
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: data
+          key: lulus-data-${{ github.run_id }}
