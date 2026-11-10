@@ -1,0 +1,104 @@
+# PAPER ONLY. Wallet publik yang dibagikan (kolscan 27 Okt 2026, SOLLMG 10 Nov 2026, riset 7BNaxx). Bukan saran copy-live.
+# rec lokal = prefix 10 karakter di rec-20261110.jsonl (65 menit, 10 Nov 13:23-14:28 WIB). Recorder memescan hanya menyimpan 10 huruf pertama.
+# whale tape = alamat lengkap di desk/whale_data/trades (PumpSwap/DEX, 8 Nov 11:40 UTC s/d 10 Nov 11:25 UTC, 683991 trade, 1565 mint).
+# 14 alamat SOLLMG lain cuma tampil terpotong (EBx2…wrcD, dtrz…edXy, dll) dan tidak unik di tape kita, jadi tidak dimasukkan.
+wallet,label,source_name,source_url,source_date_wib_or_utc,source_note,rec_prefix10,in_rec_trades_local65min,in_rec_coins_local65min,in_whale_trades_pumpswap,in_whale_mints_pumpswap
+5YRgrP3mjGzrzirYYN5HAQH19cTYREYwGxW6XRJQUzij,slingoor,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",5YRgrP3mjG,0,0,21,9
+4xY9T1Q7foJzJsJ6YZDSsfp9zkzeZsXnxd45SixduMmr,zeropnl,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4xY9T1Q7fo,0,0,1,1
+CyaE1VxvBrahnPWkqm5VsdCvyS2QmNht2UFrKJHga54o,Cented,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CyaE1VxvBr,20,3,22,9
+CAPn1yH4oSywsxGU456jfgTrSSUidf9jgeAnHceNUJdw,cap,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CAPn1yH4oS,0,0,63,19
+87rRdssFiTJKY4MGARa4G5vQ31hmR7MxSmhzeaJ5AAxJ,Dior,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",87rRdssFiT,0,0,3,1
+D1H83ueSw5Nxy5okxH7VBfV4jRnqAK5Mm1tm3JAj3m5t,Jeets,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",D1H83ueSw5,0,0,0,0
+A38dM3RtNpewkwkWJeyj8C9c8yWtgaaAdh4Rdj1SXg3M,TMH,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",A38dM3RtNp,0,0,0,0
+4vw54BmAogeRV3vPKWyFet5yf8DTLcREzdSzx4rw9Ud9,decu,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4vw54BmAog,0,0,32,14
+8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6,Cooker,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",8deJ9xeUvX,0,0,1,1
+CEUA7zVoDRqRYoeHTP58UHU6TR8yvtVbeLrX1dppqoXJ,Tom,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CEUA7zVoDR,0,0,0,0
+5vg7he5HibvsAW86wfiuP6jw7VwKmUAnP6P93mVCdpJu,blixze,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",5vg7he5Hib,0,0,1,1
+BQVz7fQ1WsQmSTMY3umdPEPPTm1sdcBcX9sP7o6kPRmB,Limfork.eth,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",BQVz7fQ1Ws,0,0,0,0
+862TYSvRYoiHAK3F3WwTRYAfuGiQaGdxedN9AGvRGWo2,Wugi,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",862TYSvRYo,0,0,0,0
+CCUcjek5p6DLoH2YNtjizxYhAnStXAQAGVxhp1cYJF7w,el_charto,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CCUcjek5p6,0,0,1,1
+ardinRsN1mNYVeoJWTBsWeYeXvuR9UUDGMsCDKpb6AT,trunoest,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",ardinRsN1m,0,0,11,5
+B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC,Kadenox,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",B32QbbdDAy,0,0,11,4
+6S8GezkxYUfZy9JPtYnanbcZTMB87Wjt1qx3c6ELajKC,Nyhrox,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",6S8GezkxYU,0,0,0,0
+EjtQrPTbcMevStBkpnjsH23NfUCMhGHusTYsHuGVQZp2,Zef,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",EjtQrPTbcM,0,0,12,4
+Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt,theo,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",Bi4rd5FH5b,0,0,11,6
+Dgehc8YMv6dHsiPJVoumvq4pSBkMVvrTgTUg7wdcYJPJ,omar,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",Dgehc8YMv6,0,0,0,0
+39q2g5tTQn9n7KnuapzwS2smSx3NGYqBoea11tBjsGEt,Walta,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",39q2g5tTQn,0,0,1,1
+DEdEW3SMPU2dCfXEcgj2YppmX9H3bnMDJaU4ctn2BQDQ,KingSolomon,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",DEdEW3SMPU,0,0,2,2
+DYAn4XpAkN5mhiXkRB7dGq4Jadnx6XYgu8L5b3WGhbrt,TheDoc,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",DYAn4XpAkN,0,0,11,6
+3pfqebV65sHMbF5z86HsPKSiTxwpNhCzjK5X7GUqCbtK,Rem,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",3pfqebV65s,0,0,3,2
+J9TYAsWWidbrcZybmLSfrLzryANf4CgJBLdvwdGuC8MB,Johnson,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",J9TYAsWWid,0,0,7,4
+H1TLERBQyQzSd5gbvbWwP97GjeL9txzWoN5BK4UG7xYm,alex,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",H1TLERBQyQ,0,0,3,2
+BXNiM7pqt9Ld3b2Hc8iT3mA5bSwoe9CRrtkSUs15SLWN,Absol,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",BXNiM7pqt9,0,0,0,0
+8MaVa9kdt3NW4Q5HyNAm1X5LbR8PQRVDc1W8NMVK88D5,Daumen,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",8MaVa9kdt3,0,0,2,2
+ALauG4FwEYDgSXd5Hen6kvuWSCdUi2fYNSNqM1Ci31wE,Thurstonzappedarc,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",ALauG4FwEY,0,0,0,0
+Dvbv5TdAyPpJk16X9mUxWFVicYtCUxTLhuof8TGuUaRv,CookDoc,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",Dvbv5TdAyP,0,0,0,0
+PMJA8UQDyWTFw2Smhyp9jGA6aTaP7jKHR7BPudrgyYN,chester,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",PMJA8UQDyW,0,0,2,2
+JAunzNqs3bVBcWDjDxfq9rgLzJMCadNXoaCgfzLGMtYs,Pengu,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",JAunzNqs3b,0,0,0,0
+4yo9CUuTBbds9NFhZd4MzPiZZkUvveXdTnAH8qMsE8ku,Gfree,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4yo9CUuTBb,4,1,7,3
+BAr5csYtpWoNpwhUjixX7ZPHXkUciFZzjBp9uNxZXJPh,JackDuval,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",BAr5csYtpW,0,0,6,5
+A3W8psibkTUvjxs4LRscbnjux6TFDXdvD4m4GsGpQ2KJ,Numer0trencharc,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",A3W8psibkT,0,0,1,1
+9RrKUhRpbPDNxR7x88ZsCgdtqPHUfwYPjj4JdpV4FBj9,PocketHitlers,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",9RrKUhRpbP,0,0,10,3
+CXVJewdc79TYR55sz4SGLSWUPz3r4LBJ9Mn93bZ8ZyAz,Swan,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CXVJewdc79,0,0,0,0
+EP5mvfhGv6x1XR33Fd8eioiYjtRXAawafPmkz9xBpDvG,Zemrics,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",EP5mvfhGv6,0,0,0,0
+hahaA2GjzZbwgAwwryjmTb8VkmLt68hdZVHhtcpknpT,Aspect,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",hahaA2GjzZ,0,0,0,0
+951wq3qDowjKHaycrNaiRB5WpovYVKXnqhnrcKPh46zt,jrus,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",951wq3qDow,0,0,0,0
+GGznouFGrtSETCzvt14gysyjZ2uYKBDVjMBaq8h1aCHG,Boeroe,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",GGznouFGrt,0,0,0,0
+7pDhG6NqfzQzw5KvtGXJbVRUh4iTBgYAn68BSKjdMNC1,DegenerateBrian,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",7pDhG6Nqfz,0,0,0,0
+BCnqsPEtA1TkgednYEebRpkmwFRJDCjMQcKZMMtEdArc,kreo,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",BCnqsPEtA1,0,0,4,3
+GM7Hrz2bDq33ezMtL6KGidSWZXMWgZ6qBuugkb5H8NvN,Beaver,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",GM7Hrz2bDq,0,0,1,1
+8rvAsDKeAcEjEkiZMug9k8v1y8mW6gQQiMobd89Uy7qR,Casino,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",8rvAsDKeAc,0,0,4,2
+5fHJszey2UdB2nETS1y6NS2wSG4ic9byKtbgJzaYzGeV,k4ye,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",5fHJszey2U,0,0,7,2
+78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2,Sheep,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",78N177fzNJ,0,0,1,1
+8fsKLLtvKNanL4ginCaiRS6UfeemY11rSf8U8fN1dJw4,Stigman,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",8fsKLLtvKN,0,0,0,0
+53BnNc49Ajgstciq3CRoyxuBpkkW1r8pgPyvr7JGYnsh,Monki,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",53BnNc49Aj,0,0,0,0
+DuGezKLZp8UL2aQMHthoUibEC7WSbpNiKFJLTtK1QHjx,Eddy,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",DuGezKLZp8,0,0,0,0
+5hAgYC8TJCcEZV7LTXAzkTrm7YL29YXyQQJPCNrG84zM,Schoen,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",5hAgYC8TJC,0,0,18,6
+CxgPWvH2GoEDENELne2XKAR2z2Fr4shG2uaeyqZceGve,narc,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CxgPWvH2Go,0,0,0,0
+EeXvxkcGqMDZeTaVeawzxm9mbzZwqDUMmfG3bF7uzumH,milito,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",EeXvxkcGqM,0,0,0,0
+4BdKaxN8G6ka4GYtQQWk4G4dZRUTX2vQH9GcXdBREFUk,Jijo,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4BdKaxN8G6,0,0,2,2
+5t9xBNuDdGTGpjaPTx6hKd7sdRJbvtKS8Mhq6qVbo8Qz,Smokez,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",5t9xBNuDdG,0,0,0,0
+4nwfXw7n98jEQn93VWY7Cuf1jnn1scHXuXCPGVYS9k6T,Frost,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4nwfXw7n98,0,0,5,2
+DjM7Tu7whh6P3pGVBfDzwXAx2zaw51GJWrJE3PwtuN7s,LUKEY,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",DjM7Tu7whh,0,0,0,0
+3LUfv2u5yzsDtUzPdsSJ7ygPBuqwfycMkjpNreRR2Yww,Domy,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",3LUfv2u5yz,0,0,9,3
+GNrmKZCxYyNiSUsjduwwPJzhed3LATjciiKVuSGrsHEC,Giann,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",GNrmKZCxYy,0,0,0,0
+xyzfhxfy8NhfeNG3Um3WaUvFXzNuHkrhrZMD8dsStB6,Gasp,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",xyzfhxfy8N,0,0,1,1
+6aXFYXbFob1ZKAEDCcqZnX2vooA3TgEqDoy5dAQbeWoV,Flames,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",6aXFYXbFob,0,0,14,8
+67Nwfi9hgwqhxGoovT2JGLU67uxfomLwQAWncjXXzU6U,Silver,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",67Nwfi9hgw,0,0,7,5
+CQervCdE3WAUGRmaTj9NHdbNrNGVsxJb68t3QggcntM2,marker,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CQervCdE3W,0,0,0,0
+GJA1HEbxGnqBhBifH9uQauzXSB53to5rhDrzmKxhSU65,Latuche,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",GJA1HEbxGn,0,0,0,0
+7NnaXghjuU92gM9kmwXysqa5HboyZuR2LTaBnvazFxSH,Pavlo,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",7NnaXghjuU,0,0,0,0
+E7gozEiAPNhpJsdS52amhhN2XCAqLZa7WPrhyR6C8o4S,evening,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",E7gozEiAPN,0,0,2,2
+5B79fMkcFeRTiwm7ehsZsFiKsC7m7n1Bgv9yLxPp9q2X,bandit,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",5B79fMkcFe,0,0,8,5
+6KR7SorsUQtNH6CB6JpAnWCAKeTysa95iyXeWihdNeGT,KOREAN,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",6KR7SorsUQ,0,0,5,2
+8nqtxpFpuXwfXG4pBLsDkkuMMPK9FjSkBMCn542HiM3v,dov7,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",8nqtxpFpuX,0,0,9,2
+J23qr98GjGJJqKq9CBEnyRhHbmkaVxtTJNNxKu597wsA,gr3g,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",J23qr98GjG,0,0,4,3
+SAALE2x3sn51EyahJyqD6913L3GqHZdZo3egUdMayQp,saale,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",SAALE2x3sn,0,0,0,0
+DU323DieHUGPmYamp6A4Ai1V4YSYgRi35mGpzJGrjf7k,Toxicw,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",DU323DieHU,0,0,0,0
+4DdrfiDHpmx55i4SPssxVzS9ZaKLb8qr45NKY9Er9nNh,Mr.Frog,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4DdrfiDHpm,0,0,0,0
+4fZFcK8ms3bFMpo1ACzEUz8bH741fQW4zhAMGd5yZMHu,Rilsio,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4fZFcK8ms3,0,0,0,0
+EqiFgyNw6kgrmYstWyrP8VjKhka7XEmKTZzHSmwpr1Zb,ban,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",EqiFgyNw6k,4,2,38,14
+5o3kAZLwEzNF1kfVv8JSEqv6sSB88pZbHxF1oYTxgXzG,neo.,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",5o3kAZLwEz,0,0,0,0
+zhYnXqK3MNSmwS3yxSvPmY5kUa1n2WUaCJgYUDrAHkL,zhynx,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",zhYnXqK3MN,0,0,0,0
+215nhcAHjQQGgwpQSJQ7zR26etbjjtVdW74NLzwEgQjP,OGAntD,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",215nhcAHjQ,0,0,1,1
+3bzaJd5yZG73EVDz8xosQb7gfZm2LN5auFGh6wnP1n1f,Matt,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",3bzaJd5yZG,0,0,2,1
+4Be9CvxqHW6BYiRAxW9Q3xu1ycTMWaL5z8NX4HR3ha7t,Mitch,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",4Be9CvxqHW,0,0,0,0
+CgaA9a1JwAXJyfHuvZ7VW8YfTVRkdiT5mjBBSKcg7Rz5,Art,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CgaA9a1JwA,2,1,18,6
+FAicXNV5FVqtfbpn4Zccs71XcfGeyxBSGbqLDyDJZjke,radiance,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",FAicXNV5FV,0,0,0,0
+ADC1QV9raLnGGDbnWdnsxazeZ4Tsiho4vrWadYswA2ph,Ducky,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",ADC1QV9raL,0,0,0,0
+CkPFGv2Wv1vwdWjtXioEgb8jhZQfs3eVZez3QCetu7xD,Lynk,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",CkPFGv2Wv1,0,0,4,3
+99xnE2zEFi8YhmKDaikc1EvH6ELTQJppnqUwMzmpLXrs,Coler,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",99xnE2zEFi,2,1,0,0
+G6fUXjMKPJzCY1rveAE6Qm7wy5U3vZgKDJmN1VPAdiZC,clukz,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",G6fUXjMKPJ,0,0,2,1
+H31vEBxSJk1nQdUN11qZgZyhScyShhscKhvhZZU3dQoU,Megga,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",H31vEBxSJk,0,0,6,4
+9iaawVBEsFG35PSwd4PahwT8fYNQe9XYuRdWm872dUqY,Meechie,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",9iaawVBEsF,0,0,16,9
+9cdZg6xR4c9kZiqKSzqjn4QHCXNQuC9HEWBzzMJ3mzqw,Pikalosi,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",9cdZg6xR4c,0,0,2,1
+FsG3BaPmRTdSrPaivbgJsFNCCa8cPfkUtk8VLWXkHpHP,Reljoo,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",FsG3BaPmRT,0,0,2,1
+FqamE7xrahg7FEWoByrx1o8SeyHt44rpmE6ZQfT7zrve,EustazZ,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",FqamE7xrah,0,0,0,0
+Be24Gbf5KisDk1LcWWZsBn8dvB816By7YzYF5zWZnRR6,Chairman,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",Be24Gbf5Ki,0,0,3,3
+7Js5gmq57y9jG2sseKrAeJt3vbncSWSFFHDEsyJDnyVm,Yami,kolscan.io leaderboard 1/7/30d,https://kolscan.io,2026-10-27,"ambil lewat browser user, file kol_wallets.txt",7Js5gmq57y,0,0,10,5
+5KhMUK6yK6FtDkXVmS5Tdy3Jnkd8yuRuUKWQKmGua1WV,"SOLLMG 24h PnL #1 (~+175.8 SOL, 455 trades, 70% WR)",sollmg.com pump.fun smart money 24h,https://sollmg.com/en/data/smart-money/,2026-11-10,prefix+suffix 5KhM…a1WV diresolve unik dari trade tape PumpSwap kita,5KhMUK6yK6,0,0,12,2
+D9gQ6RhKEpnobPBUdWY5bPQt2p3zGk3iVz6ChpUi2ArA,SOLLMG 24h PnL #13 (~+64.91 SOL),sollmg.com pump.fun smart money 24h,https://sollmg.com/en/data/smart-money/,2026-11-10,prefix+suffix D9gQ…2ArA unik,D9gQ6RhKEp,0,0,10,3
+FTKTyJJ99PV8BSW3Nhz1WSqvbcAuzW7o7vT9WsEaQTL9,SOLLMG 24h PnL #14 (~+61.11 SOL),sollmg.com pump.fun smart money 24h,https://sollmg.com/en/data/smart-money/,2026-11-10,prefix+suffix FTKT…QTL9 unik,FTKTyJJ99P,0,0,7,1
+timeworn2X1EwMLSzeVhdVTbVSzSCKuibKd2kQ2Lsyn,SOLLMG 24h PnL #15 (~+59.5 SOL),sollmg.com pump.fun smart money 24h,https://sollmg.com/en/data/smart-money/,2026-11-10,prefix+suffix time…Lsyn unik,timeworn2X,0,0,3,1
+dKMjeGJ4Mk9S3hxdfTThvZ7exks2xMwWqSM5NvN2CTK,"SOLLMG 24h PnL #19 (~+55.31 SOL, 1084 trades, 38% WR)",sollmg.com pump.fun smart money 24h,https://sollmg.com/en/data/smart-money/,2026-11-10,"prefix+suffix dKMj…2CTK unik; WR rendah, kemungkinan bot",dKMjeGJ4Mk,60,6,25,7
+7BNaxx6KdUYrjACNQZ9He26NBFoFxujQMAfNLnArLGH5,"7BNaxx (sudah diteliti, copy gagal OOS)",riset internal bedah-wallet-7BNaxx,https://github.com/agilganteng/memescan (laporan 2026-10-28),2026-10-28,bukan leaking X hari ini; sudah diuji copy dan kalah,7BNaxx6KdU,0,0,429,97
