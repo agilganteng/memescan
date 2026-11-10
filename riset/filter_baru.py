@@ -161,7 +161,9 @@ def build_block(coins, paths, prefixes, decision, snap, stale, delay):
         te_a.append(te)
         lx_a.append(lx)
     if len(idx) < 30:
-        return None
+        F = np.asarray(feats, np.float64) if feats else np.zeros((0, 11), np.float64)
+        return dict(idx=np.asarray(idx, np.int32), F=F, decision=decision, snap=snap, delay=delay,
+                    stale=stale, short=True)
     n, e = len(idx), len(EXITS)
     X = np.full((n, e), np.nan, np.float64)
     tout = np.full((n, e), np.nan, np.float64)
@@ -563,6 +565,131 @@ def agent_of(rec):
     return "data", "pita mcap plus gerbang rug/latar (top10, dev, bundle, fresh, growth, drawdown)"
 
 
+VOTE_MODES = ("all4", "ge3", "rug+data", "rug+latar", "rug+whale")
+VOTE_WAIT = (1.0, 2.0, 3.0)
+VOTE_XTOL = ((0.10, "10%"), (0.15, "15%"), (0.25, "25%"), (None, "tanpa batas"))
+MODE_LAB = {
+    "all4": "4/4 narasi-SKIP (=5/5 jika narasi diasumsikan ACC)",
+    "ge3": "≥3/4 narasi-ACC",
+    "rug+data": "rug+data, bukan 4/5",
+    "rug+latar": "rug+latar, bukan 4/5",
+    "rug+whale": "rug+whale, bukan 4/5",
+}
+
+
+def vote_settings():
+    return [(w, xt, lab) for w in VOTE_WAIT for xt, lab in VOTE_XTOL]
+
+
+def vote_labeled(F):
+    out = []
+    for bname, _lo, _hi in BANDS:
+        for mode in VOTE_MODES:
+            out.append(((bname, mode), vote_mask(F, bname, 1, mode)))
+    return out
+
+
+def precompute_vote(coins, paths, block):
+    """Hasil masuk suara. Jeda eksekusi 1 dtk sesudah tunggu, jual jaga Bom. Bukan jeda 3–8."""
+    settings = vote_settings()
+    n, ncol = len(block["idx"]), len(settings)
+    X = np.full((n, ncol), np.nan, np.float64)
+    tout = np.full((n, ncol), np.nan, np.float64)
+    te = np.full((n, ncol), np.nan, np.float64)
+    decision = float(block["decision"])
+    for j, ii in enumerate(block["idx"]):
+        i = int(ii)
+        c, pa = coins[i], paths[i]
+        p0 = gl.price_at_py(pa, decision)
+        if p0 <= 0:
+            continue
+        for col, (wait, xtol, _lab) in enumerate(settings):
+            p1 = gl.price_at_py(pa, decision + wait)
+            if p1 <= 0:
+                continue
+            if xtol is not None and abs(p1 / p0 - 1.0) > xtol:
+                continue
+            t_e = decision + wait + 1.0
+            if t_e >= c.end - 1:
+                continue
+            p_in = gl.price_at_py(pa, t_e)
+            if p_in <= 0:
+                continue
+            x, to = ab.one_x(pa, t_e, 1.0, p_in, ab.BOM_EXIT)
+            X[j, col] = x
+            tout[j, col] = to
+            te[j, col] = t_e
+        if j and j % 20000 == 0:
+            print(f"  suara D{int(decision)} {j}/{n}", flush=True)
+    return settings, X, tout, te
+
+
+def rows_vote(block, coins, mask, col, te, tout, X):
+    rows = []
+    m = mask & np.isfinite(X[:, col])
+    for j in np.flatnonzero(m):
+        i = int(block["idx"][j])
+        c = coins[i]
+        rows.append(dict(i=i, t=float(c.t0 + te[j, col]), tout=float(c.t0 + tout[j, col]),
+                         x=float(X[j, col]), per=int(block["per"][j]), te=float(te[j, col]), lx=1.0))
+    return rows
+
+
+def run_locked_votes(coins, paths, blocks, nulls_n):
+    """Paket suara yang dikunci, pada setiap umur yang datanya cukup. Bukan picker."""
+    rows_out = []
+    real = 0
+    k = 0
+    nulls = [0] * nulls_n
+    rng = np.random.default_rng(200)
+    chosen = [b for b in blocks if b["delay"] == "3-8" and not b.get("short")]
+    for block in chosen:
+        print(f"suara terkunci umur {block['decision']}", flush=True)
+        settings, X, tout, te = precompute_vote(coins, paths, block)
+        labeled = vote_labeled(block["F"])
+        M = np.vstack([m for _lab, m in labeled])
+        k += M.shape[0] * X.shape[1]
+        got = pass_count(M, X, block["per"])
+        real += got
+        per = block["per"]
+        for s in range(nulls_n):
+            perm = rng.permutation(block["F"].shape[0])
+            Ms = np.vstack([m for _lab, m in vote_labeled(block["F"][perm])])
+            nulls[s] += pass_count(Ms, X, per)
+        seen_ok = 0
+        for (band, mode), mask in labeled:
+            for col, (wait, xtol, xlab) in enumerate(settings):
+                finite = np.isfinite(X[:, col])
+                sa = stats_of(X[mask & (per == 0) & finite, col])
+                sb = stats_of(X[mask & (per == 1) & finite, col])
+                ok = bool(sa["n"] >= NMIN and (sa["mean"] or 0) > 1 and sb["n"] >= NMIN
+                          and (sb["mean"] or 0) > 1 and (sb["nobest"] or 0) > 1)
+                seen_ok += int(ok)
+                compare = (band == "10-30k" and mode in ("all4", "ge3") and wait == 2.0
+                           and xlab in ("15%", "tanpa batas"))
+                st = None
+                p = None
+                if compare or ok:
+                    traded = rows_vote(block, coins, mask, col, te, tout, X)
+                    st = slices_of(traded)
+                    if ok:
+                        xs = np.array([r["x"] for r in traded if r["per"] == 1], np.float64)
+                        if xs.size >= 5:
+                            p, B = gl.boot_p(xs, B=200000, seed=1)
+                            if p == 0:
+                                p = 1.0 / B
+                name = (f"suara {MODE_LAB[mode]}, umur {block['decision']}s, mcap {band}, "
+                        f"tunggu {wait:.0f}s, pita {xlab}")
+                rows_out.append(dict(name=name, age=block["decision"], band=band, mode=mode, wait=wait,
+                                     xlab=xlab, nA=sa["n"], meanA=sa["mean"], nB=sb["n"], meanB=sb["mean"],
+                                     nobB=sb["nobest"], ok=ok, compare=compare, st=st, p=p,
+                                     stale=block["stale"]))
+        if seen_ok != got:
+            print(f"  peringatan hitung suara {seen_ok} vs {got}", flush=True)
+            real += seen_ok - got
+    return dict(rows=rows_out, real=real, nulls=nulls, k=k)
+
+
 def self_test(wallet_path):
     rows, prefs, dups = load_whales(wallet_path)
     assert len(rows) == 99, len(rows)
@@ -644,13 +771,17 @@ def main():
         paths.append(gl.extract_path(c))
         if i and i % 5000 == 0:
             print(f"  jalur {i}", flush=True)
-    blocks = []
+    blocks, shorts = [], []
     for decision, snap, stale in AGES:
         for delay in DELAYS:
             print(f"G3/G6 D{decision} snap {snap} jeda {delay} basi={stale}", flush=True)
             block = build_block(coins, paths, prefixes, decision, snap, stale, delay)
             if block is None:
                 print("  terlalu sedikit", flush=True)
+                continue
+            if block.get("short"):
+                shorts.append(block)
+                print(f"  n {len(block['idx'])} di bawah 30, tidak masuk pencarian", flush=True)
                 continue
             blocks.append(block)
             print(f"  n {len(block['idx'])}", flush=True)
@@ -756,37 +887,40 @@ def main():
         rec["plus"] = plus
         rec["rows_n"] = len(rows)
         detailed.append(rec)
-    votes = []
-    if detailed and detailed[0]["family"] != "G6-copy":
-        rec0 = detailed[0]
-        block = blocks[rec0["bi"]]
-        F = block["F"]
-        for mode, label in (("all4", "4/4 narasi-SKIP = 5/5 jika narasi diasumsikan ACC"),
-                            ("ge3", "≥3/4 narasi-ACC")):
-            base = vote_mask(F, rec0["band"], rec0["kmin"], mode)
-            for wait in (1.0, 2.0, 3.0):
-                for xtol, xlab in ((0.10, "10%"), (0.15, "15%"), (0.25, "25%"), (None, "tanpa batas")):
-                    rows = sim_vote(coins, paths, block, base, wait, xtol)
-                    st = slices_of(rows)
-                    votes.append((f"suara {label}, tunggu {wait:.0f}s, pita {xlab}", st, mode, wait, xlab))
-                    print(f"  suara {mode} {wait:.0f}s {xlab} nB {st['B']['n']}", flush=True)
-        for mode, label in (("rug+data", "rug+data, bukan suara 4/5"),
-                            ("rug+latar", "rug+latar, bukan suara 4/5"),
-                            ("rug+whale", "rug+whale, bukan suara 4/5")):
-            base = vote_mask(F, rec0["band"], rec0["kmin"], mode)
-            for xtol, xlab in ((0.15, "15%"), (None, "tanpa batas")):
-                rows = sim_vote(coins, paths, block, base, 2.0, xtol)
-                votes.append((f"satu-satu {label}, tunggu 2s, pita {xlab}", slices_of(rows), mode, 2.0, xlab))
+    g3_show = []
+    for age in (120, 300, 600, 1800):
+        cand = [r for r in search if r["family"] == "G3" and r["age"] == age and r["delay"] == "3-8"
+                and r["nA"] >= NMIN and r["meanA"] is not None]
+        if not cand:
+            cand = [r for r in search if r["family"] == "G3" and r["age"] == age
+                    and r["nA"] >= NMIN and r["meanA"] is not None]
+        if not cand:
+            continue
+        cand.sort(key=lambda r: r["meanA"], reverse=True)
+        best = cand[0]
+        if "own" not in best:
+            if best["family"] == "G6-copy":
+                continue
+            block = blocks[best["bi"]]
+            grows = rows_from_block(block, coins, mask_for(block, best), best["ek"])
+            best["own"] = slices_of(grows)
+            best["plus"] = slices_of(ab.combine_and(base_rows["Bom v1 (c)"], grows, coins, paths, ab.BOM_EXIT))
+            best["pass_b"] = bool(best["nB"] >= NMIN and (best["meanB"] or 0) > 1 and (best["nobB"] or 0) > 1)
+        g3_show.append(best)
+    print("suara terkunci, bukan picker", flush=True)
+    vote_pack = run_locked_votes(coins, paths, blocks, a.null)
+    votes = vote_pack["rows"]
     # diagnostik likuiditas dan pita, dari blok jeda 3-8 supaya tidak ganda
     diag = []
-    for block in blocks:
+    for block in list(blocks) + list(shorts):
         if block["delay"] != "3-8":
             continue
         F = block["F"]
         n = len(F)
         n25 = int(np.sum(F[:, 10] >= 25000))
         diag.append((block["decision"], block["stale"], n, n25, float(F[:, 0].max()) if n else 0,
-                     {name: int(np.sum((F[:, 0] >= lo) & (F[:, 0] < hi))) for name, lo, hi in BANDS}))
+                     {name: int(np.sum((F[:, 0] >= lo) & (F[:, 0] < hi))) for name, lo, hi in BANDS},
+                     bool(block.get("short"))))
     n_fresh = sum(1 for c in coins if c.t0 > CLEAN)
     thr = 0.05 / k if k else None
     nmax = max(nulls) if nulls else 0
@@ -795,27 +929,44 @@ def main():
     beat = real > nmax
     fresh_ok = any((r["own"]["segar"]["n"] >= NMIN and (r["own"]["segar"]["mean"] or 0) > 1
                     and (r["own"]["segar"]["nobest"] or 0) > 1) for r in cleared)
-    if not detailed:
+    vk, vreal, vnull = vote_pack["k"], vote_pack["real"], vote_pack["nulls"]
+    vnmax = max(vnull) if vnull else 0
+    vthr = 0.05 / vk if vk else None
+    vpass = [v for v in votes if v["ok"]]
+    vcleared = [v for v in vpass if v.get("p") is not None and vthr and v["p"] < vthr]
+    vbeat = vreal > vnmax
+    vote_note = (f"Suara terkunci {vreal} lulus dari {vk}, null maks {vnmax}, Bonferroni {vthr}.")
+    vfresh = any((v.get("st") or {}).get("segar", {}).get("n", 0) >= NMIN
+                 and (((v.get("st") or {}).get("segar") or {}).get("mean") or 0) > 1
+                 and (((v.get("st") or {}).get("segar") or {}).get("nobest") or 0) > 1 for v in vcleared)
+    vote_bar = bool(vcleared and vbeat)
+    if cleared and beat and fresh_ok:
+        line1 = "LAYAK sebagai kandidat paper saja, bukan live. " + vote_note
+    elif vote_bar and vfresh:
+        line1 = ("LAYAK sebagai kandidat paper saja, bukan live. Grid pencarian tidak lolos, "
+                 "tetapi paket suara terkunci lolos B, null, Bonferroni, dan data segar. " + vote_note)
+    elif (cleared and beat and n_fresh == 0) or (vote_bar and n_fresh == 0):
+        line1 = ("BELUM LAYAK. Ada yang lolos B, null, dan Bonferroni, tetapi tidak ada koin dengan t0 sesudah "
+                 "10 Nov 07:17 UTC. Konfirmasi bersih ditunda. Ini bukan LAYAK. " + vote_note)
+    elif not detailed:
         line1 = (f"TIDAK LAYAK. Tidak ada konfigurasi dengan n_A≥30 dan rata A>1. "
-                 f"Kombinasi {k}. Lulus A+B {real}. Null maks {nmax}. C tercemar dan tidak memilih.")
+                 f"Kombinasi {k}. Lulus A+B {real}. Null maks {nmax}. {vote_note} "
+                 f"C tercemar dan tidak memilih. Tanpa lolos B, vonis tidak boleh LAYAK.")
     elif not official:
-        line1 = (f"TIDAK LAYAK. Lima teratas menurut A tidak lolos B (n_B≥30, rata B>1, B tanpa koin terbaik >1). "
-                 f"Kombinasi {k}. Lulus A+B di seluruh grid {real}, null maks {nmax}. "
+        line1 = (f"TIDAK LAYAK. Yang lolos syarat A tidak lolos B (n_B≥30, rata B>1, B tanpa koin terbaik >1). "
+                 f"Kombinasi {k}. Lulus A+B di seluruh grid {real}, null maks {nmax}. {vote_note} "
                  f"Tanpa lolos B, vonis tidak boleh LAYAK.")
     elif not beat:
-        line1 = (f"TIDAK LAYAK. Ada {len(official)} dari 5 teratas yang lolos B, tetapi jumlah lulus {real} "
-                 f"tidak di atas null maks {nmax}.")
+        line1 = (f"TIDAK LAYAK. Ada {len(official)} dari yang lolos A yang juga lolos B, tetapi jumlah lulus {real} "
+                 f"tidak di atas null maks {nmax}. {vote_note}")
     elif not cleared:
-        line1 = (f"TIDAK LAYAK. {len(official)} dari 5 teratas lolos B dan jumlah lulus di atas null, "
-                 f"tetapi tidak ada p bootstrap di bawah Bonferroni {thr:.3g}. C tercemar.")
-    elif n_fresh == 0:
-        line1 = ("BELUM LAYAK. Lolos B, null, dan Bonferroni, tetapi tidak ada koin dengan t0 sesudah "
-                 "10 Nov 07:17 UTC. Konfirmasi bersih ditunda. Ini bukan LAYAK.")
+        line1 = (f"TIDAK LAYAK. {len(official)} lolos B dan jumlah lulus di atas null, "
+                 f"tetapi tidak ada p bootstrap di bawah Bonferroni {thr:.3g}. {vote_note} C tercemar.")
     elif not fresh_ok:
         line1 = ("TIDAK LAYAK. Lolos A+B dan koreksi, tetapi koin sesudah 10 Nov 07:17 UTC tidak mengkonfirmasi "
-                 "(butuh n≥30, rata>1, tanpa koin terbaik >1).")
+                 "(butuh n≥30, rata>1, tanpa koin terbaik >1). " + vote_note)
     else:
-        line1 = "LAYAK sebagai kandidat paper saja, bukan live."
+        line1 = "LAYAK sebagai kandidat paper saja, bukan live. " + vote_note
     L = [line1, "",
          "# Modul filter baru calon Bom v2, 10 Nov 2026, PAPER", "",
          "Satu bot: tim agen Bom. Modul di bawah calon tugas agen, bukan bot kedua.",
@@ -841,19 +992,25 @@ def main():
         add_slice_rows(L, name, st)
     add_slice_rows(L, "G5 kontrol kurva ≥92%, TP2, SL-50%, 120 dtk, jeda 3–8", g5)
     if detailed:
-        add_slice_rows(L, "Finalis peringkat A #1: " + describe(detailed[0]), detailed[0]["own"])
-        add_slice_rows(L, "Bom v1 DAN finalis #1, waktu lebih akhir, jual jaga Bom", detailed[0]["plus"])
-        for name, st, mode, wait, xlab in votes:
-            if mode in ("all4", "ge3") and wait == 2.0 and xlab in ("15%", "tanpa batas"):
-                add_slice_rows(L, name, st)
+        add_slice_rows(L, "Peringkat A #1: " + describe(detailed[0]), detailed[0]["own"])
+        add_slice_rows(L, "Bom v1 DAN peringkat A #1, waktu lebih akhir, jual jaga Bom", detailed[0]["plus"])
     else:
-        L.append("| Finalis | | tidak ada | | | | | | | |")
+        L.append("| Peringkat A | | tidak ada dengan n_A≥30 dan rata A>1 | | | | | | | |")
+    for rec in g3_show:
+        tag = "lolos B" if rec.get("pass_b") else "tidak lolos B"
+        add_slice_rows(L, f"G3 terbaik umur {rec['age']}s jeda 3–8 menurut A ({tag}): " + describe(rec), rec["own"])
+        add_slice_rows(L, f"Bom v1 DAN G3 umur {rec['age']}s, jual jaga Bom", rec["plus"])
+    for v in votes:
+        if v["compare"] and v.get("st"):
+            add_slice_rows(L, v["name"], v["st"])
     L += ["",
           "Bom sendiri ada di baris pertama. Bom+modul memakai masuk yang lebih lambat di antara sinyal Bom dan sinyal modul, lalu jual TP3 SL0,5 600 dtk.",
-          "Suara finalis #1: rug lulus jika top10≤30%, dev≤5%, dev belum jual, belum pernah rug, bundle<5. "
-          "Latar lulus jika bukan proksi fresh dan dev belum jual. Data lulus jika mcap di pita finalis, growth<2, drawdown<40%. "
-          "Whale lulus jika minimal satu prefix daftar sudah beli (di jendela yang terekam). "
-          "Harga pertama di umur keputusan. Setelah tunggu 1/2/3 dtk, masuk hanya jika harga masih di dalam pita, plus jeda eksekusi 1 dtk. Jual suara = jaga Bom, bukan exit grid.",
+          "Suara terkunci, bukan hasil pilih-pilih: rug lulus jika top10≤30%, dev≤5%, dev belum jual, belum pernah rug, bundle<5. "
+          "Latar lulus jika bukan proksi fresh dan dev belum jual. Data lulus jika mcap di pita itu, growth<2, drawdown<40%. "
+          "Whale lulus jika minimal satu prefix daftar sudah beli di jendela yang terekam. "
+          "4/4 adalah narasi-SKIP. ≥3/4 adalah narasi-ACC. 5/5 sama dengan 4/4 karena narasi hanya diasumsikan setuju. "
+          "Harga pertama di umur keputusan. Setelah tunggu, masuk hanya jika harga masih di dalam pita, plus jeda eksekusi 1 dtk. Jual suara = jaga Bom.",
+          "Baris suara di tabel ini dikunci sebelumnya: mcap 10–30k, tunggu 2 dtk, pita 15% dan tanpa batas. Tabel di bawah memuat semua pita dan semua tunggu.",
           "",
           "## Pencarian terkunci",
           "",
@@ -867,13 +1024,13 @@ def main():
           "",
           "### Diagnostik, bukan gerbang",
           ""]
-    for decision, stale, n, n25, mx, counts in diag:
-        L.append(f"- Umur {decision}s{' (fitur basi)' if stale else ''}: koin {n}, mcap maks {mx:.0f} USD, "
-                 f"liq≥$25k {n25}. Pita {counts}.")
+    for decision, stale, n, n25, mx, counts, short in diag:
+        L.append(f"- Umur {decision}s{' (fitur basi)' if stale else ''}{' (tidak disimulasikan, n<30)' if short else ''}: "
+                 f"koin {n}, mcap maks {mx:.0f} USD, liq≥$25k {n25}. Pita {counts}.")
     L.append("- liq≥$25k hampir tidak ada di kurva. Tidak dipakai memilih.")
-    L += ["", "### Lima teratas menurut A", ""]
+    L += ["", "### Yang lolos syarat A (n≥30 dan rata A>1)", ""]
     if not detailed:
-        L.append("Tidak ada.")
+        L.append("Tidak ada. Tidak ada yang naik ke uji B sebagai finalis.")
     for i, rec in enumerate(detailed, 1):
         agent, task = agent_of(rec)
         L.append(f"{i}. Agen {agent}. {task}.")
@@ -891,18 +1048,35 @@ def main():
         pb = rec["plus"]["B"]
         L.append(f"   - Bom+modul di B: n={pb['n']} rata {fmt_x(pb['mean'])} tanpa terbaik {fmt_x(pb['nobest'])} "
                  f"saldo 8%m1 {fmt_money(pb['books'].get('8% m1'))}.")
-    L += ["", "## Suara pada finalis #1", "",
-          "Tabel penuh hanya irisan B. Empat baris utama (tunggu 2 dtk) juga ada di tabel atas.",
+    L += ["", "### G3 terbaik tiap umur, jeda 3–8, menurut A", "",
+          "Ini diagnostik keluarga mcap. Bukan pemenang kalau rata A tidak di atas 1 atau B gagal.", ""]
+    if not g3_show:
+        L.append("Tidak ada G3 dengan n_A≥30.")
+    for rec in g3_show:
+        L.append(f"- {describe(rec)}")
+        for lab in ("A", "B"):
+            s = rec["own"][lab]
+            L.append(f"  - {lab}: n={s['n']} rata {fmt_x(s['mean'])} tanpa terbaik {fmt_x(s['nobest'])} "
+                     f"menang {fmt_p(s['win'])}")
+        L.append(f"  - Lolos B: {'ya' if rec.get('pass_b') else 'tidak'}.")
+    shown = [v for v in votes if v["nA"] or v["nB"]]
+    hidden = len(votes) - len(shown)
+    L += ["", "## Suara tim, paket terkunci", "",
+          f"Bukan picker. {vote_note} Null: {', '.join(str(x) for x in vnull)}.",
+          "Jual = jaga Bom (TP3 SL0,5 600 dtk). Eksekusi = umur keputusan + tunggu + 1 dtk.",
+          "Baris dengan n_A dan n_B nol tidak dicetak." if hidden else "",
           "",
-          "| Suara | n_B | Rata B | Tanpa terbaik | $200 8%m1 |",
-          "|---|---:|---:|---:|---|"]
-    for name, st, _mode, _wait, _xlab in votes:
-        b = st["B"]
-        L.append(f"| {name} | {b['n']} | {fmt_x(b['mean'])} | {fmt_x(b['nobest'])} | {fmt_money((b.get('books') or {}).get('8% m1'))} |")
+          "| Suara | n_A | Rata A | n_B | Rata B | Tanpa terbaik B | Lolos B |",
+          "|---|---:|---:|---:|---:|---:|---|"]
+    for v in shown:
+        L.append(f"| {v['name']} | {v['nA']} | {fmt_x(v['meanA'])} | {v['nB']} | {fmt_x(v['meanB'])} | "
+                 f"{fmt_x(v['nobB'])} | {'ya' if v['ok'] else 'tidak'} |")
     if not votes:
-        L.append("| tidak ada finalis bersnapshot | | | | |")
+        L.append("| umur 30 menit atau semua umur di bawah n 30, suara tidak disimulasikan | | | | | | |")
     L += ["",
-          "Baris satu-satu (rug+data, rug+latar, rug+whale) bukan suara 4/5. Dua agen yang lain tidak menjawab, jadi kalau abstain dihitung SKIP, suara 4/5 tidak pernah cukup. Angkanya tetap dilaporkan sebagai paket yang dikunci.",
+          f"Baris n=0 yang disembunyikan: {hidden}.",
+          "Baris rug+data, rug+latar, dan rug+whale bukan suara 4/5. Dua agen yang lain tidak menjawab, jadi abstain dihitung SKIP dan 4/5 tidak pernah cukup. Angkanya tetap dilaporkan karena paket itu dikunci.",
+          "Umur 30 menit masuk suara hanya jika ada minimal 30 koin yang rekamannya masih hidup sampai detik itu.",
           "",
           "## WR daftar whale",
           "",
