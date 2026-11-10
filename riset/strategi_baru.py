@@ -353,6 +353,7 @@ def with_books(c):
 
 
 def add_rows(L, name, c):
+    name = name.replace("|", "/")
     st = with_books(c)
     L.append(f"| {name} | | | | | | | | | |")
     for lab in ("A", "B", "C", "segar"):
