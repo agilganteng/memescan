@@ -1,0 +1,130 @@
+name: riset-grid-full
+
+# Grid penuh pada semua koin kurva standar, plus uji holdout aturan yang sudah dikunci.
+# Hanya baca cache. Tidak menyimpan cache, tidak memakai secret.
+# Grup concurrency sendiri: tidak membatalkan perekam di main/strat100k.
+on:
+  push:
+    branches: [riset-zgrid]
+    paths:
+      - "riset/grid_luas.py"
+      - "riset/gabung_full.py"
+      - ".github/workflows/riset-grid-full.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: riset-grid-full
+  cancel-in-progress: false
+
+jobs:
+  holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pulihkan cache memescan
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Cek cache
+        run: |
+          set -euo pipefail
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "cache-matched-key=${{ steps.cache.outputs.cache-matched-key }}"
+          test -n "${{ steps.cache.outputs.cache-matched-key }}"
+          test -d data/rec
+          du -sh data
+      - run: pip install -q numpy numba
+      - name: Holdout aturan terkunci
+        env:
+          CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+          PYTHONUNBUFFERED: "1"
+          MALLOC_ARENA_MAX: "2"
+        run: python3 -u riset/grid_luas.py --data data --holdout-of 30000 --out out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: holdout
+          if-no-files-found: error
+          path: out/holdout.json
+
+  grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: bom
+            families: Bom
+          - id: momentum
+            families: Momentum
+          - id: awal
+            families: Sniper,Graduation
+          - id: copy
+            families: Copy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pulihkan cache memescan
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Cek cache
+        run: |
+          set -euo pipefail
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "cache-matched-key=${{ steps.cache.outputs.cache-matched-key }}"
+          test -n "${{ steps.cache.outputs.cache-matched-key }}"
+          test -d data/rec
+          du -sh data
+      - run: pip install -q numpy numba
+      - name: Grid ${{ matrix.id }}
+        env:
+          CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+          PYTHONUNBUFFERED: "1"
+          MALLOC_ARENA_MAX: "2"
+        run: python3 -u riset/grid_luas.py --data data --sample 0 --families "${{ matrix.families }}" --pick 8 --desc 15 --null 20 --out out --report-name bagian.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: grid-${{ matrix.id }}
+          if-no-files-found: error
+          path: out/grid_luas_result.json
+
+  gabung:
+    needs: [holdout, grid]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          path: hasil
+      - run: pip install -q numpy numba
+      - name: Tulis laporan
+        run: python3 -u riset/gabung_full.py hasil riset/riset-grid-full-2026-11-10.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: laporan-penuh
+          if-no-files-found: error
+          path: riset/riset-grid-full-2026-11-10.md

@@ -3,14 +3,9 @@ name: riset-grid-luas
 # Pencarian strategi pump.fun di data rekaman yang sama (cache Actions).
 # Job terpisah dari zgrid. Hanya baca cache. Tidak menyimpan cache, tidak memakai secret,
 # grup concurrency sendiri supaya tidak membatalkan perekam 24 jam.
+# Push dimatikan supaya perubahan grid_luas.py tidak mengulang sampel 30.000.
+# Jalankan manual dari tab Actions kalau sampel itu perlu diulang.
 on:
-  push:
-    branches: [riset-zgrid]
-    paths:
-      - "riset/grid_luas.py"
-      - "riset/kol.py"
-      - "memescan.py"
-      - ".github/workflows/riset-grid-luas.yml"
   workflow_dispatch:
 
 permissions:

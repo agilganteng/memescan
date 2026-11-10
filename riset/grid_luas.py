@@ -99,7 +99,7 @@ def dedupe_trades(w, gap=0.3):
 
 class Coin:
     __slots__ = ("t0", "end", "m0", "cs", "starts", "w", "cov", "dev", "snaps",
-                 "devbuy", "dev_sold", "smart", "i")
+                 "devbuy", "dev_sold", "smart", "i", "full_i")
 
 
 def _std(cs, snaps):
@@ -188,10 +188,17 @@ def load_coins(data_dir):
     return coins, meta
 
 
+def sample_index(n, k):
+    """Indeks sampel merata. k<=0 atau k>=n berarti semua. Sama dengan lari 30.000 kemarin."""
+    if k <= 0 or n <= k:
+        return np.arange(n)
+    return np.unique(np.round(np.linspace(0, n - 1, k)).astype(int))
+
+
 def take_sample(coins, n):
-    if n <= 0 or len(coins) <= n:
+    idx = sample_index(len(coins), n)
+    if len(idx) == len(coins):
         return coins
-    idx = np.unique(np.round(np.linspace(0, len(coins) - 1, n)).astype(int))
     return [coins[int(i)] for i in idx]
 
 
@@ -738,8 +745,9 @@ def _pack(family, name, F, X, per, tin, tout, specs, exits, copy=False, ci=None)
     return g
 
 
-def build_groups(coins, paths, per, events, exits):
+def build_groups(coins, paths, per, events, exits, families=None):
     _need_numba()
+    want = set(families) if families else {"Sniper", "Bom", "Momentum", "Graduation", "Copy"}
     # kompilasi sekali
     dummy = paths[0]
     sim_one(dummy, 0.0, 0.4, max(dummy["anchor"], 1.0), exits_arrays(exits), -1.0)
@@ -753,6 +761,20 @@ def build_groups(coins, paths, per, events, exits):
         if g is not None:
             groups.append(g)
 
+    if "Sniper" in want:
+        _build_sniper(coins, paths, per, exits, base_arr, specs_s, add)
+    if "Bom" in want:
+        _build_bom(coins, paths, per, exits, base_arr, specs_b, add)
+    if "Momentum" in want:
+        _build_mom(coins, paths, per, exits, base_arr, specs_m, add)
+    if "Graduation" in want:
+        _build_grad(coins, paths, per, exits, base_arr, add)
+    if "Copy" in want:
+        _build_copy(coins, paths, per, events, dummy, add)
+    return groups
+
+
+def _build_sniper(coins, paths, per, exits, base_arr, specs_s, add):
     for L in DELAYS:
         F, X, P, tin, tout = [], [], [], [], []
         for i, c in enumerate(coins):
@@ -775,6 +797,8 @@ def build_groups(coins, paths, per, events, exits):
             tout.append(c.t0 + to)
         add(_pack("Sniper", f"Sniper dev-buy jeda {L}", F, X, P, tin, tout, specs_s, exits))
 
+
+def _build_bom(coins, paths, per, exits, base_arr, specs_b, add):
     for D in AGES_BOM:
         for L in DELAYS:
             F, X, P, tin, tout = [], [], [], [], []
@@ -799,6 +823,8 @@ def build_groups(coins, paths, per, events, exits):
                 tout.append(c.t0 + to)
             add(_pack("Bom", f"Bom D{D} jeda {L}", F, X, P, tin, tout, specs_b, exits))
 
+
+def _build_mom(coins, paths, per, exits, base_arr, specs_m, add):
     for D in AGES_MOM:
         for L in DELAYS:
             F, X, P, tin, tout = [], [], [], [], []
@@ -823,6 +849,8 @@ def build_groups(coins, paths, per, events, exits):
                 tout.append(c.t0 + to)
             add(_pack("Momentum", f"Momentum D{D} jeda {L}", F, X, P, tin, tout, specs_m, exits))
 
+
+def _build_grad(coins, paths, per, exits, base_arr, add):
     specs_age = age_specs()
     for pc in GRAD_PC:
         thr = (30 + pc / 100.0 * 85) ** 2 / K_CURVE
@@ -855,6 +883,8 @@ def build_groups(coins, paths, per, events, exits):
                 tout.append(c.t0 + to)
             add(_pack("Graduation", f"Graduation {pc}% jeda {L}", F, X, P, tin, tout, specs_age, exits))
 
+
+def _build_copy(coins, paths, per, events, dummy, add):
     cex = make_exits(with_follow=True)
     carr = exits_arrays(cex)
     cspecs = copy_specs()
@@ -882,7 +912,6 @@ def build_groups(coins, paths, per, events, exits):
             ci.append(ci_i)
         g = _pack("Copy", f"Copy-wallet jeda {L}", F, X, P, tin, tout, cspecs, cex, True, ci)
         add(g)
-    return groups
 
 
 def group_pass(g, perm=None):
@@ -1130,7 +1159,7 @@ def best_per_family(groups):
     return rows
 
 
-def evaluate(groups, meta, n_null):
+def evaluate(groups, meta, n_null, n_pick=5, n_desc=10):
     t0 = time.time()
     real = 0
     by = {}
@@ -1161,7 +1190,7 @@ def evaluate(groups, meta, n_null):
         for fam, v in acc.items():
             null_by[fam].append(v)
         print(f"null {s}: {total}", flush=True)
-    picked = top_by_A(groups, 5)
+    picked = top_by_A(groups, n_pick)
     final_rows = []
     for mean, gi, f, k in picked:
         g = groups[gi]
@@ -1169,7 +1198,7 @@ def evaluate(groups, meta, n_null):
         do_c = (B["mean"] or 0) > 1
         final_rows.append(row_detail(g, f, k, do_c))
     descriptive = []
-    for nob, gi, f, k in top_nobest(groups, 10):
+    for nob, gi, f, k in top_nobest(groups, n_desc):
         d = row_detail(groups[gi], f, k, True)
         d["nobest_rank"] = nob
         descriptive.append(d)
@@ -1369,7 +1398,150 @@ def build_report(R):
     return "\n".join(L)
 
 
+PARTIAL_2_5 = dict(kind=2, tp=2.0, sl=0.7, T=600.0, arm=0.0, trail=0.0, tp2=5.0,
+                    name="parsial 50% 2x sisa TP5 SL0.7 600s")
+# Aturan dikunci dari laporan sampel 30.000. Tidak ada ambang baru.
+FIXED_RULES = [
+    dict(key="a", judul="(a) Momentum, baris 1 top-10 C tanpa koin terbaik",
+         D=120, delay="1", kind=3, mode="snap", exit=PARTIAL_2_5,
+         conds=[(9, ">=", 3.0), (11, "<=", 0.35), (1, "<=", 0.35)],
+         teks="D120 jeda 1 dtk, growth≥3, drawdown≤35%, top10≤35%, beli/vol/laju bebas, parsial 50% di 2x sisa TP5 SL0,7 600 dtk"),
+    dict(key="b", judul="(b) Momentum terbaik menurut A pada sampel",
+         D=120, delay="3-8", kind=3, mode="snap", exit=PARTIAL_2_5,
+         conds=[(9, ">=", 3.0), (10, ">=", 0.65), (12, ">=", 3.0), (13, ">=", 1.5)],
+         teks="D120 jeda 3–8 dtk, growth≥3, rasio beli≥65%, inflow baru≥3 SOL, laju pembeli≥1,5, parsial 50% di 2x sisa TP5 SL0,7 600 dtk"),
+    dict(key="c", judul="(c) Bom terbaik menurut A pada sampel",
+         D=180, delay="1", kind=2, mode="snap",
+         exit=dict(kind=0, tp=3.0, sl=0.5, T=600.0, arm=0.0, trail=0.0, tp2=0.0, name="TP3 SL0.5 600s"),
+         conds=[(5, "==", 0.0), (1, "<=", 0.40), (2, ">=", 40), (4, ">=", 8), (7, ">=", 1), (6, "<", 0.5), (8, "==", 0.0)],
+         teks="D180 jeda 1 dtk, dev belum jual, top10≤40%, buyer≥40, liq≥8, smart≥1, devbuy<0,5, rug pembuat 0, TP3 SL0,5 600 dtk"),
+    dict(key="d", judul="(d) Graduation 98%, umur di bawah 5 menit",
+         pc=98, delay="3-8", kind=4, mode="grad", age_max=300.0,
+         exit=dict(kind=0, tp=1e9, sl=0.0, T=1800.0, arm=0.0, trail=0.0, tp2=0.0, name="tahan sampai habis"),
+         teks="kurva 98%, umur sinyal <5 menit, jeda 3–8 dtk, tahan sampai rekaman habis"),
+]
+
+
+def _conds_ok(fr, conds):
+    for col, op, val in conds:
+        x = float(fr[col])
+        if op == ">=" and not x >= val:
+            return False
+        if op == "<=" and not x <= val:
+            return False
+        if op == ">" and not x > val:
+            return False
+        if op == "<" and not x < val:
+            return False
+        if op == "==" and not x == val:
+            return False
+    return True
+
+
+def _pack_slice(xs, tin, tout):
+    xs = np.asarray(xs, np.float64)
+    n = int(xs.size)
+    if n == 0:
+        return dict(n=0, mean=None, win=None, wilson=[0.0, 0.0], nobest=None, best=None, sim={})
+    wins = int(np.sum(xs > 1))
+    lo, hi = wilson(wins, n)
+    tr = list(zip(np.asarray(tin, np.float64).tolist(), xs.tolist(), np.asarray(tout, np.float64).tolist()))
+    sim = {}
+    for frac, mp in ((0.08, 1), (0.08, 5), (0.10, 1), (0.10, 5)):
+        eq, nn, k = sim200(tr, frac, mp)
+        sim[f"{int(frac * 100)}% maks{mp}"] = [eq, nn, k]
+    return dict(n=n, mean=float(xs.mean()), win=wins / n, wilson=[float(lo), float(hi)],
+                nobest=nobest_of(xs), best=float(xs.max()), sim=sim)
+
+
+def run_holdout(a):
+    """Uji aturan yang sudah dikunci pada koin yang TIDAK masuk sampel 30.000. Tanpa setel ulang."""
+    _need_numba()
+    t0 = time.time()
+    sha = hashlib.sha256(open(__file__, "rb").read()).hexdigest()
+    print(f"sha256 {sha}", flush=True)
+    coins, meta = load_coins(a.data)
+    if not coins:
+        raise SystemExit("Tidak ada koin kurva standar.")
+    for i, c in enumerate(coins):
+        c.full_i = i
+        c.i = i
+    print("riwayat wallet pada SEMUA koin standar (supaya filter smart kausal utuh)...", flush=True)
+    prepare(coins)
+    taken = set(int(i) for i in sample_index(len(coins), a.holdout_of))
+    hold = [c for i, c in enumerate(coins) if i not in taken]
+    print(f"std {len(coins)}, sampel lama {len(taken)}, holdout {len(hold)}", flush=True)
+    del coins
+    t0s = np.array([c.t0 for c in hold], np.float64)
+    cut1, cut2 = float(t0s[int(len(hold) * 0.5)]), float(t0s[int(len(hold) * 0.7)])
+    per = np.where(t0s < cut1, 0, np.where(t0s < cut2, 1, 2)).astype(np.int8)
+    print("bangun jalur harga holdout...", flush=True)
+    paths = []
+    for i, c in enumerate(hold):
+        paths.append(extract_path(c))
+        if i and i % 5000 == 0:
+            print(f"  jalur {i}", flush=True)
+    sim_one(paths[0], 0.0, 0.4, max(paths[0]["anchor"], 1.0), exits_arrays([PARTIAL_2_5]), -1.0)
+    rules_out = []
+    for rule in FIXED_RULES:
+        arr = exits_arrays([rule["exit"]])
+        bag = {0: [], 1: [], 2: []}
+        n_try = 0
+        for i, c in enumerate(hold):
+            if rule["mode"] == "snap":
+                fr = feat_row(c, rule["D"])
+                if fr is None or not _conds_ok(fr, rule["conds"]):
+                    continue
+                lx = lag(rule["kind"], c.full_i, rule["D"], rule["delay"])
+                te = rule["D"] + lx
+            else:
+                pa = paths[i]
+                hi = pa["bar_hi"]
+                thr = (30 + rule["pc"] / 100.0 * 85) ** 2 / K_CURVE
+                if hi.size == 0 or float(hi.max()) < thr:
+                    continue
+                j = int(np.argmax(hi >= thr))
+                if hi[j] < thr:
+                    continue
+                th = float(pa["bar_t"][j])
+                if th >= rule["age_max"]:
+                    continue
+                lx = lag(rule["kind"], c.full_i, rule["pc"], rule["delay"])
+                te = th + lx
+            if te >= c.end - 1:
+                continue
+            p_in = price_at_py(paths[i], te)
+            if p_in <= 0:
+                continue
+            p1, p2, split, to = sim_one(paths[i], te, lx, p_in, arr, -1.0)
+            x = float(apply_costs(p_in, p1, p2, split)[0])
+            s = int(per[i])
+            bag[s].append((x, c.t0 + te, c.t0 + float(to[0])))
+            n_try += 1
+        slices = {}
+        for s, lab in ((0, "A"), (1, "B"), (2, "C")):
+            rows = bag[s]
+            slices[lab] = _pack_slice([r[0] for r in rows], [r[1] for r in rows], [r[2] for r in rows])
+        print(f"{rule['key']} trade {n_try} A/B/C "
+              f"{slices['A']['n']}/{slices['B']['n']}/{slices['C']['n']}", flush=True)
+        rules_out.append(dict(key=rule["key"], judul=rule["judul"], teks=rule["teks"],
+                              exit=rule["exit"]["name"], n=n_try, slices=slices))
+    meta.update(sha256=sha, cache_key=os.environ.get("CACHE_MATCHED_KEY") or "",
+                n_std=len(taken) + len(hold), n_sample=len(taken), n_hold=len(hold),
+                nA=int((per == 0).sum()), nB=int((per == 1).sum()), nC=int((per == 2).sum()),
+                t_first=float(t0s[0]), t_last=float(t0s[-1]), cut1=cut1, cut2=cut2,
+                secs=time.time() - t0, holdout_of=a.holdout_of)
+    os.makedirs(a.out, exist_ok=True)
+    path = os.path.join(a.out, "holdout.json")
+    with open(path, "w") as f:
+        json.dump(dict(meta=meta, rules=rules_out), f, indent=1, default=float)
+    print(f"tulis {path}", flush=True)
+
+
 def run(a):
+    if a.holdout_of:
+        run_holdout(a)
+        return
     _need_numba()
     t0 = time.time()
     sha = hashlib.sha256(open(__file__, "rb").read()).hexdigest()
@@ -1402,10 +1574,12 @@ def run(a):
     events = prepare(coins)
     exits = make_exits(False)
     print(f"cara keluar dasar: {len(exits)}", flush=True)
-    groups = build_groups(coins, paths, per, events, exits)
+    fams = [x.strip() for x in a.families.split(",") if x.strip()] or None
+    groups = build_groups(coins, paths, per, events, exits, fams)
+    del paths, events
     if not groups:
         raise SystemExit("Tidak ada kelompok yang cukup datanya.")
-    R = evaluate(groups, meta, a.null)
+    R = evaluate(groups, meta, a.null, a.pick, a.desc)
     R["secs"] = time.time() - t0
     text = build_report(R)
     os.makedirs(a.out, exist_ok=True)
@@ -1572,6 +1746,11 @@ def main(argv=None):
     ap.add_argument("--sample", type=int, default=30000)
     ap.add_argument("--null", type=int, default=20)
     ap.add_argument("--report-name", default="riset-grid-luas-2026-11-10.md")
+    ap.add_argument("--families", default="", help="Sniper,Bom,Momentum,Graduation,Copy. Kosong = semua.")
+    ap.add_argument("--holdout-of", type=int, default=0,
+                    help="Kalau >0, uji aturan terkunci pada koin di luar sampel merata sebesar ini.")
+    ap.add_argument("--pick", type=int, default=5)
+    ap.add_argument("--desc", type=int, default=10)
     ap.add_argument("--self-test", action="store_true")
     a = ap.parse_args(argv)
     if a.self_test:
