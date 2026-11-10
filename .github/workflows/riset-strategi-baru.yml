@@ -1,0 +1,58 @@
+name: riset-strategi-baru
+
+# Keluarga strategi baru. PAPER.
+# Hanya baca cache. Tidak menyimpan cache, tidak memakai secret.
+# Grup concurrency sendiri: tidak membatalkan perekam atau riset lain.
+on:
+  push:
+    branches: [riset-zgrid]
+    paths:
+      - "riset/strategi_baru.py"
+      - ".github/workflows/riset-strategi-baru.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: riset-strategi-baru
+  cancel-in-progress: false
+
+jobs:
+  cari:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pulihkan cache memescan
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Cek cache
+        run: |
+          set -euo pipefail
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "cache-matched-key=${{ steps.cache.outputs.cache-matched-key }}"
+          test -n "${{ steps.cache.outputs.cache-matched-key }}"
+          test -d data/rec
+          du -sh data
+      - run: pip install -q numpy numba
+      - name: Strategi baru
+        env:
+          CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+          PYTHONUNBUFFERED: "1"
+          MALLOC_ARENA_MAX: "2"
+        run: python3 -u riset/strategi_baru.py --data data --null 20 --out riset/riset-strategi-baru-2026-11-10.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: laporan-strategi-baru
+          if-no-files-found: error
+          path: riset/riset-strategi-baru-2026-11-10.md
