@@ -1,0 +1,117 @@
+name: riset-amplify-b
+
+# Perlebar modul di sekitar aturan (b) dan bandingkan suara agen Bom.
+# Hanya baca cache. Tidak menyimpan cache, tidak memakai secret.
+# Grup concurrency sendiri: tidak membatalkan perekam di main/strat100k.
+on:
+  push:
+    branches: [riset-zgrid]
+    paths:
+      - "riset/amplify_b.py"
+      - ".github/workflows/riset-amplify-b.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: riset-amplify-b
+  cancel-in-progress: false
+
+jobs:
+  cari:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: a45-60
+            mode: search
+            ages: "45,60"
+          - id: a90-120
+            mode: search
+            ages: "90,120"
+          - id: a150-180
+            mode: search
+            ages: "150,180"
+          - id: a240-300
+            mode: search
+            ages: "240,300"
+          - id: reentry
+            mode: reentry
+            ages: "120,180"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pulihkan cache memescan
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Cek cache
+        run: |
+          set -euo pipefail
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "cache-matched-key=${{ steps.cache.outputs.cache-matched-key }}"
+          test -n "${{ steps.cache.outputs.cache-matched-key }}"
+          test -d data/rec
+          du -sh data
+      - run: pip install -q numpy numba
+      - name: Cari ${{ matrix.id }}
+        env:
+          CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+          PYTHONUNBUFFERED: "1"
+          MALLOC_ARENA_MAX: "2"
+        run: python3 -u riset/amplify_b.py --mode ${{ matrix.mode }} --ages "${{ matrix.ages }}" --data data --null 20 --out out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: amp-${{ matrix.id }}
+          if-no-files-found: error
+          path: out/amplify_part.json
+
+  laporan:
+    needs: [cari]
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pulihkan cache memescan
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Cek cache
+        run: |
+          set -euo pipefail
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "cache-matched-key=${{ steps.cache.outputs.cache-matched-key }}"
+          test -n "${{ steps.cache.outputs.cache-matched-key }}"
+          test -d data/rec
+      - uses: actions/download-artifact@v4
+        with:
+          path: hasil
+      - run: pip install -q numpy numba
+      - name: Laporan dan suara
+        env:
+          CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+          PYTHONUNBUFFERED: "1"
+          MALLOC_ARENA_MAX: "2"
+        run: python3 -u riset/amplify_b.py --mode report --data data --parts hasil --report riset/riset-amplify-b-2026-11-10.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: laporan-amplify
+          if-no-files-found: error
+          path: riset/riset-amplify-b-2026-11-10.md
