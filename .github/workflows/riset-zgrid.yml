@@ -1,0 +1,69 @@
+name: riset-zgrid
+
+# Backtest grid @zostaff di data rekaman yang hanya ada di cache Actions.
+# Hanya baca cache. Tidak menyimpan cache, tidak menyentuh workflow perekam,
+# tidak memakai secret. Grup concurrency sendiri, tidak membatalkan run lain.
+on:
+  push:
+    branches: [riset-zgrid]
+    paths:
+      - "riset/zostaff-grid/**"
+      - "riset/bevan.py"
+      - "riset/kol.py"
+      - "memescan.py"
+      - ".github/workflows/riset-zgrid.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: riset-zgrid
+  cancel-in-progress: false
+
+jobs:
+  zgrid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pulihkan cache memescan
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Cek cache dan data
+        run: |
+          set -euo pipefail
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "cache-matched-key=${{ steps.cache.outputs.cache-matched-key }}"
+          if [ -z "${{ steps.cache.outputs.cache-matched-key }}" ]; then
+            echo "cache memescan-data- tidak ketemu"
+            exit 1
+          fi
+          test -d data/rec
+          find data/rec -name 'rec-*.jsonl' -printf '%f %s\n' | sort
+          du -sh data data/rec
+      - run: pip install -q numpy
+      - name: Grid zostaff
+        run: python3 -u riset/zostaff-grid/zgrid.py --data data --sample 30000
+      - name: Cetak laporan
+        if: always()
+        run: |
+          python3 -u riset/zostaff-grid/render_report.py out/zgrid_result.json out/zgrid_report.md || true
+          echo "===== ZGRID JSON ====="
+          cat out/zgrid_result.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zgrid-report
+          if-no-files-found: warn
+          path: |
+            out/zgrid_result.json
+            out/zgrid_report.md

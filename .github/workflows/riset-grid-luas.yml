@@ -1,0 +1,72 @@
+name: riset-grid-luas
+
+# Pencarian strategi pump.fun di data rekaman yang sama (cache Actions).
+# Job terpisah dari zgrid. Hanya baca cache. Tidak menyimpan cache, tidak memakai secret,
+# grup concurrency sendiri supaya tidak membatalkan perekam 24 jam.
+on:
+  push:
+    branches: [riset-zgrid]
+    paths:
+      - "riset/grid_luas.py"
+      - "riset/kol.py"
+      - "memescan.py"
+      - ".github/workflows/riset-grid-luas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: riset-grid-luas
+  cancel-in-progress: false
+
+jobs:
+  luas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pulihkan cache memescan
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Cek cache dan data
+        run: |
+          set -euo pipefail
+          echo "cache-hit=${{ steps.cache.outputs.cache-hit }}"
+          echo "cache-matched-key=${{ steps.cache.outputs.cache-matched-key }}"
+          if [ -z "${{ steps.cache.outputs.cache-matched-key }}" ]; then
+            echo "cache memescan-data- tidak ketemu"
+            exit 1
+          fi
+          test -d data/rec
+          find data/rec -name 'rec-*.jsonl' | wc -l
+          du -sh data data/rec
+      - run: pip install -q numpy numba
+      - name: Grid luas
+        env:
+          CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+          PYTHONUNBUFFERED: "1"
+        run: python3 -u riset/grid_luas.py --data data --sample 30000 --out riset
+      - name: Cetak laporan
+        if: always()
+        run: |
+          if [ -f riset/riset-grid-luas-2026-11-10.md ]; then
+            echo "===== LAPORAN GRID LUAS ====="
+            cat riset/riset-grid-luas-2026-11-10.md
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: grid-luas-report
+          if-no-files-found: warn
+          path: |
+            riset/riset-grid-luas-2026-11-10.md
+            riset/grid_luas_result.json
