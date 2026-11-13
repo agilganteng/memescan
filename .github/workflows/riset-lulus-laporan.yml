@@ -1,0 +1,29 @@
+name: riset-lulus-laporan
+
+# Laporan (paper) trading koin lulusan PumpSwap, sesuai riset/lulus-praregistrasi.md.
+# Membaca cache data terbaru dari perekam riset-lulus. Tidak mengubah data.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/lulus_report.py, .github/workflows/riset-lulus-laporan.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  laporan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: lulus-data-none
+          restore-keys: lulus-data-
+      - name: Laporan
+        run: python3 -u riset/lulus_report.py --data data
