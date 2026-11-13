@@ -64,7 +64,7 @@ def own_x(rec):
     return (rec.get("xp") or {}).get("kind") == "account"
 
 
-def simulate(rows, i0, p_in, rule):
+def simulate(rows, i0, p_in, rule, rug=True):
     """rows: (t, price, liq). Masuk di rows[i0] harga p_in (sebelum biaya). Hasil x setelah biaya."""
     t0 = rows[i0][0]
     buy = p_in * (1 + COST)
@@ -80,11 +80,11 @@ def simulate(rows, i0, p_in, rule):
         t_last = t
         if p <= 0:
             zeros += 1
-            if zeros >= 3:
+            if rug and zeros >= 3:
                 return 0.0, t
             continue
         zeros = 0
-        if liq < 500:
+        if rug and liq < 500:
             return 0.0, t
         last_valid = p
         r = p / p_in
@@ -158,6 +158,7 @@ def main():
              "x": {}}
         for k, name in enumerate(EXITS):
             e["x"][k], e.setdefault("to", {})[k] = simulate(rows, i0, p_in, name.split()[0])
+        e["norug"] = {k: simulate(rows, i0, p_in, n.split()[0], rug=False)[0] for k, n in enumerate(EXITS)}
         pk24 = max([r[1] for r in rows[i0:] if r[0] - t_in <= 24 * H] + [p_in]) / p_in
         pk72 = max([r[1] for r in rows[i0:]] + [p_in]) / p_in
         e["pk24"], e["pk72"] = pk24, pk72
@@ -207,6 +208,13 @@ def main():
             print(f"  {FILTERS[fi]} | {EXITS[xi]}: n={len(xs)} rata {sum(xs) / len(xs):.3f}x median "
                   f"{xs[len(xs) // 2]:.3f}x menang {100 * win / len(xs):.0f}% [{100 * lo:.0f}%-{100 * hi:.0f}%]  "
                   + "  ".join(f"${s}->${bank(tr, s):,.0f}" for s in (100, 200, 1000)))
+
+    print("\n## Cek ketahanan (L0): porsi trade yang kena aturan rug (0x), dan hasil kalau aturan rug dimatikan")
+    for xi, xname in enumerate(EXITS):
+        xs = [e["x"][xi] for e in ev]
+        nr = sorted(e["norug"][xi] for e in ev)
+        print(f"  {xname:32s} kena-rug {100 * sum(1 for x in xs if x == 0) / len(xs):.0f}%  tanpa-aturan-rug rata "
+              f"{sum(nr) / len(nr):.3f}x median {nr[len(nr) // 2]:.3f}x")
 
     print("\n## Per telat deteksi (L0, H6)")
     for lo_, hi_ in ((0, 120), (120, 300), (300, 900), (900, 10 ** 9)):
