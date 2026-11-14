@@ -1,0 +1,23 @@
+name: perps-baru
+
+# Riset 15 Nov: short koin baru listing di Binance futures + panen funding. Pilih 2023-2024, uji 2025-sekarang.
+on:
+  push:
+    branches: [main]
+    paths: [perps_baru.py, .github/workflows/perps-baru.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: mkdir -p out && python3 -u perps_baru.py --out out
+      - run: head -c 30000 out/perps_baru.json
