@@ -69,7 +69,7 @@ def net(gross):
 
 
 class Coin:
-    __slots__ = ("t0", "end", "m0", "cs", "w", "cov", "dev", "ends", "tt", "tp", "starts")
+    __slots__ = ("t0", "end", "m0", "cs", "w", "cov", "dev", "ends", "tt", "tp", "starts", "s")
 
 
 def iter_coins(data_dir, files=None):
@@ -118,6 +118,7 @@ def parse(line):
             return None
         c.w = [(float(a), w, int(b), float(s)) for a, w, b, s in r["w"]]
         c.dev = r.get("dev") or ""
+        c.s = str(r.get("s") or "")
         c.cov = c.w[-1][0] if len(c.w) >= ms.REC_W_MAX else min(ms.REC_W_AGE, c.end)
         c.starts = [x[0] for x in c.cs]
         c.tt = None

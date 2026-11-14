@@ -1,0 +1,29 @@
+name: narasi-whale
+
+# Riset 14 Nov: whale x narasi dua arah (whale dulu lalu cek narasi; narasi dulu lalu cek whale). P3 pilih, P4 uji.
+on:
+  push:
+    branches: [main]
+    paths: [narasi.py, .github/workflows/narasi-whale.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy scikit-learn
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: mkdir -p out && python3 -u narasi.py --data data --out out
+      - run: head -c 20000 out/narasi.json
