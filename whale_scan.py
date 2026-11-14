@@ -283,7 +283,7 @@ def scan(data_dir, files, t_lo, t_hi, cand, dev_n, acc, period_of):
     return n
 
 
-def judge(w, A, dev_n, pers):
+def judge(w, A, dev_n, pers, CRIT=CRIT):
     """Return (lolos?, alasan, info) memakai periode di `pers`."""
     k = S * NPER
     n = sum(A[p * S] for p in pers)
@@ -320,15 +320,19 @@ def judge(w, A, dev_n, pers):
         return False, "tidak konsisten", info
     if pnl <= 0 or info["roi"] < CRIT["MIN_ROI"]:
         return False, "PnL/ROI kurang", info
+    if ownw < CRIT.get("MIN_WIN", 0.0):
+        return False, "winrate kurang", info
     info["tier"] = "A" if cm > CRIT["COPY_A"] and cn >= CRIT["COPY_A_N"] else "B"
+    if CRIT.get("ONLY_A") and info["tier"] != "A":
+        return False, "bukan tier A", info
     info["score"] = (len(win) / len(act)) * math.log1p(pnl) * (1 + min(info["roi"], 3.0))
     return True, "lolos", info
 
 
-def build_list(acc, dev_n, pers):
+def build_list(acc, dev_n, pers, crit=CRIT):
     ok, reasons, elig = [], collections.Counter(), []
     for w, A in acc.items():
-        good, why, info = judge(w, A, dev_n, pers)
+        good, why, info = judge(w, A, dev_n, pers, crit)
         reasons[why] += 1
         if good:
             ok.append((w, info))
@@ -393,10 +397,73 @@ def holdout(data_dir, files, t4, t_hi, listed, control):
     return out
 
 
+def signals(data_dir, files, t_from, t_to, lists, ns=(2, 3, 4)):
+    """lists: {nama: set wallet}. Return {nama: {N: {exit: [mult]}}} untuk koin dengan t0 di [t_from, t_to)."""
+    out = {k: {n: {"bot": [], "tahan5m": []} for n in ns} for k in lists}
+    for c in iter_coins(data_dir, files):
+        if not (t_from <= c.t0 < t_to):
+            continue
+        ws = coin_wallets(c)
+        order = sorted((v[0], w) for w, v in ws.items())
+        for k, L in lists.items():
+            hit = [a for a, w in order if w in L]
+            for n in ns:
+                if len(hit) >= n and hit[n - 1] + LAT < c.end:
+                    te = hit[n - 1] + LAT
+                    out[k][n]["bot"].append(bot_exit(c, te))
+                    out[k][n]["tahan5m"].append(hold_exit(c, te, 300))
+    return out
+
+
+def grid(a, files, acc, dev_n, t_lo, span):
+    """Pilih varian syarat wallet di periode 3 (daftar dari P1-2), uji SEKALI di periode 4 (daftar dari P1-3)."""
+    import itertools
+    variants = {}
+    for mc, mb, roi, win, sn, ca in itertools.product((10, 20), (0.5, 1.0, 2.0), (0.05, 0.3), (0.0, 0.4),
+                                                      (0.4, 0.2), ("semua", "A>1.0", "A>1.2")):
+        cr = dict(CRIT, MIN_COINS=mc, MIN_BUY=mb, MIN_ROI=roi, MIN_WIN=win, SNIPE_MAX=sn,
+                  ONLY_A=ca != "semua", COPY_A=1.2 if ca == "A>1.2" else 1.0, MIN_PER_ACTIVE=2)
+        variants[f"koin>={mc} beli>={mb} roi>={roi} win>={win} snipe<={sn} {ca}"] = cr
+    t3, t4 = t_lo + 2 * span, t_lo + 3 * span
+    lists12 = {k: {w for w, _ in build_list(acc, dev_n, range(2), cr)[0]} for k, cr in variants.items()}
+    lists12 = {k: v for k, v in lists12.items() if v}
+    print(f"[grid] {len(variants)} varian, {len(lists12)} punya wallet; uji pilih di P3", flush=True)
+    r3 = signals(a.data, files, t3, t4, lists12)
+    rows = []
+    for k, d in r3.items():
+        for n, ex in d.items():
+            for e, xs in ex.items():
+                st = mstat(xs)
+                if st.get("n", 0) >= 30:
+                    rows.append((st["mean_wo_best"], st["mean"], k, n, e, st, len(lists12[k])))
+    rows.sort(key=lambda r: (-r[0], -r[1]))
+    n_ok = sum(1 for r in rows if r[0] > 1.0)
+    print(f"[grid] strategi n>=30 di P3: {len(rows)}; untung (tanpa koin terbaik > 1): {n_ok}", flush=True)
+    for r in rows[:15]:
+        print(f"  P3 {r[2]} | N{r[3]} {r[4]} | wallet {r[6]} | {r[5]}", flush=True)
+    top = rows[:5]
+    lists123 = {r[2]: {w for w, _ in build_list(acc, dev_n, range(3), variants[r[2]])[0]} for r in top}
+    rnd = random.Random(11)
+    pool = list(acc)
+    ctrl = {f"KONTROL acak {len(v)}": set(rnd.sample(pool, min(len(pool), len(v)))) for v in lists123.values()}
+    r4 = signals(a.data, files, t4, math.inf, {**lists123, **ctrl})
+    res = []
+    print("[grid] UJI SEKALI di P4 (daftar dibangun dari P1-3):", flush=True)
+    for r in top:
+        st = mstat(r4[r[2]][r[3]][r[4]])
+        res.append({"varian": r[2], "N": r[3], "exit": r[4], "wallet": len(lists123[r[2]]), "P3": r[5], "P4": st})
+        print(f"  {r[2]} | N{r[3]} {r[4]} | wallet {len(lists123[r[2]])} | P4 {st}", flush=True)
+    for k in ctrl:
+        print(f"  {k}: " + " ".join(f"N{n} bot {mstat(v['bot'])}" for n, v in r4[k].items()), flush=True)
+    return {"n_strategi": len(rows), "untung_P3": n_ok, "top_P3": [dict(varian=r[2], N=r[3], exit=r[4], st=r[5])
+                                                                  for r in rows[:15]], "uji_P4": res}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data")
     ap.add_argument("--out", default="whales")
+    ap.add_argument("--grid", action="store_true", help="uji varian syarat (pilih P3, uji P4), tidak menulis daftar")
     a = ap.parse_args()
     t_start = time.time()
     os.makedirs(a.out, exist_ok=True)
@@ -429,6 +496,11 @@ def main():
     acc = {}
     scan(a.data, files, t_lo, t_hi, cand, dev_n, acc, period_of)
     print(f"[2] statistik {len(acc)} wallet ({time.time() - t_start:.0f}s)", flush=True)
+    if a.grid:
+        g = grid(a, files, acc, dev_n, t_lo, span)
+        with open(os.path.join(a.out, "grid.json"), "w") as f:
+            json.dump(g, f, indent=1)
+        return
     # langkah 5 dulu: daftar dari periode 1-3, uji di periode 4
     lst3, reasons3, elig3, nok3 = build_list(acc, dev_n, range(NPER - 1))
     listed3 = {w for w, _ in lst3}
