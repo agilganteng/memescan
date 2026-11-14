@@ -203,6 +203,31 @@ def bot_exit(c, te):
     return got + left * net(end_price(c) / p_in)
 
 
+def savip_exit(c, te):
+    """Gaya post @savipww: Risk potong kalau turun 6%, take profit bertahap (1/3 di 1,5x, 1/3 di 2x, sisa trailing 25%).
+    Isi order 3 dtk setelah pemicu."""
+    p_in = price_at(c, te) * (1 + SLIP)
+    if p_in <= 0:
+        return None
+    got, left, peak, steps = 0.0, 1.0, 1.0, [1.5, 2.0]
+    for t, cl, hi, lo in points(c, te):
+        if t > c.end:
+            break
+        if lo / p_in <= 0.94:
+            px = price_at(c, t + LAT)
+            if t > c.cov:
+                px = min(px, p_in * 0.94 * 0.72)
+            return got + left * net(px / p_in)
+        while steps and hi / p_in >= steps[0]:
+            steps.pop(0)
+            got += (1 / 3) * net(price_at(c, t + LAT) / p_in)
+            left -= 1 / 3
+        peak = max(peak, hi / p_in)
+        if not steps and cl / p_in <= peak * 0.75:
+            return got + left * net(price_at(c, t + LAT) / p_in)
+    return got + left * net(end_price(c) / p_in)
+
+
 def hold_exit(c, te, secs):
     p_in = price_at(c, te) * (1 + SLIP)
     return net(price_at(c, min(te + secs, c.end)) / p_in) if p_in > 0 else None
@@ -360,7 +385,7 @@ def mstat(xs):
 def holdout(data_dir, files, t4, t_hi, listed, control):
     """Uji di periode 4: copy per wallet + sinyal >= N wallet daftar."""
     res = {"copy_daftar": [], "copy_kontrol": []}
-    sig = {f"N{k}": {"bot": [], "tahan5m": []} for k in (1, 2, 3, 4)}
+    sig = {f"N{k}": {"bot": [], "tahan5m": [], "savip": []} for k in (1, 2, 3, 4)}
     sigc = {f"N{k}": {"bot": [], "tahan5m": []} for k in (1, 2, 3)}
     for c in iter_coins(data_dir, files):
         if not (t4 <= c.t0 <= t_hi):
@@ -386,6 +411,7 @@ def holdout(data_dir, files, t4, t_hi, listed, control):
                 te = hit[k - 1] + LAT
                 sig[f"N{k}"]["bot"].append(bot_exit(c, te))
                 sig[f"N{k}"]["tahan5m"].append(hold_exit(c, te, 300))
+                sig[f"N{k}"]["savip"].append(savip_exit(c, te))
         for k in (1, 2, 3):
             if len(hitc) >= k and hitc[k - 1] + LAT < c.end:
                 te = hitc[k - 1] + LAT
@@ -599,7 +625,8 @@ def main():
           "## Uji jujur periode 4 (daftar dibangun dari periode 1-3 saja)", "",
           f"Copy wallet daftar: {ho['copy_daftar']}  ", f"Copy wallet kontrol acak: {ho['copy_kontrol']}  ", ""]
     for k, d in ho["sinyal_daftar"].items():
-        md.append(f"- Sinyal {k} wallet daftar: bot {d['bot']} · tahan 5m {d['tahan5m']}")
+        md.append(f"- Sinyal {k} wallet daftar: bot {d['bot']} · tahan 5m {d['tahan5m']} · gaya savip "
+                  f"(cut -6%, TP bertahap) {d['savip']}")
     for k, d in ho["sinyal_kontrol"].items():
         md.append(f"- Kontrol {k}: bot {d['bot']} · tahan 5m {d['tahan5m']}")
     md += ["", "Alasan dibuang: " + ", ".join(f"{k} {v}" for k, v in reasons.most_common()), ""]
