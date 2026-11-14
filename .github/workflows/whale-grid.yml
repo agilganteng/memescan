@@ -1,5 +1,5 @@
 name: whale-grid
-# 14 Nov: dipakai juga untuk --banyak (daftar besar x banyak whale)
+# 14 Nov: dipakai juga untuk --banyak (daftar besar x 2-20 whale)
 
 # Riset: uji 144 varian syarat wallet whale x N whale x 2 cara jual. Pilih di periode 3, uji SEKALI di periode 4.
 on:

@@ -482,7 +482,7 @@ def loose_list(acc, dev_n, pers, min_buy, min_coins=10):
 
 def banyak(a, files, acc, dev_n, t_lo, span):
     """Daftar besar (1000-5000+, syarat longgar) x syarat banyak whale (N 2..12). Pilih P3, uji sekali P4."""
-    ns = (2, 3, 5, 8, 12)
+    ns = (2, 3, 5, 8, 10, 12, 15, 20)
     t3, t4 = t_lo + 2 * span, t_lo + 3 * span
 
     def lists(pers):
