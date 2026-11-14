@@ -1,0 +1,30 @@
+name: gabungan
+
+# Riset 14 Nov: gabungan semua sinyal (kurva latency copy whale, jual ikut whale, model gradient boosting target 2x).
+# Daftar wallet tiap periode dibangun dari periode sebelumnya saja. P2 latih, P3 pilih, P4 uji sekali + null acak.
+on:
+  push:
+    branches: [main]
+    paths: [gabungan.py, .github/workflows/gabungan.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy scikit-learn
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: mkdir -p out && python3 -u gabungan.py --data data --out out
+      - run: cat out/gabungan.json | head -c 60000
