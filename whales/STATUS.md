@@ -1,4 +1,4 @@
-# Status scan whale (2026-11-14 10:34 UTC)
+# Status scan whale (2026-11-14 11:37 UTC)
 
 **Wallet terkumpul: 172** (batas 5000; yang lolos sebelum dipotong 172)  
 Tier A (lolos + copy 3 dtk > 1,0): 92 · Tier B: 80  
