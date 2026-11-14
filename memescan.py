@@ -73,7 +73,7 @@ DEFAULTS = {
     "PAPER_FLAT": 0,
     # ---- COPY WHALE (bot multi-agent, paper). Daftar wallet dari whale_scan.py (branch whales).
     "WHALE": 1,                 # 1 = aktif
-    "WHALE_MIN": 2,             # minimal berapa wallet whale beli koin yang sama
+    "WHALE_MIN": 3,             # minimal berapa wallet whale beli koin yang sama (uji periode 4: N2 0,80x n118, N3 1,09x n36)
     "WHALE_WINDOW": 120.0,      # ... dalam jendela sekian detik
     "WHALE_TIER_B": 1,          # 1 = wallet tier B ikut dihitung, 0 = cuma tier A
     "WHALE_MCAP_MIN": 0.0, "WHALE_MCAP_MAX": 300.0,     # market cap (SOL) saat sinyal
