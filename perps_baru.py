@@ -413,7 +413,7 @@ def main():
     f3 = []
     for thr in (0.0003, 0.0005, 0.001):
         for xthr in (0.00005, 0.0002):
-            tr, dur, nb_, liq = [], [], 0, 0
+            tr, dur, nb_, liq, dbg = [], [], 0, 0, []
             for d in data:
                 sp = spot.get(d["sym"])
                 if not sp:
@@ -434,6 +434,8 @@ def main():
                         if s0 and s1:
                             pnl = (s1 / s0 - 1) - (k[j][1] / k[i][1] - 1) + got - 4 * FEE - (0.01 if forced else 0)
                             tr.append((k[i][0], k[j][0], 1 + pnl / 2))
+                            dbg.append((k[i][0] >= T_SPLIT, got, s1 / s0 - 1, k[j][1] / k[i][1] - 1, j - i, forced,
+                                        d["sym"]))
                             dur.append(j - i)
                             liq += forced
                         else:
@@ -456,6 +458,17 @@ def main():
             row["per_tahun"] = {y: (stat(v)["n"], stat(v)["mean"], stat(v)["ci_lo"]) for y, v in sorted(yrs.items())}
             row["terburuk"] = [round(x, 3) for x in sorted(t[2] for t in tr)[:5]]
             f3.append(row)
+            for per in (False, True):
+                g = [x for x in dbg if x[0] == per]
+                if g:
+                    m = lambda i2: round(sum(x[i2] for x in g) / len(g), 4)  # noqa: E731
+                    md = lambda i2: round(sorted(x[i2] for x in g)[len(g) // 2], 4)  # noqa: E731
+                    bad = sorted(g, key=lambda x: x[1] + x[2] - x[3])[:6]
+                    print(f"[F3 bedah {'B' if per else 'A'}] n{len(g)} funding rata {m(1)} med {md(1)} | spot rata {m(2)} | "
+                          f"perp rata {m(3)} | basis(spot-perp) rata {round(m(2) - m(3), 4)} med "
+                          f"{round(sorted(x[2] - x[3] for x in g)[len(g) // 2], 4)} | lama med {md(4)} | paksa "
+                          f"{sum(x[5] for x in g)} | simbol unik {len({x[6] for x in g})} | terburuk "
+                          f"{[(x[6], round(x[1], 3), round(x[2], 3), round(x[3], 3), x[4]) for x in bad]}", flush=True)
             print(f"[F3 masuk>{thr * 100:.2f}% keluar<{xthr * 100:.3f}%/8j] {row}", flush=True)
     out = {"F3": f3, "simbol": len(data), "listing_baru": len(new), "F1": res, "F1_lolos_A": len(okA), "F1_lolos_AB": len(okAB),
            "F1_kontrol": {k: stat(v) for k, v in ctl.items()}, "F1v2": v2, "F2": f2, "durasi_s": round(time.time() - T)}
