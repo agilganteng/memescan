@@ -92,3 +92,12 @@ Semua angka bisa diubah di `data/.env` (nama variabel lihat `DEFAULTS` di `memes
 ## Versi lama
 
 Screener DexScreener yang lama ada di `legacy/screener.py` (tidak dipakai lagi).
+
+## Copy whale (paper, multi-agent) — 14 Nov 2026
+- `whale_scan.py` + workflow `whale-scan` (tiap 4 jam): bangun daftar maks 5000 wallet whale/smart money dari
+  rekaman memescan, buang dev / sniper-bundler peluncuran / bot / wallet beli kecil, wajib untung konsisten di
+  beberapa periode. Hasil di branch `whales`: `whales/STATUS.md` (jumlah wallet + uji jujur), `whales/watchlist.json`.
+- `memescan.py` (bot 24/7) mengunduh daftar tiap jam. Agent: pencari (>= WHALE_MIN whale beli koin sama dalam
+  WHALE_WINDOW detik) -> anti-rug (mint/freeze authority, dev, riwayat dump, bundle) -> holder (top10, dev) ->
+  pasar (MC, likuiditas, sudah naik berapa x, drawdown) -> risiko (10% saldo maks $20, maks 3 posisi) ->
+  eksekutor paper (+3 dtk, slippage, fee) -> Telegram. Modal paper $200. Semua angka bisa diubah lewat env/.env.

@@ -71,7 +71,23 @@ DEFAULTS = {
     "RECORD": 1, "REC_KEEP_DAYS": 14,
     # 1 = beli paper ukuran tetap walau belum ada aturan yang terbukti (hasil 13 Okt: rugi)
     "PAPER_FLAT": 0,
+    # ---- COPY WHALE (bot multi-agent, paper). Daftar wallet dari whale_scan.py (branch whales).
+    "WHALE": 1,                 # 1 = aktif
+    "WHALE_MIN": 2,             # minimal berapa wallet whale beli koin yang sama
+    "WHALE_WINDOW": 120.0,      # ... dalam jendela sekian detik
+    "WHALE_TIER_B": 1,          # 1 = wallet tier B ikut dihitung, 0 = cuma tier A
+    "WHALE_MCAP_MIN": 0.0, "WHALE_MCAP_MAX": 300.0,     # market cap (SOL) saat sinyal
+    "WHALE_LIQ_MIN": 3.0,       # SOL nyata di kurva bonding minimal
+    "WHALE_TOP10_MAX": 0.35, "WHALE_DEV_MAX": 0.10, "WHALE_HOLD_MIN": 5,
+    "WHALE_DD_MAX": 0.30,       # jangan beli kalau sudah turun > 30% dari puncak
+    "WHALE_GROWTH_MAX": 6.0,    # jangan beli kalau harga sudah > 6x dari launch
+    "WHALE_BUNDLE_MAX": 6, "WHALE_RUGS_MAX": 1,          # beli bareng detik pertama, riwayat dump pembuat
+    "WHALE_AUTH_CHECK": 1,      # cek mint/freeze authority lewat RPC
+    "WHALE_START_USD": 200.0, "WHALE_STAKE_PCT": 0.10, "WHALE_STAKE_MAX": 20.0, "WHALE_MAX_POS": 3,
+    "WHALE_SHADOW_SOL": 0.1,    # shadow trade untuk SETIAP sinyal (lolos/gagal filter) = bahan uji
+    "WHALE_REFRESH_H": 1.0, "WHALE_NOTIFY_REJECT": 0,
 }
+WHALE_URL_DEFAULT = "https://raw.githubusercontent.com/agilganteng/memescan/whales/whales/watchlist.json"
 
 
 def load_config(data_dir):
@@ -96,6 +112,8 @@ def load_config(data_dir):
         else:
             cfg[k] = int(float(v)) if isinstance(d, int) else float(v)
     cfg["RPC_WS_URL"] = env.get("RPC_WS_URL", "").strip()
+    cfg["RPC_HTTP_URL"] = (env.get("RPC_HTTP_URL") or os.environ.get("RPC_HTTP_URL") or "").strip()
+    cfg["WHALE_URL"] = (env.get("WHALE_URL") or os.environ.get("WHALE_URL") or WHALE_URL_DEFAULT).strip()
     cfg["TELEGRAM_BOT_TOKEN"] = env.get("TELEGRAM_BOT_TOKEN", "").strip()
     cfg["TELEGRAM_CHAT_ID"] = env.get("TELEGRAM_CHAT_ID", "").strip()
     return cfg
@@ -241,6 +259,8 @@ class Token:
         self.rec_next = 0
         self.rec_cand = None
         self.rec_w = []            # trade per wallet 5 menit pertama: [umur, wallet 10 huruf, beli 1/0, sol]
+        self.wb = {}               # wallet whale yang beli: prefix -> (waktu, tier, sol)
+        self.w_done = False        # sinyal whale sudah diproses (tidak pernah dibeli ulang)
 
     @property
     def price(self):
@@ -490,10 +510,21 @@ class Engine:
                                "Saldo dan posisi paper lama dihapus.")
         else:
             self.recover(self._recover_from)
+        st = self._recover_from
         del self._recover_from
         self.orphans, self.orphan_q = {}, collections.deque()
         self.sample = set()        # id kandidat yang dikirim ke Telegram
         self.hour_start, self.n_hour, self.suppressed = time.time(), 0, 0
+        # ---- copy whale
+        self.wport = st.get("whale_port") or {"usd": cfg["WHALE_START_USD"], "start_usd": cfg["WHALE_START_USD"],
+                                              "stopped": False, "since": time.time()}
+        self.wsig_n = st.get("wsig_n", 0)
+        self.wstats = collections.Counter()
+        self.desk = []             # sinyal whale yang sedang dicek agent: [tok, t_trig, future, whales]
+        self.whales, self.whales_meta = {}, {}
+        self.load_whales()
+        import concurrent.futures
+        self.pool = concurrent.futures.ThreadPoolExecutor(4)
 
     # --- persistensi
     def _load(self, name, default):
@@ -513,7 +544,7 @@ class Engine:
         """Posisi paper terbuka + nilainya dalam USD kalau dijual sekarang (untuk pemulihan)."""
         out = []
         for p in self.positions:
-            if p.kind != "portfolio":
+            if p.kind not in ("portfolio", "whale"):
                 continue
             tok = self.tokens.get(p.mint)
             px = self.sol_usd or p.sol_usd
@@ -526,7 +557,7 @@ class Engine:
                     sol += max(0.0, curve_sell(tok.v_sol, tok.v_tok, p.tokens) * (1 - c["SLIPPAGE"])
                                * (1 - c["FEE_PCT"]) - c["PRIORITY_FEE"])
                 value = sol * px
-            out.append({"id": p.id, "mint": p.mint, "sym": p.sym, "cost_usd": p.cost_usd,
+            out.append({"id": p.id, "mint": p.mint, "sym": p.sym, "cost_usd": p.cost_usd, "ledger": p.kind,
                         "cost": p.cost or p.size, "value_usd": value, "opened": p.opened})
         return out
 
@@ -534,7 +565,7 @@ class Engine:
         self._save("state.json", {"seen": list(self.seen)[-50000:], "portfolio": self.port,
                                   "n_cand": self.n_cand, "last_summary": self.last_summary,
                                   "last_welcome": self.last_welcome, "tg_chat": self.tg_chat,
-                                  "n_rec": self.n_rec,
+                                  "n_rec": self.n_rec, "whale_port": self.wport, "wsig_n": self.wsig_n,
                                   "open_paper": self.open_paper()})
 
     def recover(self, st):
@@ -543,14 +574,17 @@ class Engine:
         now = time.time()
         for o in st.get("open_paper") or []:
             got = o["value_usd"]
-            self.port["usd"] += got
+            led = self.port if o.get("ledger", "portfolio") == "portfolio" else st.setdefault(
+                "whale_port", {"usd": self.cfg["WHALE_START_USD"], "start_usd": self.cfg["WHALE_START_USD"],
+                               "stopped": False, "since": now})
+            led["usd"] += got
             mult = got / o["cost_usd"] if o["cost_usd"] else 0.0
-            self.log({"id": o["id"], "t": now, "mint": o["mint"], "kind": "portfolio", "outcome": {
+            self.log({"id": o["id"], "t": now, "mint": o["mint"], "kind": o.get("ledger", "portfolio"), "outcome": {
                 "won": False, "multiple": round(mult, 4), "reason": "bot mati mendadak", "peak_x": None,
                 "held_s": round(now - o["opened"], 1), "usd_cost": o["cost_usd"], "usd_out": got}})
             self.outbox.append(f"⚠️ <b>{html.escape(o['sym'])}</b> #{o['id']}: bot sempat mati mendadak, "
                                f"posisi paper ditutup di nilai terakhir {fmt_bal(got - o['cost_usd'])}. "
-                               f"💼 Sisa saldo {fmt_bal(self.port['usd'])}")
+                               f"💼 Sisa saldo {fmt_bal(led['usd'])}")
 
     def save(self):
         self.save_state()
@@ -584,6 +618,11 @@ class Engine:
         tok.on_trade(ev, now)
         if self.cfg["RECORD"]:
             self.rec_trade(tok, ev, now)
+        if self.whales and ev.get("txType") == "buy" and not tok.w_done:
+            tier = self.whales.get((ev.get("traderPublicKey") or "")[:10])
+            if tier and (tier == "A" or self.cfg["WHALE_TIER_B"]):
+                self.whale_buy(tok, (ev.get("traderPublicKey") or "")[:10], tier,
+                               float(ev.get("solAmount") or 0), now)
         if not was_sold and tok.dev_max > 0 and tok.bal.get(tok.creator, 0) <= tok.dev_max * 0.1:
             tok.dev_sold_flag = True
             self.creators.setdefault(tok.creator, {"tokens": 1, "rugs": 0})["rugs"] += 1
@@ -670,6 +709,8 @@ class Engine:
     # --- detak jam: gate, order, exit, pruning
     def tick(self, now):
         c = self.cfg
+        if self.desk:
+            self.desk_step(now)
         for tok in list(self.tokens.values()):
             if c["RECORD"] and tok.rec_next < len(REC_SNAPS):
                 self.rec_snap(tok, now)
@@ -713,14 +754,15 @@ class Engine:
             if not tok:
                 continue
             done = pos.step(tok, now)
-            if pos.kind == "portfolio" and pos.entry_px and not getattr(pos, "announced", False):
+            if pos.kind in ("portfolio", "whale") and pos.entry_px and not getattr(pos, "announced", False):
                 pos.announced = True
-                self.outbox.append(self.entry_msg(pos, tok, now))
+                self.outbox.append(self.entry_msg(pos, tok, now) if pos.kind == "portfolio"
+                                   else self.whale_entry_msg(pos, tok, now))
                 self.save_state()
             if done:
                 self.positions.remove(pos)
                 self.close(pos, now)
-                if pos.kind == "portfolio":
+                if pos.kind in ("portfolio", "whale"):
                     self.save_state()
 
         self.prune(now)
@@ -731,11 +773,13 @@ class Engine:
     def flush(self, now):
         """Bot berhenti (misal ganti run GitHub): posisi paper yang masih terbuka dijual di
         harga saat itu supaya saldo tidak hilang; order beli yang belum terisi dibatalkan."""
-        for pos in [p for p in self.positions if p.kind == "portfolio"]:
+        for pos in [p for p in self.positions if p.kind in ("portfolio", "whale", "wshadow")]:
             tok = self.tokens.get(pos.mint)
             self.positions.remove(pos)
+            led = self.port if pos.kind == "portfolio" else self.wport if pos.kind == "whale" else None
             if pos.entry_px is None or not tok:
-                self.port["usd"] += pos.cost_usd if pos.entry_px is None else pos.out * (self.sol_usd or pos.sol_usd)
+                if led is not None:
+                    led["usd"] += pos.cost_usd if pos.entry_px is None else pos.out * (self.sol_usd or pos.sol_usd)
                 continue
             pos._fill(tok, "sell", 1.0)
             pos.closed, pos.reason = True, "bot berhenti"
@@ -800,6 +844,211 @@ class Engine:
             self.n_hour += 1
             self.notified.add(self.n_cand)
             self.outbox.append(self.signal_msg(tok, now, gate, s, why, feats))
+
+    # ================================================================ COPY WHALE (multi-agent, paper)
+    # Agent 1 PENCARI   : wallet whale dari daftar beli -> hitung berapa whale beda di koin itu (jendela waktu)
+    # Agent 2 ANTI-RUG  : mint authority & freeze authority dicabut (RPC), dev belum jual semua, pembuat tidak
+    #                     sering dump, tidak dibundle berat di detik pertama
+    # Agent 3 HOLDER    : jumlah holder, top10, porsi dev
+    # Agent 4 PASAR     : market cap dalam rentang, likuiditas kurva, belum terbang terlalu tinggi, tidak sedang dump
+    # Agent 5 RISIKO    : ukuran posisi (10% saldo, maks $20), maks posisi terbuka, auto-stop saldo minimum
+    # Agent 6 EKSEKUTOR : order paper diisi EXEC_DELAY detik kemudian di harga kurva + slippage + fee; TP/SL/trailing
+    # Agent 7 PELAPOR   : Telegram + log candidates.jsonl (kind wsignal / whale / wshadow)
+    def load_whales(self):
+        try:
+            with open(os.path.join(self.dir, "whales.json")) as f:
+                wl = json.load(f)
+            self.whales = {x["w"][:10]: x.get("tier", "B") for x in wl.get("wallets", []) if x.get("w")}
+            self.whales_meta = {"updated": wl.get("updated", "?"), "n": len(self.whales),
+                                "tiers": wl.get("tiers", {})}
+        except (OSError, ValueError, KeyError, TypeError):
+            self.whales, self.whales_meta = {}, {"updated": None, "n": 0, "tiers": {}}
+
+    def fetch_whales(self):
+        """Unduh daftar terbaru (dipanggil di thread). Gagal = pakai salinan lama."""
+        if not self.cfg["WHALE"]:
+            return
+        try:
+            with urllib.request.urlopen(self.cfg["WHALE_URL"] + f"?t={int(time.time())}", timeout=30) as r:
+                raw = r.read()
+            wl = json.loads(raw)
+            if not isinstance(wl.get("wallets"), list):
+                return
+            p = os.path.join(self.dir, "whales.json")
+            with open(p + ".tmp", "wb") as f:
+                f.write(raw)
+            os.replace(p + ".tmp", p)
+            old = self.whales_meta.get("n", 0)
+            self.load_whales()
+            if self.whales_meta["n"] != old:
+                print(f"[info] daftar whale: {self.whales_meta['n']} wallet ({self.whales_meta['updated']})",
+                      file=sys.stderr)
+        except Exception as e:  # noqa: BLE001
+            print(f"[warn] unduh daftar whale gagal: {str(e)[:120]}", file=sys.stderr)
+
+    def rpc_http(self):
+        u = self.cfg["RPC_HTTP_URL"] or self.cfg["RPC_WS_URL"] or PUBLIC_RPC_WS
+        return u.replace("wss://", "https://").replace("ws://", "http://")
+
+    def auth_check(self, mint):
+        """(ok, keterangan). Dicek di thread supaya simulasi tidak menunggu."""
+        body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "getAccountInfo",
+                           "params": [mint, {"encoding": "jsonParsed", "commitment": "processed"}]}).encode()
+        try:
+            req = urllib.request.Request(self.rpc_http(), body, {"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=3) as r:
+                v = (json.loads(r.read()).get("result") or {}).get("value")
+            info = ((v or {}).get("data") or {}).get("parsed", {}).get("info") if isinstance(v, dict) else None
+            if not isinstance(info, dict):
+                return None, "akun mint belum terbaca"
+            bad = [k for k, lab in (("mintAuthority", "mint"), ("freezeAuthority", "freeze")) if info.get(k)]
+            if bad:
+                return False, "authority " + "/".join("mint" if b == "mintAuthority" else "freeze" for b in bad) + " masih aktif"
+            return True, "mint & freeze dicabut"
+        except Exception as e:  # noqa: BLE001
+            return None, f"RPC gagal ({type(e).__name__})"
+
+    def whale_buy(self, tok, w, tier, sol, now):
+        if w in tok.wb:
+            return
+        tok.wb[w] = (now, tier, sol)
+        self.wstats["whale_buy"] += 1
+        win = self.cfg["WHALE_WINDOW"]
+        live = {k: v for k, v in tok.wb.items() if now - v[0] <= win}
+        if len(live) >= self.cfg["WHALE_MIN"]:
+            tok.w_done = True
+            fut = self.pool.submit(self.auth_check, tok.mint) if self.cfg["WHALE_AUTH_CHECK"] else None
+            self.desk.append([tok, now, fut, live])
+
+    def desk_step(self, now):
+        c = self.cfg
+        keep = []
+        for item in self.desk:
+            tok, t_trig, fut, live = item
+            if fut is not None and not fut.done() and now - t_trig < 2.5:
+                keep.append(item)       # tunggu agent anti-rug maks 2,5 dtk
+                continue
+            self.whale_decide(tok, t_trig, fut, live, now)
+        self.desk = keep
+
+    def whale_decide(self, tok, t_trig, fut, live, now):
+        c = self.cfg
+        checks = []                     # (agent, lolos True/False/None, keterangan)
+        # Agent 2 anti-rug
+        if fut is None:
+            checks.append(("anti-rug", None, "cek authority dimatikan"))
+        elif fut.done():
+            ok, why = fut.result()
+            checks.append(("anti-rug", ok, why))
+        else:
+            checks.append(("anti-rug", None, "RPC lambat (>2,5 dtk)"))
+        cr = self.creators.get(tok.creator, {})
+        checks.append(("anti-rug", not tok.dev_sold_all(), "dev belum jual semua" if not tok.dev_sold_all()
+                       else "dev sudah jual semua"))
+        checks.append(("anti-rug", cr.get("rugs", 0) <= c["WHALE_RUGS_MAX"],
+                       f"pembuat pernah dump {cr.get('rugs', 0)}x"))
+        checks.append(("anti-rug", tok.bundle <= c["WHALE_BUNDLE_MAX"], f"bundle detik pertama {tok.bundle}"))
+        # Agent 3 holder
+        nh, t10, dv = len(tok.holders()), tok.top_pct(10), tok.dev_pct()
+        checks.append(("holder", nh >= c["WHALE_HOLD_MIN"], f"{nh} holder"))
+        checks.append(("holder", t10 <= c["WHALE_TOP10_MAX"], f"top10 {t10:.0%}"))
+        checks.append(("holder", dv <= c["WHALE_DEV_MAX"], f"dev pegang {dv:.0%}"))
+        # Agent 4 pasar
+        g = tok.price / tok.price0 if tok.price0 else 0.0
+        checks.append(("pasar", c["WHALE_MCAP_MIN"] <= tok.mcap <= c["WHALE_MCAP_MAX"], f"MC {self.money(tok.mcap)}"))
+        checks.append(("pasar", tok.liq >= c["WHALE_LIQ_MIN"], f"liq {tok.liq:.1f} SOL"))
+        checks.append(("pasar", g <= c["WHALE_GROWTH_MAX"], f"{g:.1f}x dari launch"))
+        checks.append(("pasar", tok.dd() <= c["WHALE_DD_MAX"], f"turun {tok.dd():.0%} dari puncak"))
+        passed = all(ok is not False for _, ok, _ in checks)
+        fails = [f"{a}: {d}" for a, ok, d in checks if ok is False]
+        self.wsig_n += 1
+        sid = self.wsig_n
+        nA = sum(1 for v in live.values() if v[1] == "A")
+        rec = {"id": sid, "t": now, "kind": "wsignal", "mint": tok.mint, "sym": tok.sym, "pass": passed,
+               "whales": len(live), "tierA": nA, "whale_sol": round(sum(v[2] for v in live.values()), 3),
+               "spread_s": round(max(v[0] for v in live.values()) - min(v[0] for v in live.values()), 1),
+               "age_s": round(tok.age(now), 1), "decide_ms": round((now - t_trig) * 1000),
+               "mcap_sol": round(tok.mcap, 2), "liq_sol": round(tok.liq, 2), "top10": round(t10, 3),
+               "checks": [[a, ok, d] for a, ok, d in checks]}
+        self.log(rec)
+        self.wstats["sinyal"] += 1
+        self.wstats["lolos" if passed else "gagal"] += 1
+        # shadow untuk SEMUA sinyal (bahan uji maju: apakah filter agent membantu)
+        sh = Position(sid, tok, c["WHALE_SHADOW_SOL"], "wshadow", now, c)
+        sh.wpass = passed
+        self.positions.append(sh)
+        if not passed:
+            if c["WHALE_NOTIFY_REJECT"]:
+                self.outbox.append(f"🐋 {len(live)} whale beli <b>{html.escape(tok.sym)}</b>, DITOLAK: "
+                                   + html.escape("; ".join(fails)))
+            return
+        # Agent 5 risiko
+        p = self.wport
+        why = None
+        if p["stopped"]:
+            why = "auto-stop saldo minimum"
+        elif sum(1 for x in self.positions if x.kind == "whale") >= c["WHALE_MAX_POS"]:
+            why = f"sudah {int(c['WHALE_MAX_POS'])} posisi terbuka"
+        elif not self.sol_usd:
+            why = "harga SOL belum didapat"
+        size = min(c["WHALE_STAKE_MAX"], p["usd"] * c["WHALE_STAKE_PCT"])
+        if why is None and size / (self.sol_usd or 1) <= c["PRIORITY_FEE"] * 4:
+            why = "saldo habis"
+        if why:
+            self.wstats["skip_risiko"] += 1
+            return
+        p["usd"] -= size
+        pos = Position(sid, tok, size / self.sol_usd - c["PRIORITY_FEE"], "whale", now, c)
+        pos.cost_usd, pos.sol_usd = size, self.sol_usd
+        pos.wsig = rec
+        self.positions.append(pos)
+        self.save_state()
+
+    def whale_entry_msg(self, pos, tok, now):
+        e, c, r = html.escape, self.cfg, pos.wsig
+        p = pos.entry_px
+        ag = collections.OrderedDict()
+        for a, ok, d in r["checks"]:
+            ag.setdefault(a, []).append(("✅" if ok else "⚠️" if ok is None else "❌") + " " + d)
+        lines = [f"🐋 <b>COPY WHALE (paper) {e(tok.sym)}</b> W#{pos.id}",
+                 f"🕵️ Pencari: {r['whales']} whale beli dalam {r['spread_s']:.0f} dtk (tier A {r['tierA']}) · "
+                 f"total {r['whale_sol']:.2f} SOL · umur koin {r['age_s']:.0f} dtk"]
+        for a, lab in (("anti-rug", "🛡 Anti-rug"), ("holder", "👥 Holder"), ("pasar", "📈 Pasar")):
+            if a in ag:
+                lines.append(f"{lab}: " + e(" · ".join(ag[a])))
+        lines += [f"⚡ Keputusan {r['decide_ms']} ms setelah whale ke-{int(c['WHALE_MIN'])} · isi order +"
+                  f"{c['EXEC_DELAY']:.0f} dtk",
+                  f"💰 Masuk {fmt_bal(pos.cost_usd)} @ {self.px(p)} · MC {self.money(tok.mcap)}",
+                  f"🎯 TP {self.px(p * c['TP1_X'])} (jual {c['TP1_FRAC']:.0%}) · SL {self.px(p * (1 - c['SL']))} "
+                  f"(-{c['SL']:.0%}) · sisanya trailing {c['TRAIL']:.0%}",
+                  f"🐋 Saldo copy whale {fmt_bal(self.wport['usd'])}",
+                  f"https://pump.fun/coin/{e(tok.mint)}",
+                  "<i>Paper, bukan uang asli. Belum terbukti untung.</i>"]
+        return "\n".join(lines)
+
+    def whale_summary(self):
+        if not self.cfg["WHALE"]:
+            return []
+        m = self.whales_meta
+        lines = [f"🐋 <b>Copy whale</b>: daftar {m.get('n', 0)} wallet (update {m.get('updated') or '-'}) · "
+                 f"syarat ≥{int(self.cfg['WHALE_MIN'])} whale dalam {self.cfg['WHALE_WINDOW']:.0f} dtk"]
+        sh = self.results("wshadow")
+        if sh:
+            xs = [o["multiple"] for o in sh]
+            w = sum(x > 1 for x in xs)
+            lines.append(f"Semua sinyal (shadow): {len(xs)} trade, rata-rata {sum(xs) / len(xs):.2f}x, "
+                         f"untung {w}/{len(xs)}")
+        pf = self.results("whale", self.wport.get("since", 0))
+        held = sum(x.cost_usd for x in self.positions if x.kind == "whale")
+        tot = self.wport["usd"] + held
+        st = self.wport["start_usd"]
+        w = sum(o.get("usd_out", 0) > o.get("usd_cost", 0) for o in pf)
+        lines.append(f"Paper copy whale: modal {fmt_bal(st)} → {fmt_bal(tot)} ({tot / st - 1:+.1%}) · "
+                     f"{len(pf)} trade, menang {w}{f' ({w / len(pf):.0%})' if pf else ''}"
+                     f"{' · AUTO-STOP' if self.wport['stopped'] else ''}")
+        if len(pf) < 30:
+            lines.append("<i>Belum 30 trade copy whale, belum bisa disimpulkan.</i>")
+        return lines
 
     def usd(self, sol):
         return sol * self.sol_usd if self.sol_usd else None
@@ -898,12 +1147,14 @@ class Engine:
     def close(self, pos, now):
         e = html.escape
         out_usd = None
-        if pos.kind == "portfolio":
+        if pos.kind in ("portfolio", "whale"):
+            led = self.port if pos.kind == "portfolio" else self.wport
             out_usd = pos.out * (self.sol_usd or pos.sol_usd)
-            self.port["usd"] += out_usd
-            if self.port["usd"] < self.cfg["MIN_BALANCE_USD"] and not self.port["stopped"]:
-                self.port["stopped"] = True
-                self.outbox.append(f"⛔ Saldo paper {fmt_bal(self.port['usd'])} di bawah minimum. "
+            led["usd"] += out_usd
+            if led["usd"] < self.cfg["MIN_BALANCE_USD"] and not led["stopped"]:
+                led["stopped"] = True
+                self.outbox.append(f"⛔ Saldo paper {'whale ' if pos.kind == 'whale' else ''}"
+                                   f"{fmt_bal(led['usd'])} di bawah minimum. "
                                    "Pembelian berhenti. Lanjutkan dengan <code>memescan.py --resume</code>.")
         oc = {"won": pos.won, "multiple": round(pos.multiple, 4), "reason": pos.reason,
               "peak_x": round(pos.peak_x, 3), "held_s": round(now - pos.opened, 1),
@@ -912,6 +1163,18 @@ class Engine:
             oc.update(usd_cost=round(pos.cost_usd, 4), usd_out=round(out_usd, 4))
         self.log({"id": pos.id, "t": now, "mint": pos.mint, "kind": pos.kind, "outcome": oc})
         # posisi paper selalu dilaporkan; shadow hanya kalau kandidatnya dikirim ke Telegram
+        if pos.kind == "whale":
+            pnl, pct = out_usd - pos.cost_usd, out_usd / pos.cost_usd - 1 if pos.cost_usd else 0.0
+            why = {"sl": "🛑 SL", "trailing": "📉 trailing stop", "time_stop": "⏱ time stop", "basi": "💤 koin sepi",
+                   "bot berhenti": "🔁 bot ganti run, dijual di harga pasar"}.get(pos.reason, pos.reason)
+            self.outbox.append(
+                f"{'✅' if pnl > 0 else '❌'} 🐋 <b>{e(pos.sym)}</b> W#{pos.id} ditutup ({why}): "
+                f"{'+' if pnl >= 0 else ''}{fmt_bal(pnl)} ({pct:+.0%}) · puncak {pos.peak_x:.1f}x · "
+                f"{(now - pos.opened) / 60:.0f} menit [Paper copy whale]\n"
+                f"🐋 Saldo copy whale {fmt_bal(self.wport['usd'])}")
+            return
+        if pos.kind == "wshadow":
+            return
         if pos.kind == "portfolio" or pos.id in self.notified:
             if pos.kind == "shadow":
                 self.notified.discard(pos.id)
@@ -974,6 +1237,7 @@ class Engine:
                      f"{f' · winrate {w / len(pf):.0%}' if pf else ''}")
         if pf and len(pf) < 30:
             lines.append(f"<i>Paper baru {len(pf)} trade, belum bisa disimpulkan.</i>")
+        lines += self.whale_summary()
         return "\n".join(lines)
 
 
@@ -1220,12 +1484,15 @@ async def telegram_sender(engine):
     """Kirim pesan di task terpisah supaya Telegram lambat tidak menunda simulasi.
     Sekalian perbarui harga SOL/USD tiap 10 menit."""
     loop = asyncio.get_running_loop()
-    next_px = 0.0
+    next_px = next_wl = 0.0
     while True:
         if time.time() >= next_px:
             v = await loop.run_in_executor(None, fetch_sol_usd)
             engine.sol_usd = v or engine.sol_usd
             next_px = time.time() + (600 if v else 30)
+        if engine.cfg["WHALE"] and time.time() >= next_wl:
+            next_wl = time.time() + engine.cfg["WHALE_REFRESH_H"] * 3600
+            await loop.run_in_executor(None, engine.fetch_whales)
         while engine.outbox:
             await engine.tg.asend(engine.outbox.pop(0))
         await asyncio.sleep(0.5)
@@ -1985,6 +2252,7 @@ def main():
         return
     if a.resume:
         eng.port["stopped"] = False
+        eng.wport["stopped"] = False
         eng.save()
 
     if time.time() - eng.last_welcome > 12 * 3600:   # jangan spam kalau sering restart

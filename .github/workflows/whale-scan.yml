@@ -1,0 +1,52 @@
+name: whale-scan
+
+# Bangun daftar wallet whale / smart money (maks 5000) dari rekaman memescan, lalu simpan ke branch `whales`
+# (whales/watchlist.json, whales/status.json, whales/STATUS.md). Bot memescan mengunduh daftar itu tiap jam.
+# Jalan tiap 4 jam (data rekaman terus bertambah), bisa juga manual. Hanya baca cache, tidak ada wallet/kunci.
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  push:
+    branches: [main]
+    paths: [whale_scan.py, .github/workflows/whale-scan.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: whale-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - name: Data rekaman
+        run: ls data/rec | head -40; du -sh data/rec || true
+      - name: Scan wallet
+        run: python3 -u whale_scan.py --data data --out /tmp/whales_out
+      - name: Simpan ke branch whales
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -rf data
+          if git fetch --depth 1 origin whales; then git checkout -B whales FETCH_HEAD; else git checkout --orphan whales; fi
+          git rm -rq --cached . || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          mkdir -p whales && cp /tmp/whales_out/* whales/
+          printf '# Daftar whale untuk memescan\n\nLihat whales/STATUS.md\n' > README.md
+          git add whales README.md
+          N=$(python3 -c "import json;print(json.load(open('whales/status.json'))['wallet_terkumpul'])")
+          git commit -qm "whale scan: $N wallet" || echo "tidak ada perubahan"
+          git push -f origin whales
