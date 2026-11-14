@@ -140,6 +140,71 @@ def short_trade(d, i0, hold, stop):
     return max(0.0, 1 + r - 2 * FEE), k[i0][0]
 
 
+BTC = {}
+
+
+def short_trade2(d, i0, hold, stop, lev=1.0, hedge=False):
+    """Short dari open hari i0, leverage `lev` (margin), likuidasi kalau rugi >= 90% margin di high harian.
+    hedge=True: tambah long BTC nominal sama (netral pasar). Return (t_masuk, t_keluar, mult margin) atau None."""
+    k, f = d["k"], d["f"]
+    if i0 >= len(k) or k[i0][1] <= 0:
+        return None
+    if i0 + hold - 1 > len(k) - 1 and k[-1][0] >= time.time() - 3 * DAY:
+        return None
+    end = min(len(k) - 1, i0 + hold - 1)
+    p0, fsum = k[i0][1], 0.0
+    b0 = BTC.get(k[i0][0], (None,))[0] if hedge else None
+    if hedge and not b0:
+        return None
+    nfee = (4 if hedge else 2) * FEE
+    for j in range(i0, end + 1):
+        o, hi, lo, cl = k[j][1], k[j][2], k[j][3], k[j][4]
+        bt = BTC.get(k[j][0]) if hedge else None
+        if hedge and not bt:
+            return None
+        # rugi terburuk hari ini (koin di high; BTC di low kalau hedge)
+        worst = (p0 - hi) / p0 + fsum + ((bt[2] / b0 - 1) if hedge else 0.0)
+        if stop is not None and hi >= p0 * (1 + stop):
+            px = max(p0 * (1 + stop), o) * 1.002
+            r = (p0 - px) / p0 + fsum + ((bt[3] / b0 - 1) if hedge else 0.0)
+            return k[i0][0], k[j][0] + DAY, max(0.0, 1 + lev * r - lev * nfee)
+        if lev * worst <= -0.9:
+            return k[i0][0], k[j][0] + DAY, 0.0
+        fsum += f[j]
+    bt = BTC.get(k[end][0]) if hedge else None
+    r = (p0 - k[end][4]) / p0 + fsum + ((bt[3] / b0 - 1) if hedge else 0.0)
+    return k[i0][0], k[end][0] + DAY, max(0.0, 1 + lev * r - lev * nfee)
+
+
+def porto(trades, start, frac, min_order=5.0):
+    """Simulasi portofolio: tiap posisi baru = frac x ekuitas (kas + posisi terbuka di harga masuk), hanya kalau
+    kas cukup dan >= min_order. Return (akhir, MDD ekuitas tertutup, trade diambil, dilewati)."""
+    ev = sorted(trades)
+    cash, open_, eq_hist, taken, skip = start, [], [], 0, 0
+    import heapq
+    peak, mdd = start, 0.0
+    for t_in, t_out, m in ev:
+        while open_ and open_[0][0] <= t_in:
+            _, st, mm = heapq.heappop(open_)
+            cash += st * mm
+        eq = cash + sum(x[1] for x in open_)
+        peak = max(peak, eq)
+        mdd = max(mdd, 1 - eq / peak if peak > 0 else 0)
+        st = eq * frac
+        if st < min_order or st > cash:
+            skip += 1
+            continue
+        cash -= st
+        heapq.heappush(open_, (t_out, st, m))
+        taken += 1
+    while open_:
+        _, st, mm = heapq.heappop(open_)
+        cash += st * mm
+    peak = max(peak, cash)
+    mdd = max(mdd, 1 - cash / peak if peak > 0 else 0)
+    return round(cash, 2), round(mdd, 3), taken, skip
+
+
 def stat(trades):
     trades = sorted(t for t in trades if t is not None)
     xs = [m for _, m in trades]
@@ -177,12 +242,24 @@ def main():
         syms = syms[:a.max]
     now = time.time()
     data = []
+    cache = os.path.join("pcache", "data.json.gz")
+    if os.path.exists(cache) and not a.max:
+        import gzip
+        with gzip.open(cache, "rt") as f:
+            data = json.load(f)
+        print(f"[cache] {len(data)} simbol dari cache", flush=True)
+        syms = []
     with cf.ThreadPoolExecutor(24) as ex:
         for i, d in enumerate(ex.map(lambda s: load(s, now), syms)):
             if d:
                 data.append(d)
             if i % 100 == 0:
                 print(f"  {i}/{len(syms)} dimuat ({time.time() - T:.0f}s)", flush=True)
+    if syms and not a.max:
+        import gzip
+        os.makedirs("pcache", exist_ok=True)
+        with gzip.open(cache, "wt") as f:
+            json.dump(data, f)
     new = [d for d in data if d["k"][0][0] > T_FIRST + 20 * DAY]
     print(f"[data] {len(data)} simbol punya candle; listing baru sejak 2023: {len(new)} "
           f"(A {sum(d['k'][0][0] < T_SPLIT for d in new)}, B {sum(d['k'][0][0] >= T_SPLIT for d in new)})", flush=True)
@@ -233,6 +310,63 @@ def main():
             lev["A" if d["k"][0][0] < T_SPLIT else "B"].append((t[1], max(0.0, 1 + 2 * (t[0] - 1))))
     print(f"[F1 terpilih 2x] A {stat(lev['A'])} | B {stat(lev['B'])}", flush=True)
 
+    # ---------------- F1 versi 2: jalur likuidasi, hedge BTC, portofolio realistis
+    btc = next((d for d in data if d["sym"] == "BTCUSDT"), None)
+    if btc:
+        for x in btc["k"]:
+            BTC[x[0]] = (x[1], x[2], x[3], x[4])
+    dl, h, st = pick["masuk_hari"], pick["tahan"], pick["stop"]
+    print(f"[F1v2] varian terpilih di A: masuk h{dl}, tahan {h} hari, stop {st}", flush=True)
+    v2 = {}
+    for nm, lev, hd in (("1x", 1.0, False), ("2x", 2.0, False), ("3x", 3.0, False), ("1x+hedgeBTC", 1.0, True),
+                        ("2x+hedgeBTC", 2.0, True)):
+        tr = {"A": [], "B": []}
+        for d in new:
+            t = short_trade2(d, dl, h, st, lev, hd)
+            if t:
+                tr["A" if d["k"][0][0] < T_SPLIT else "B"].append(t)
+        row = {}
+        for per in ("A", "B"):
+            xs = [(t[0], t[2]) for t in tr[per]]
+            row[per] = stat(xs)
+            row[per].pop("sim", None)
+            row[per]["likuidasi"] = sum(1 for t in tr[per] if t[2] == 0.0)
+            row[per]["porto"] = {}
+            for S in (100, 200, 500, 1000, 5000):
+                for fr in (0.05, 0.10):
+                    row[per]["porto"][f"${S} {int(fr * 100)}%/posisi"] = porto(tr[per], S, fr)
+        yrs = {}
+        for t in tr["A"] + tr["B"]:
+            yrs.setdefault(time.gmtime(t[0]).tm_year, []).append((t[0], t[2]))
+        row["per_tahun"] = {y: {k2: v for k2, v in stat(v).items() if k2 != "sim"} for y, v in sorted(yrs.items())}
+        worst = sorted(tr["A"] + tr["B"], key=lambda t: t[2])[:5]
+        row["terburuk"] = [(time.strftime("%Y-%m-%d", time.gmtime(t[0])), round(t[2], 3)) for t in worst]
+        v2[nm] = row
+        print(f"[F1v2 {nm}] A {row['A']}", flush=True)
+        print(f"[F1v2 {nm}] B {row['B']}", flush=True)
+        print(f"[F1v2 {nm}] per tahun {row['per_tahun']}", flush=True)
+        print(f"[F1v2 {nm}] 5 terburuk {row['terburuk']}", flush=True)
+    # kontrol hedge: short koin LAMA (umur 120-400 hari) + hedge BTC
+    ctl2 = {"A": [], "B": []}
+    rnd2 = random.Random(9)
+    for d in new:
+        if len(d["k"]) < 420:
+            continue
+        i0 = rnd2.randint(120, min(400, len(d["k"]) - h - 1))
+        t = short_trade2(d, i0, h, st, 1.0, True)
+        if t:
+            ctl2["A" if d["k"][i0][0] < T_SPLIT else "B"].append((t[0], t[2]))
+    print(f"[F1v2 kontrol umur acak + hedge BTC] A {stat(ctl2['A'])} | B {stat(ctl2['B'])}", flush=True)
+    # tetangga parameter (B, 1x+hedge) untuk cek bukan satu angka beruntung
+    nb = []
+    for dl2 in (1, 3, 7, 14):
+        for h2 in (14, 30, 60):
+            xs = [short_trade2(d, dl2, h2, None, 1.0, True) for d in new if d["k"][0][0] >= T_SPLIT]
+            s2 = stat([(t[0], t[2]) for t in xs if t])
+            nb.append((dl2, h2, s2.get("n"), s2.get("mean"), s2.get("ci_lo")))
+    print("[F1v2 tetangga B 1x+hedge] " + " ; ".join(f"h{a2} tahan{b2}: n{c2} rata {d2} ci {e2}"
+                                                    for a2, b2, c2, d2, e2 in nb), flush=True)
+
     # ---------------- F2 panen funding (batas atas, basis tidak dihitung)
     f2 = []
     for thr in (0.0003, 0.0005, 0.001):
@@ -255,7 +389,7 @@ def main():
         f2.append({"ambang_per8j": thr, "A": stat(A), "B": stat(B)})
         print(f"[F2 funding > {thr * 100:.2f}%/8j] A {stat(A)} | B {stat(B)}", flush=True)
     out = {"simbol": len(data), "listing_baru": len(new), "F1": res, "F1_lolos_A": len(okA), "F1_lolos_AB": len(okAB),
-           "F1_kontrol": {k: stat(v) for k, v in ctl.items()}, "F2": f2, "durasi_s": round(time.time() - T)}
+           "F1_kontrol": {k: stat(v) for k, v in ctl.items()}, "F1v2": v2, "F2": f2, "durasi_s": round(time.time() - T)}
     with open(os.path.join(a.out, "perps_baru.json"), "w") as f:
         json.dump(out, f, indent=1)
     print(f"[selesai] {time.time() - T:.0f}s", flush=True)

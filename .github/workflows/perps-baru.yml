@@ -19,5 +19,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: pcache
+          key: perps-data-none
+          restore-keys: perps-data-
       - run: mkdir -p out && python3 -u perps_baru.py --out out
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: pcache
+          key: perps-data-${{ github.run_id }}
       - run: head -c 30000 out/perps_baru.json
