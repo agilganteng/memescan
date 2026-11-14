@@ -1468,7 +1468,9 @@ async def ticker(ws, engine, stop_at):
             engine.save()
             last_save = now
             print(f"[{time.strftime('%H:%M:%S')}] dilacak {len(engine.tokens)} · posisi {len(engine.positions)} · "
-                  f"kandidat {engine.n_cand} · " + " · ".join(f"{k} {v}" for k, v in engine.stats.items()),
+                  f"kandidat {engine.n_cand} · " + " · ".join(f"{k} {v}" for k, v in engine.stats.items())
+                  + f" · whale {engine.whales_meta.get('n', 0)} wallet: "
+                  + " · ".join(f"{k} {v}" for k, v in engine.wstats.items()),
                   file=sys.stderr)
         tx = engine.stats.get("tx", 0)
         if tx != last_tx:
