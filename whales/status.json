@@ -1,0 +1,195 @@
+{
+ "updated": "2026-11-14 03:55 UTC",
+ "wallet_terkumpul": 184,
+ "lolos_sebelum_batas": 184,
+ "batas": 5000,
+ "tier": {
+  "A": 101,
+  "B": 83
+ },
+ "data": {
+  "koin": 139499,
+  "dari": "2026-10-30 00:00 UTC",
+  "sampai": "2026-11-13 22:53 UTC",
+  "wallet_dicek": 18681
+ },
+ "alasan_dibuang": {
+  "sniper/bundler": 4347,
+  "tidak konsisten": 4952,
+  "beli kecil (bukan whale)": 5783,
+  "bot frekuensi": 72,
+  "dev": 1547,
+  "bot flip": 777,
+  "hari aktif kurang": 484,
+  "periode aktif kurang": 436,
+  "PnL/ROI kurang": 99,
+  "lolos": 184
+ },
+ "kriteria": {
+  "MIN_COINS": 10,
+  "MIN_DAYS": 3,
+  "MIN_PER_ACTIVE": 2,
+  "MIN_BUY": 0.5,
+  "MIN_ROI": 0.05,
+  "DEV_MAX_N": 2,
+  "DEV_MAX_SHARE": 0.1,
+  "SNIPE_AGE": 2.0,
+  "SNIPE_MAX": 0.4,
+  "BOT_PER_DAY": 150,
+  "FLIP_S": 5.0,
+  "FLIP_MAX": 0.5,
+  "COPY_A": 1.0,
+  "COPY_A_N": 10
+ },
+ "holdout_periode4": {
+  "dari": "2026-11-10 05:10 UTC",
+  "daftar_dari_P1_3": 146,
+  "copy_daftar": {
+   "n": 853,
+   "mean": 0.7792,
+   "median": 0.6287,
+   "win": 0.124,
+   "sim200": 0.0,
+   "mean_wo_best": 0.7693
+  },
+  "copy_kontrol": {
+   "n": 1118,
+   "mean": 0.7236,
+   "median": 0.5491,
+   "win": 0.096,
+   "sim200": 0.0,
+   "mean_wo_best": 0.7152
+  },
+  "sinyal_daftar": {
+   "N1": {
+    "bot": {
+     "n": 685,
+     "mean": 0.7413,
+     "median": 0.6355,
+     "win": 0.15,
+     "sim200": 0.0,
+     "mean_wo_best": 0.7344
+    },
+    "tahan5m": {
+     "n": 685,
+     "mean": 0.7779,
+     "median": 0.6293,
+     "win": 0.14,
+     "sim200": 0.0,
+     "mean_wo_best": 0.7681
+    }
+   },
+   "N2": {
+    "bot": {
+     "n": 118,
+     "mean": 0.7994,
+     "median": 0.6649,
+     "win": 0.22,
+     "sim200": 14.76,
+     "mean_wo_best": 0.759
+    },
+    "tahan5m": {
+     "n": 118,
+     "mean": 0.8754,
+     "median": 0.6631,
+     "win": 0.195,
+     "sim200": 29.39,
+     "mean_wo_best": 0.8263
+    }
+   },
+   "N3": {
+    "bot": {
+     "n": 36,
+     "mean": 1.0865,
+     "median": 0.8595,
+     "win": 0.417,
+     "sim200": 262.3,
+     "mean_wo_best": 0.9598
+    },
+    "tahan5m": {
+     "n": 36,
+     "mean": 0.9625,
+     "median": 0.6971,
+     "win": 0.278,
+     "sim200": 169.34,
+     "mean_wo_best": 0.8614
+    }
+   },
+   "N4": {
+    "bot": {
+     "n": 13,
+     "mean": 1.1505,
+     "median": 1.1155,
+     "win": 0.538,
+     "sim200": 239.14,
+     "mean_wo_best": 0.9563
+    },
+    "tahan5m": {
+     "n": 13,
+     "mean": 0.9688,
+     "median": 0.8216,
+     "win": 0.385,
+     "sim200": 189.62,
+     "mean_wo_best": 0.8268
+    }
+   }
+  },
+  "sinyal_kontrol": {
+   "N1": {
+    "bot": {
+     "n": 1057,
+     "mean": 0.7207,
+     "median": 0.5314,
+     "win": 0.137,
+     "sim200": 0.0,
+     "mean_wo_best": 0.7152
+    },
+    "tahan5m": {
+     "n": 1057,
+     "mean": 0.7592,
+     "median": 0.5606,
+     "win": 0.144,
+     "sim200": 0.0,
+     "mean_wo_best": 0.7504
+    }
+   },
+   "N2": {
+    "bot": {
+     "n": 60,
+     "mean": 0.7456,
+     "median": 0.4283,
+     "win": 0.217,
+     "sim200": 38.21,
+     "mean_wo_best": 0.6921
+    },
+    "tahan5m": {
+     "n": 60,
+     "mean": 0.7561,
+     "median": 0.5134,
+     "win": 0.233,
+     "sim200": 42.18,
+     "mean_wo_best": 0.7017
+    }
+   },
+   "N3": {
+    "bot": {
+     "n": 1,
+     "mean": 0.4283,
+     "median": 0.4283,
+     "win": 0.0,
+     "sim200": 188.57,
+     "mean_wo_best": null
+    },
+    "tahan5m": {
+     "n": 1,
+     "mean": 0.7268,
+     "median": 0.7268,
+     "win": 0.0,
+     "sim200": 194.54,
+     "mean_wo_best": null
+    }
+   }
+  }
+ },
+ "durasi_s": 88
+}
