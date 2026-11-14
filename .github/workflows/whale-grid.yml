@@ -1,4 +1,5 @@
 name: whale-grid
+# 14 Nov: dipakai juga untuk --banyak (daftar besar x banyak whale)
 
 # Riset: uji 144 varian syarat wallet whale x N whale x 2 cara jual. Pilih di periode 3, uji SEKALI di periode 4.
 on:
@@ -24,4 +25,4 @@ jobs:
           path: data
           key: memescan-data-none
           restore-keys: memescan-data-
-      - run: mkdir -p out && python3 -u whale_scan.py --data data --out out --grid
+      - run: mkdir -p out && python3 -u whale_scan.py --data data --out out --banyak

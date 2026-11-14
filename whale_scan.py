@@ -459,10 +459,69 @@ def grid(a, files, acc, dev_n, t_lo, span):
                                                                   for r in rows[:15]], "uji_P4": res}
 
 
+def loose_list(acc, dev_n, pers, min_buy, min_coins=10):
+    """Wallet lolos filter anti-bot/dev/sniper saja, diurutkan PnL sendiri di periode `pers`."""
+    k = S * NPER
+    out = []
+    for w, A in acc.items():
+        n = sum(A[p * S] for p in pers)
+        tot = A[k + 4]
+        if n < min_coins or not tot:
+            continue
+        dn = dev_n.get(w, 0)
+        if dn >= CRIT["DEV_MAX_N"] or dn / (tot + dn) > CRIT["DEV_MAX_SHARE"]:
+            continue
+        days = bin(int(A[k + 3])).count("1")
+        if (A[k] / tot > CRIT["SNIPE_MAX"] or tot / max(1, days) > CRIT["BOT_PER_DAY"]
+                or A[k + 1] / tot > CRIT["FLIP_MAX"] or A[k + 2] / tot < min_buy):
+            continue
+        out.append((sum(A[p * S + 1] for p in pers), w))
+    out.sort(reverse=True)
+    return out
+
+
+def banyak(a, files, acc, dev_n, t_lo, span):
+    """Daftar besar (1000-5000+, syarat longgar) x syarat banyak whale (N 2..12). Pilih P3, uji sekali P4."""
+    ns = (2, 3, 5, 8, 12)
+    t3, t4 = t_lo + 2 * span, t_lo + 3 * span
+
+    def lists(pers):
+        L = {}
+        for mb in (0.2, 0.5):
+            ll = loose_list(acc, dev_n, pers, mb)
+            L[f"semua lolos anti-bot (beli>={mb})"] = {w for _, w in ll}
+            L[f"PnL>0 (beli>={mb})"] = {w for p, w in ll if p > 0}
+            for top in (1000, 2000, 5000):
+                L[f"top {top} PnL (beli>={mb})"] = {w for _, w in ll[:top]}
+        return L
+    l12 = lists(range(2))
+    print("[banyak] ukuran daftar P1-2: " + ", ".join(f"{k}={len(v)}" for k, v in l12.items()), flush=True)
+    r3 = signals(a.data, files, t3, t4, l12, ns)
+    rows = []
+    for k, d in r3.items():
+        for n, ex in d.items():
+            for e, xs in ex.items():
+                st = mstat(xs)
+                print(f"  P3 {k} | N{n} {e} | {st}", flush=True)
+                if st.get("n", 0) >= 30:
+                    rows.append((st["mean_wo_best"], st["mean"], k, n, e, st))
+    rows.sort(key=lambda r: (-r[0], -r[1]))
+    print(f"[banyak] strategi n>=30 di P3: {len(rows)}; untung tanpa koin terbaik: {sum(r[0] > 1 for r in rows)}",
+          flush=True)
+    l123 = lists(range(3))
+    top = rows[:5]
+    r4 = signals(a.data, files, t4, math.inf, {r[2]: l123[r[2]] for r in top}, ns)
+    print("[banyak] UJI SEKALI di P4 (daftar dari P1-3):", flush=True)
+    for r in top:
+        print(f"  {r[2]} ({len(l123[r[2]])} wallet) | N{r[3]} {r[4]} | P3 {r[5]} | P4 {mstat(r4[r[2]][r[3]][r[4]])}",
+              flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="data")
     ap.add_argument("--out", default="whales")
+    ap.add_argument("--banyak", action="store_true", help="uji daftar besar x banyak whale")
     ap.add_argument("--grid", action="store_true", help="uji varian syarat (pilih P3, uji P4), tidak menulis daftar")
     a = ap.parse_args()
     t_start = time.time()
@@ -496,6 +555,9 @@ def main():
     acc = {}
     scan(a.data, files, t_lo, t_hi, cand, dev_n, acc, period_of)
     print(f"[2] statistik {len(acc)} wallet ({time.time() - t_start:.0f}s)", flush=True)
+    if a.banyak:
+        banyak(a, files, acc, dev_n, t_lo, span)
+        return
     if a.grid:
         g = grid(a, files, acc, dev_n, t_lo, span)
         with open(os.path.join(a.out, "grid.json"), "w") as f:
