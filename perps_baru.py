@@ -318,7 +318,8 @@ def main():
     dl, h, st = pick["masuk_hari"], pick["tahan"], pick["stop"]
     print(f"[F1v2] varian terpilih di A: masuk h{dl}, tahan {h} hari, stop {st}", flush=True)
     v2 = {}
-    for nm, lev, hd in (("1x", 1.0, False), ("2x", 2.0, False), ("3x", 3.0, False), ("1x+hedgeBTC", 1.0, True),
+    for nm, lev, hd in (("0.33x", 1 / 3, False), ("0.5x", 0.5, False), ("0.33x+hedgeBTC", 1 / 3, True),
+                        ("0.5x+hedgeBTC", 0.5, True), ("1x", 1.0, False), ("2x", 2.0, False), ("3x", 3.0, False), ("1x+hedgeBTC", 1.0, True),
                         ("2x+hedgeBTC", 2.0, True)):
         tr = {"A": [], "B": []}
         for d in new:
@@ -388,7 +389,75 @@ def main():
                     i += 1
         f2.append({"ambang_per8j": thr, "A": stat(A), "B": stat(B)})
         print(f"[F2 funding > {thr * 100:.2f}%/8j] A {stat(A)} | B {stat(B)}", flush=True)
-    out = {"simbol": len(data), "listing_baru": len(new), "F1": res, "F1_lolos_A": len(okA), "F1_lolos_AB": len(okAB),
+    # ---------------- F3 panen funding dengan harga SPOT nyata (basis dihitung), modal = spot + margin (2 unit)
+    import gzip
+    sc = os.path.join("pcache", "spot.json.gz")
+    if os.path.exists(sc):
+        with gzip.open(sc, "rt") as f:
+            spot = json.load(f)
+    else:
+        def load_spot(sym):
+            ss = sym[4:] if sym.startswith("1000") and not sym.startswith("1000000") else sym
+            days = {}
+            for mo in months(now):
+                for r in rows_zip(get(f"https://data.binance.vision/data/spot/monthly/klines/{ss}/1d/{ss}-1d-{mo}.zip")):
+                    t = ts(r[0])
+                    days[str(t - t % DAY)] = float(r[1])
+            return sym, days
+        with cf.ThreadPoolExecutor(24) as ex:
+            spot = {k2: v for k2, v in ex.map(load_spot, [d["sym"] for d in data]) if len(v) > 30}
+        os.makedirs("pcache", exist_ok=True)
+        with gzip.open(sc, "wt") as f:
+            json.dump(spot, f)
+    print(f"[F3] simbol dengan spot Binance: {len(spot)}/{len(data)}", flush=True)
+    f3 = []
+    for thr in (0.0003, 0.0005, 0.001):
+        for xthr in (0.00005, 0.0002):
+            tr, dur, nb_, liq = [], [], 0, 0
+            for d in data:
+                sp = spot.get(d["sym"])
+                if not sp:
+                    continue
+                f, k = d["f"], d["k"]
+                i, n = 3, len(k)
+                while i < n - 1:
+                    if sum(f[i - 3:i]) / 9 > thr and str(int(k[i][0])) in sp:
+                        j, got, forced = i, 0.0, False
+                        while j < n - 1 and (j == i or sum(f[j - 3:j]) / 9 > xthr):
+                            got += f[j]
+                            if k[j][2] >= k[i][1] * 1.8:
+                                forced = True
+                                j += 1
+                                break
+                            j += 1
+                        s0, s1 = sp.get(str(int(k[i][0]))), sp.get(str(int(k[j][0])))
+                        if s0 and s1:
+                            pnl = (s1 / s0 - 1) - (k[j][1] / k[i][1] - 1) + got - 4 * FEE - (0.01 if forced else 0)
+                            tr.append((k[i][0], k[j][0], 1 + pnl / 2))
+                            dur.append(j - i)
+                            liq += forced
+                        else:
+                            nb_ += 1
+                        i = j + 1
+                    else:
+                        i += 1
+            row = {"masuk>": thr, "keluar<": xthr, "tanpa_spot_di_tanggal": nb_, "paksa_tutup": liq,
+                   "lama_median_hari": sorted(dur)[len(dur) // 2] if dur else None}
+            for per, sel in (("A", lambda t: t < T_SPLIT), ("B", lambda t: t >= T_SPLIT)):
+                xs = [t for t in tr if sel(t[0])]
+                st2 = stat([(t[0], t[2]) for t in xs])
+                st2.pop("sim", None)
+                st2["porto"] = {f"${S} {int(fr * 100)}%": porto(xs, S, fr, 10.0) for S in (100, 200, 500, 1000, 5000)
+                                for fr in (0.1, 0.25)}
+                row[per] = st2
+            yrs = {}
+            for t in tr:
+                yrs.setdefault(time.gmtime(t[0]).tm_year, []).append((t[0], t[2]))
+            row["per_tahun"] = {y: (stat(v)["n"], stat(v)["mean"], stat(v)["ci_lo"]) for y, v in sorted(yrs.items())}
+            row["terburuk"] = [round(x, 3) for x in sorted(t[2] for t in tr)[:5]]
+            f3.append(row)
+            print(f"[F3 masuk>{thr * 100:.2f}% keluar<{xthr * 100:.3f}%/8j] {row}", flush=True)
+    out = {"F3": f3, "simbol": len(data), "listing_baru": len(new), "F1": res, "F1_lolos_A": len(okA), "F1_lolos_AB": len(okAB),
            "F1_kontrol": {k: stat(v) for k, v in ctl.items()}, "F1v2": v2, "F2": f2, "durasi_s": round(time.time() - T)}
     with open(os.path.join(a.out, "perps_baru.json"), "w") as f:
         json.dump(out, f, indent=1)
