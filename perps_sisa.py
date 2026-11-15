@@ -8,6 +8,7 @@ Data: cache perps_baru (pcache/data.json.gz), 2023-sekarang. Sinyal di close har
   SHOCK gerak 1 hari > k sigma (sigma 30 hari sebelumnya): ikut (CONT) atau lawan (REV), pegang H hari.
   VOL   volume > m x median 30 hari + arah harga hari itu: ikut atau lawan, pegang H hari.
   FUND  funding harian ekstrem: > x -> short (terima funding), < -x -> long, pegang H hari.
+  FUNDH sama, setengah modal, posisi bersih dilawan dengan BTC (netral arah pasar).
 Bobot: rata di posisi aktif, paling besar 1/5 per koin (eksposur kotor <= 1x). Biaya 0,1% x perputaran + funding nyata.
 A = 2023-2024, B = 2025-sekarang. Lulus: t mingguan >= 2 di A DAN di B, total B > 1.
 Kontrol: jumlah lulus dibanding jumlah lulus kalau sinyal tiap koin digeser waktunya secara acak.
@@ -186,11 +187,18 @@ def main():
             S[:-1][wd[1:] == d] = sgn  # sinyal di close t untuk dipegang hari t+1 = hari d
             events[f"DOW {nama_hari[d]} {lab}"] = S
     print(f"[sinyal] {len(events)} sinyal kejadian ({time.time() - T0:.0f}s)", flush=True)
+    ib = syms.index("BTCUSDT")
     unis = {N: universe(C, V, N, 200) for N in (20, 50)}
     for N, U in unis.items():
         for nm, S in events.items():
             A, B = ab(run_w(days, C, F, weights(S, U)))
             res.append({"nama": f"{nm} top{N}", "kel": nm.split()[0], "A": A, "B": B})
+            if nm.startswith("FUND"):
+                # versi lindung nilai: posisi bersih ditutup dengan BTC supaya tidak ikut arah pasar
+                W = weights(S, U) * 0.5
+                W[:, ib] -= W.sum(axis=1)
+                A, B = ab(run_w(days, C, F, W))
+                res.append({"nama": f"{nm} top{N} +BTC", "kel": "FUNDH", "A": A, "B": B})
     for L in (20, 40, 60):
         for zin in (1.5, 2.0, 2.5):
             for thr in (0.7, 0.85):
@@ -205,7 +213,7 @@ def main():
     ok = [r for r in res if lulus(r["A"], r["B"])]
     okA = [r for r in res if r["A"].get("t", 0) >= 2]
     posAB = [r for r in res if r["A"].get("total", 0) > 1 and r["B"].get("total", 0) > 1]
-    for kel in ("PAIR", "DOW", "SHOCK", "VOL", "FUND"):
+    for kel in ("PAIR", "DOW", "SHOCK", "VOL", "FUND", "FUNDH"):
         rr = [r for r in res if r["kel"] == kel]
         print(f"[kel] {kel}: {len(rr)} strategi, t>=2 di A {sum(r['A'].get('t', 0) >= 2 for r in rr)}, "
               f"untung A dan B {sum(r in posAB for r in rr)}, lulus {sum(r in ok for r in rr)}, "

@@ -4,7 +4,7 @@ name: perps-sisa
 on:
   push:
     branches: [main]
-    paths: [perps_ts.py, perps_xs.py, .github/workflows/perps-sisa.yml]
+    paths: [perps_sisa.py, .github/workflows/perps-sisa.yml]
   workflow_dispatch:
 
 permissions:
