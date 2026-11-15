@@ -1,0 +1,29 @@
+name: dev-uji
+
+# Riset 15 Nov: sisi dev pump.fun (untung nyata dev + simulasi beli awal lalu jual).
+on:
+  push:
+    branches: [main]
+    paths: [dev_uji.py, .github/workflows/dev-uji.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy scikit-learn
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: mkdir -p out && python3 -u dev_uji.py --data data --out out
+      - run: head -c 20000 out/dev_uji.json
