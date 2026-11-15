@@ -1,0 +1,28 @@
+name: perps-xs
+
+# Riset 15 Nov: strategi netral pasar lintas koin di Binance futures (momentum, pembalikan, funding, volatilitas).
+on:
+  push:
+    branches: [main]
+    paths: [perps_xs.py, .github/workflows/perps-xs.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy
+      - uses: actions/cache/restore@v4
+        with:
+          path: pcache
+          key: perps-data-none
+          restore-keys: perps-data-
+      - run: mkdir -p out && python3 -u perps_xs.py --out out
