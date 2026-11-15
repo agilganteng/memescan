@@ -81,7 +81,11 @@ def main():
             continue
         dev_n[c.dev] += 1
         ws.build_path(c)
-        b0 = buy = sell = tok = 0.0
+        b0 = max(0.0, vres(c.m0) - 30.0)                     # beli dev di transaksi pembuatan (m0 = harga sesudahnya)
+        if b0 < 0.01:
+            b0 = 0.0
+        buy, sell = b0, 0.0
+        tok = b0 / ((900.0 / K) * (30.0 + b0) / 30.0 / ms.SUPPLY) if b0 > 0 else 0.0
         nb, nsell_tx, ntx, vol, first_sell = set(), 0, 0, 0.0, None
         for ag, w, isb, sol in c.w:
             if ag > c.cov:
@@ -134,6 +138,9 @@ def main():
     recs.sort(key=lambda r: r[0])
     t_mid = recs[n // 2][0]
     hasb = [r for r in recs if r[3] > 0]
+    bs = sorted(r[2] for r in recs if r[2] > 0)
+    print(f"[dev] beli awal dev > 0: {len(bs)} ({len(bs) / n:.1%}); p25 {bs[len(bs) // 4]:.2f}, median "
+          f"{bs[len(bs) // 2]:.2f}, p75 {bs[3 * len(bs) // 4]:.2f}, p90 {bs[int(len(bs) * .9)]:.2f} SOL", flush=True)
     print(f"[dev] dev ikut beli di 5 mnt pertama: {len(hasb)} ({len(hasb) / n:.1%}); beli di umur <=2 dtk: "
           f"{sum(1 for r in recs if r[2] > 0)}; dev yang jual di 5 mnt: {sum(1 for r in recs if r[4] > 0)}", flush=True)
     fs = sorted(r[9] for r in recs if r[9] is not None)
