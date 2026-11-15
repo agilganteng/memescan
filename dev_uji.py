@@ -87,11 +87,13 @@ def main():
         buy, sell = b0, 0.0
         tok = b0 / ((900.0 / K) * (30.0 + b0) / 30.0 / ms.SUPPLY) if b0 > 0 else 0.0
         nb, nsell_tx, ntx, vol, first_sell = set(), 0, 0, 0.0, None
+        vol_o = 0.0
         for ag, w, isb, sol in c.w:
             if ag > c.cov:
                 break
             vol += sol
             if w != c.dev:
+                vol_o += sol
                 if isb:
                     nb.add(w)
                 continue
@@ -131,7 +133,7 @@ def main():
                         break
                 te = min((hit + 1.0) if hit is not None else 120.0, c.end)
                 sims[f"TP{x}"] = sell_out(vres(ws.price_at(c, te)), b0) * (1 - FEE) / base
-        recs.append((c.t0, c.dev, b0, buy, sell, net0, net1, len(nb), vol, first_sell, sims))
+        recs.append((c.t0, c.dev, b0, buy, sell, net0, net1, len(nb), vol, first_sell, sims, vol_o, c.end - c.t0 if c.end > 1e6 else c.end))
         c.tt = c.tp = None
     n = len(recs)
     print(f"[data] {n} koin kurva standar, {len(dev_n)} dev ({time.time() - T0:.0f}s)", flush=True)
@@ -217,6 +219,28 @@ def main():
               fee_kreator_p99_sol=round(vols[int(n * 0.99)] * CREATOR_FEE, 4), biaya_bikin_sol=CREATE)
     print(f"[D3] perkiraan fee kreator 0,30% x volume 5 mnt pertama: {d3}", flush=True)
     out["D3"] = d3
+    # D4: dev TANPA dump: tidak jual token, hanya terima fee kreator 0,30% dari volume orang lain (5 mnt pertama)
+    print("[D4] fee kreator saja (dev tidak jual). fee = 0,30% x volume pembeli/penjual lain di 5 mnt pertama; "
+          "biaya = 0,02 SOL bikin koin", flush=True)
+    d4 = {}
+    for label, sel in (("semua koin", lambda r: True), ("dev tidak beli", lambda r: r[3] <= 0),
+                       ("dev beli <0.5", lambda r: 0 < r[3] < 0.5), ("dev beli 0.5-2", lambda r: 0.5 <= r[3] < 2),
+                       ("dev beli 2-5", lambda r: 2 <= r[3] < 5), ("dev beli >=5", lambda r: r[3] >= 5),
+                       ("dev tidak pernah jual & tidak beli, paruh A", lambda r: r[3] <= 0 and r[0] < t_mid),
+                       ("dev tidak pernah jual & tidak beli, paruh B", lambda r: r[3] <= 0 and r[0] >= t_mid),
+                       ("dev 1 koin, tidak beli", lambda r: r[3] <= 0 and dev_n[r[1]] <= 1),
+                       ("dev >20 koin, tidak beli", lambda r: r[3] <= 0 and dev_n[r[1]] > 20)):
+        fees = sorted(r[11] * CREATOR_FEE for r in recs if sel(r))
+        m = len(fees)
+        if not m:
+            continue
+        mean = sum(fees) / m
+        d4[label] = dict(n=m, fee_rata=round(mean, 4), fee_median=round(fees[m // 2], 4), p90=round(fees[int(m * .9)], 4),
+                         p99=round(fees[int(m * .99)], 4), balik_modal=round(sum(1 for x in fees if x > CREATE) / m, 3),
+                         bersih_rata=round(mean - CREATE, 4), bersih_median=round(fees[m // 2] - CREATE, 4),
+                         kena_batas_150=round(sum(1 for r in recs if sel(r) and r[11] >= 0 and r[7] >= 100) / m, 3))
+        print(f"  {label}: {d4[label]}", flush=True)
+    out["D4"] = d4
     with open(os.path.join(a.out, "dev_uji.json"), "w") as f:
         json.dump(out, f, indent=1, default=float)
     print(f"[selesai] {time.time() - T0:.0f}s", flush=True)
