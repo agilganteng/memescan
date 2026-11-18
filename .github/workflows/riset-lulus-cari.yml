@@ -1,0 +1,28 @@
+name: riset-lulus-cari
+
+# 18 Nov: pencarian besar pemilih jackpot lulusan PumpSwap (jutaan kombinasi + model), tanpa menyimpan cache.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/lulus_cari.py, .github/workflows/riset-lulus-cari.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cari:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy scikit-learn
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: lulus-data-none
+          restore-keys: lulus-data-
+      - run: python3 -u riset/lulus_cari.py --data data --null 3
