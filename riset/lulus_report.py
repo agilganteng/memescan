@@ -11,6 +11,9 @@ Aturan ditulis 18 Nov 2026 SEBELUM melihat data harga (pra-registrasi):
            X6 jual 1/2 di 2x + trail30% 72j.
   Biaya 1,5% per sisi. Harga dicek tiap ~60 dtk (6 jam pertama) lalu tiap 5 menit: stop terisi di harga terlihat.
   Pool hilang / harga 0 / likuiditas < $500 = nilai 0.
+  KOREKSI 18 Nov (setelah run pertama, karena bug data, bukan pilih parameter): exit "TP 2x" rata-rata 14x, mustahil;
+  DexScreener punya baris harga lonjakan palsu. Perbaikan: buang baris yang harganya > 3x atau < 1/3 median 5
+  tetangga, dan isi TP / jual-separuh dibatasi maksimal 1,1 x level target (order limit).
   A/B: paruh waktu pertama / kedua. LULUS: n_B >= 30, rata A > 1, rata B > 1, rata B tanpa koin terbaik > 1.
 """
 import argparse
@@ -31,6 +34,47 @@ EXITS = {
     "X5 TP5x SL50% 72j": dict(tp=5.0, sl=0.50, T=72 * 3600),
     "X6 1/2 di 2x + trail30% 72j": dict(half=2.0, trail=0.30, T=72 * 3600),
 }
+
+
+def sim(series, t_in, ex):
+    """Sama dengan telecall.sim, tapi isi TP / jual-separuh dibatasi 1,1 x level."""
+    COST = tc.COST
+    pts = [x for x in series if x[0] >= t_in]
+    if not pts or pts[0][1] <= 0 or pts[0][0] - t_in > 300:
+        return None
+    t0, p0 = pts[0][0], pts[0][1]
+    T = ex.get("T", 24 * 3600)
+    held, got, peak, armed, last = 1.0, 0.0, p0, False, p0
+    for q in pts[1:]:
+        t, p = q[0], q[1]
+        if t - t0 > T:
+            break
+        if p <= 0:
+            return got * (1 - COST) * (1 - COST)
+        last = p
+        r = p / p0
+        peak = max(peak, p)
+        if ex.get("half") and held == 1.0 and r >= ex["half"]:
+            got += 0.5 * min(r, ex["half"] * 1.1)
+            held = 0.5
+            armed = True
+        if ex.get("tp") and r >= ex["tp"]:
+            got += held * min(r, ex["tp"] * 1.1)
+            held = 0
+            break
+        if ex.get("arm") and r >= ex["arm"]:
+            armed = True
+        if ex.get("trail") and armed and p <= peak * (1 - ex["trail"]):
+            got += held * r
+            held = 0
+            break
+        if ex.get("sl") and r <= 1 - ex["sl"]:
+            got += held * r
+            held = 0
+            break
+    if held:
+        got += held * last / p0
+    return got * (1 - COST) * (1 - COST)
 
 
 def main():
@@ -60,8 +104,19 @@ def main():
                         p = 0.0
                     px.setdefault(m, []).append((t, p, liq, r[6], r[7]))
                     t_last = max(t_last, t)
-    for v in px.values():
+    n_drop = 0
+    for m, v in px.items():
         v.sort()
+        keep = []
+        for i, q in enumerate(v):
+            nb = sorted(z[1] for z in v[max(0, i - 2):i + 3] if z[1] > 0)
+            med = nb[len(nb) // 2] if nb else 0
+            if q[1] > 0 and med > 0 and (q[1] > 3 * med or q[1] < med / 3):
+                n_drop += 1
+                continue
+            keep.append(q)
+        px[m] = keep
+    print(f"baris harga lonjakan palsu dibuang: {n_drop:,}")
     seen = sorted(x["t_seen"] for x in toks.values())
     t_split = seen[len(seen) // 2]
     f = lambda t: time.strftime("%d/%m %H:%M", time.gmtime(t))
@@ -127,7 +182,7 @@ def main():
                 for e in sel:
                     if e["t"] + T > t_last:
                         continue
-                    r = tc.sim([(q[0], q[1], q[2]) for q in px[e["m"]]], e["t"], ex)
+                    r = sim(px[e["m"]], e["t"], ex)
                     if r is None:
                         continue
                     (A if e["seen"] < t_split else B).append(r)
