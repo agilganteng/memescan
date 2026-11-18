@@ -31,6 +31,10 @@ jobs:
           key: perps-h1-none
           restore-keys: perps-h1-
       - run: mkdir -p out && python3 -u perps_jam.py --out out
+      - name: Tanpa biaya (hanya untuk melihat ada tidaknya keunggulan kotor)
+        run: FEE=0 python3 -u perps_jam.py --out out0 | grep -E "^\[(kel|jam)\]|^  .*: A total"
+      - name: Biaya maker 0,04% per perputaran
+        run: FEE=0.0004 python3 -u perps_jam.py --out out4 | grep -E "^\[(kel|jam)\]|^  .*: A total"
       - uses: actions/cache/save@v4
         if: always()
         with:

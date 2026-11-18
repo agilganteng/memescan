@@ -27,7 +27,7 @@ from perps_baru import BV, get, rows_zip, months, ts
 from perps_xs import load, T_SPLIT
 from perps_ts import universe, summ
 
-FEE = 0.001
+FEE = float(os.environ.get("FEE", "0.001"))
 H = 3600
 T0H = 1672531200  # 2023-01-01 UTC
 
