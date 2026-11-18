@@ -1,0 +1,33 @@
+name: perps-lama
+
+# Riset 18 Nov: uji kandidat funding ekstrem di data lama 2020-2022 (belum pernah dipakai).
+on:
+  push:
+    branches: [main]
+    paths: [perps_lama.py, .github/workflows/perps-lama.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  riset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy
+      - uses: actions/cache/restore@v4
+        with:
+          path: ocache
+          key: perps-lama-none
+          restore-keys: perps-lama-
+      - run: python3 -u perps_lama.py
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: ocache
+          key: perps-lama-${{ github.run_id }}
