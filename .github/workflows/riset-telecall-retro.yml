@@ -1,0 +1,27 @@
+name: riset-telecall-retro
+
+# 18 Nov: periksa cakupan harga telecall dan isi harga susulan (GeckoTerminal) untuk sampel acak, lalu laporan ulang.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/telecall_retro.py, .github/workflows/riset-telecall-retro.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: telecall-data-none
+          restore-keys: telecall-data-
+      - run: python3 -u riset/telecall_retro.py --data data --n 800
