@@ -1,0 +1,29 @@
+name: riset-lulus-jalan
+
+# 19 Nov: uji jalan-maju bot yang mencari ulang aturan tiap hari.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/lulus_jalan.py, .github/workflows/riset-lulus-jalan.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cari:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: lulus-data-none
+          restore-keys: lulus-data-
+      - run: python3 -u riset/lulus_jalan.py --data data --set 2
+      - run: python3 -u riset/lulus_jalan.py --data data --set 3
