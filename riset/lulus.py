@@ -18,6 +18,7 @@ import calendar
 import gzip
 import json
 import os
+import re
 import sys
 import time
 
@@ -28,6 +29,53 @@ GT = "https://api.geckoterminal.com/api/v2/networks/solana/new_pools"
 TRACK_H = 72
 FINE_H = 6
 POLL_S = 90
+# 19 Nov: hype X realtime. Link X koin (DexScreener, kalau kosong GeckoTerminal token info) dibaca lewat
+# api.fxtwitter.com pada 0, 5, 15, 30, 60 menit setelah terdeteksi. Baris x-YYYYMMDD.jsonl.gz:
+# [t, mint, urutan, jenis, like, retweet, balasan, tayangan, follower, jumlah_tweet]
+XPOLL = (0, 300, 900, 1800, 3600)
+GT_INFO = "https://api.geckoterminal.com/api/v2/networks/solana/tokens"
+
+
+def x_url_of(rec):
+    """Link X koin: DexScreener dulu, kalau kosong handle dari GeckoTerminal. Tidak pernah melempar error."""
+    try:
+        u = (rec.get("ds") or {}).get("x")
+        if u:
+            return u, "ds"
+        d = tc.http(f"{GT_INFO}/{rec['mint']}/info", {**tc.UA_JSON, "Accept": "application/json"}, tries=1, timeout=10)
+        h = (((d or {}).get("data") or {}).get("attributes") or {}).get("twitter_handle")
+        if h:
+            return f"https://x.com/{str(h).lstrip('@')}", "gt"
+    except Exception:   # noqa: BLE001
+        pass
+    return None, None
+
+
+def x_snap(url):
+    """[jenis, like, retweet, balasan, tayangan, follower, jumlah_tweet] atau None."""
+    try:
+        m = re.search(r"(?:twitter|x)\.com/([^/?#]+)(/[^?#]*)?", url or "")
+        if not m:
+            return None
+        user, rest = m.group(1), m.group(2) or ""
+        if user in ("i", "search", "hashtag", "home") or "communities" in rest:
+            return None
+        st = re.search(r"/status/(\d+)", rest)
+        if st:
+            d = tc.http(f"{tc.FX}/{user}/status/{st.group(1)}", tc.UA_JSON, tries=1, timeout=10)
+            t = (d or {}).get("tweet") or {}
+            if not t:
+                return None
+            a = t.get("author") or {}
+            return ["status", t.get("likes"), t.get("retweets"), t.get("replies"), t.get("views"),
+                    a.get("followers"), a.get("tweets")]
+        d = tc.http(f"{tc.FX}/{user}", tc.UA_JSON, tries=1, timeout=10)
+        u = (d or {}).get("user") or {}
+        if not u:
+            return None
+        return ["account", u.get("likes"), None, None, None, u.get("followers"), u.get("tweets")]
+    except Exception:   # noqa: BLE001
+        return None
 
 
 def gt_new(since):
@@ -66,12 +114,17 @@ def run(data, duration):
     os.makedirs(d, exist_ok=True)
     tok_fp = os.path.join(d, "tokens.jsonl")
     tokens = {}
+    xq = {}   # mint -> [url, urutan polling X berikutnya]
+    t_start = time.time()
     for line in open(tok_fp) if os.path.exists(tok_fp) else []:
         try:
             x = json.loads(line)
             tokens[x["mint"]] = [x["t_seen"], 0.0]
+            if x.get("x_url") and t_start - x["t_seen"] < XPOLL[-1]:
+                xq[x["mint"]] = [x["x_url"], sum(1 for w in XPOLL if w <= t_start - x["t_seen"])]
         except (ValueError, KeyError):
             continue
+    n_x = n_xrow = 0
     seen_dex = {}
     t_end = time.time() + duration
     next_scan = next_px = 0.0
@@ -93,6 +146,10 @@ def run(data, duration):
                 rec.update(t_seen=round(time.time(), 1), pool=p["pool"], t_pool=iso_ts(p["created"]),
                            gt_fdv=p["fdv"], gt_liq=p["liq"], name=p["name"])
                 tokens[p["mint"]] = [rec["t_seen"], 0.0]
+                rec["x_url"], rec["x_src"] = x_url_of(rec)
+                if rec["x_url"]:
+                    xq[p["mint"]] = [rec["x_url"], 0]
+                    n_x += 1
                 with open(tok_fp, "a") as f:
                     f.write(json.dumps(rec, separators=(",", ":")) + "\n")
                 n_new += 1
@@ -137,7 +194,29 @@ def run(data, duration):
                     for r in rows:
                         f.write(json.dumps(r, separators=(",", ":")) + "\n")
                 n_px += len(rows)
+            xrows = []
+            for m in list(xq):
+                url, k = xq[m]
+                if k >= len(XPOLL):
+                    del xq[m]
+                    continue
+                if now - tokens[m][0] < XPOLL[k] or len(xrows) >= 25:
+                    continue
+                xq[m][1] = k + 1
+                snap = x_snap(url)
+                if snap:
+                    xrows.append([round(time.time()), m, k] + snap)
+                time.sleep(0.2)
+            if xrows:
+                try:
+                    with gzip.open(os.path.join(d, time.strftime("x-%Y%m%d.jsonl.gz", time.gmtime(now))), "at") as f:
+                        for r in xrows:
+                            f.write(json.dumps(r, separators=(",", ":")) + "\n")
+                    n_xrow += len(xrows)
+                except OSError:
+                    pass
         time.sleep(3)
+    print(f"X: {n_x} dari {n_new} token baru punya link X, {n_xrow} baris hype X terekam", flush=True)
     print(f"lulus selesai: {n_new} token baru, {n_px} baris harga, total {len(tokens)} token. "
           f"halaman GT per scan rata {sum(pages) / max(1, len(pages)):.1f} (10 = mungkin ada yang terlewat), "
           f"dex terlihat: {dict(sorted(seen_dex.items(), key=lambda x: -x[1])[:8])}", flush=True)
