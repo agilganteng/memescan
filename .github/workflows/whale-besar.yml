@@ -1,0 +1,27 @@
+name: whale-besar
+
+# Uji riset sekali jalan: 1 whale beli besar saat harga di bawah rata-rata. Hanya baca cache rekaman, tidak menulis apa pun.
+on:
+  push:
+    branches: [main]
+    paths: [whale_besar.py, .github/workflows/whale-besar.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  uji:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: python3 -u whale_besar.py --data data
