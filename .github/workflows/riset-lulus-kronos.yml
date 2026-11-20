@@ -1,0 +1,32 @@
+name: riset-lulus-kronos
+
+# 20 Nov: model AI Kronos sebagai filter koin lulusan PumpSwap. Paper saja.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/lulus_kronos.py, .github/workflows/riset-lulus-kronos.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kronos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q numpy pandas einops huggingface_hub safetensors tqdm
+          git clone -q --depth 1 https://github.com/shiyu-coder/Kronos Kronos
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: lulus-data-none
+          restore-keys: lulus-data-
+      - run: |
+          python3 -u riset/lulus_kronos.py --data data --max 1500
