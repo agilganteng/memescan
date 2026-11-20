@@ -1,0 +1,23 @@
+name: riset-lulus-paus-probe
+
+# Cek cepat: apakah transaksi besar + wallet pembeli di koin lulus bisa dibaca dari GeckoTerminal. Data dibuang.
+on:
+  push:
+    branches: [strat100k]
+    paths: [.github/workflows/riset-lulus-paus-probe.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -u riset/lulus_paus.py run --data probe --duration 330
+      - run: python3 riset/lulus_paus.py status --data probe
