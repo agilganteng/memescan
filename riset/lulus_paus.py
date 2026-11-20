@@ -135,7 +135,8 @@ def run(data, duration):
                 seen[key] = ts
                 buy = 1 if x.get("kind") == "buy" else 0
                 try:
-                    px = float((x.get("price_to_in_usd") if buy else x.get("price_from_in_usd")) or 0)
+                    m_from = x.get("from_token_address") == uni[a]["mint"]
+                    px = float((x.get("price_from_in_usd") if m_from else x.get("price_to_in_usd")) or 0)
                     usd = float(x.get("volume_in_usd") or 0)
                 except (TypeError, ValueError):
                     continue
