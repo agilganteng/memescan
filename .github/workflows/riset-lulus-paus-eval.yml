@@ -1,0 +1,30 @@
+name: riset-lulus-paus-eval
+
+# Evaluasi copy pembelian besar di koin lulus. Hanya baca (cache perekam + API publik GeckoTerminal).
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/lulus_paus_eval.py, .github/workflows/riset-lulus-paus-eval.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: paus-data-none
+          restore-keys: paus-data-
+      - name: Daftar whale
+        run: |
+          git fetch --depth 1 origin whales && git show FETCH_HEAD:whales/watchlist.json > /tmp/wl.json || echo '{}' > /tmp/wl.json
+      - run: python3 -u riset/lulus_paus_eval.py --data data --whales /tmp/wl.json
