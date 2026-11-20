@@ -1,0 +1,32 @@
+name: riset-pump-kronos
+
+# 20 Nov: model AI Kronos sebagai filter koin pump.fun yang belum lulus. Hanya baca cache. Paper saja.
+on:
+  push:
+    branches: [strat100k]
+    paths: [riset/pump_kronos.py, riset/kronos_util.py, .github/workflows/riset-pump-kronos.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kronos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q numpy pandas einops huggingface_hub safetensors tqdm
+          git clone -q --depth 1 https://github.com/shiyu-coder/Kronos Kronos
+      - uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: memescan-data-none
+          restore-keys: memescan-data-
+      - run: |
+          python3 -u riset/pump_kronos.py --data data --max 2500
