@@ -1,21 +1,21 @@
-# Status scan whale (2026-11-20 07:29 UTC)
+# Status scan whale (2026-11-20 17:01 UTC)
 
-**Wallet terkumpul: 186** (batas 5000; yang lolos sebelum dipotong 186)  
-Tier A (lolos + copy 3 dtk > 1,0): 103 · Tier B: 83  
-Data: 131922 koin pump.fun, 2026-11-06 00:00 UTC s/d 2026-11-20 06:13 UTC, 17751 wallet dicek
+**Wallet terkumpul: 190** (batas 5000; yang lolos sebelum dipotong 190)  
+Tier A (lolos + copy 3 dtk > 1,0): 108 · Tier B: 82  
+Data: 133879 koin pump.fun, 2026-11-06 00:00 UTC s/d 2026-11-20 12:04 UTC, 17963 wallet dicek
 
 ## Uji jujur periode 4 (daftar dibangun dari periode 1-3 saja)
 
-Copy wallet daftar: {'n': 611, 'mean': 0.7906, 'median': 0.6371, 'win': 0.118, 'sim200': 0.0, 'mean_wo_best': 0.7781}  
-Copy wallet kontrol acak: {'n': 1383, 'mean': 0.7165, 'median': 0.5234, 'win': 0.108, 'sim200': 0.0, 'mean_wo_best': 0.7099}  
+Copy wallet daftar: {'n': 578, 'mean': 0.7909, 'median': 0.6554, 'win': 0.107, 'sim200': 0.0, 'mean_wo_best': 0.7776}  
+Copy wallet kontrol acak: {'n': 1100, 'mean': 0.6873, 'median': 0.5418, 'win': 0.072, 'sim200': 0.0, 'mean_wo_best': 0.679}  
 
-- Sinyal N1 wallet daftar: bot {'n': 492, 'mean': 0.7696, 'median': 0.6282, 'win': 0.152, 'sim200': 0.0, 'mean_wo_best': 0.7572} · tahan 5m {'n': 492, 'mean': 0.7688, 'median': 0.6333, 'win': 0.128, 'sim200': 0.0, 'mean_wo_best': 0.7465} · gaya savip (cut -6%, TP bertahap) {'n': 492, 'mean': 0.803, 'median': 0.7877, 'win': 0.118, 'sim200': 0.01, 'mean_wo_best': 0.7987}
-- Sinyal N2 wallet daftar: bot {'n': 71, 'mean': 0.8419, 'median': 0.5969, 'win': 0.197, 'sim200': 54.85, 'mean_wo_best': 0.7915} · tahan 5m {'n': 71, 'mean': 0.7942, 'median': 0.5882, 'win': 0.183, 'sim200': 39.69, 'mean_wo_best': 0.7434} · gaya savip (cut -6%, TP bertahap) {'n': 71, 'mean': 0.8131, 'median': 0.7245, 'win': 0.169, 'sim200': 50.17, 'mean_wo_best': 0.7931}
-- Sinyal N3 wallet daftar: bot {'n': 39, 'mean': 0.7028, 'median': 0.4283, 'win': 0.103, 'sim200': 58.26, 'mean_wo_best': 0.6472} · tahan 5m {'n': 39, 'mean': 0.712, 'median': 0.5882, 'win': 0.128, 'sim200': 61.39, 'mean_wo_best': 0.674} · gaya savip (cut -6%, TP bertahap) {'n': 39, 'mean': 0.7995, 'median': 0.7099, 'win': 0.154, 'sim200': 89.03, 'mean_wo_best': 0.7673}
-- Sinyal N4 wallet daftar: bot {'n': 8, 'mean': 0.4825, 'median': 0.4283, 'win': 0.0, 'sim200': 130.58, 'mean_wo_best': 0.4218} · tahan 5m {'n': 8, 'mean': 0.5294, 'median': 0.5777, 'win': 0.0, 'sim200': 135.55, 'mean_wo_best': 0.4676} · gaya savip (cut -6%, TP bertahap) {'n': 8, 'mean': 0.7747, 'median': 0.855, 'win': 0.125, 'sim200': 166.36, 'mean_wo_best': 0.7283}
-- Kontrol N1: bot {'n': 1234, 'mean': 0.7163, 'median': 0.551, 'win': 0.146, 'sim200': 0.0, 'mean_wo_best': 0.7107} · tahan 5m {'n': 1234, 'mean': 0.7308, 'median': 0.5522, 'win': 0.144, 'sim200': 0.0, 'mean_wo_best': 0.7229}
-- Kontrol N2: bot {'n': 143, 'mean': 0.6894, 'median': 0.4283, 'win': 0.14, 'sim200': 1.67, 'mean_wo_best': 0.6634} · tahan 5m {'n': 143, 'mean': 0.68, 'median': 0.4724, 'win': 0.161, 'sim200': 1.49, 'mean_wo_best': 0.6469}
-- Kontrol N3: bot {'n': 5, 'mean': 0.9315, 'median': 0.4283, 'win': 0.4, 'sim200': 191.24, 'mean_wo_best': 0.6673} · tahan 5m {'n': 5, 'mean': 1.0435, 'median': 0.4633, 'win': 0.4, 'sim200': 200.8, 'mean_wo_best': 0.6352}
+- Sinyal N1 wallet daftar: bot {'n': 467, 'mean': 0.8329, 'median': 0.6397, 'win': 0.133, 'sim200': 0.01, 'mean_wo_best': 0.7694} · tahan 5m {'n': 467, 'mean': 0.8517, 'median': 0.6683, 'win': 0.131, 'sim200': 0.01, 'mean_wo_best': 0.7844} · gaya savip (cut -6%, TP bertahap) {'n': 467, 'mean': 0.8526, 'median': 0.8029, 'win': 0.103, 'sim200': 0.06, 'mean_wo_best': 0.8098}
+- Sinyal N2 wallet daftar: bot {'n': 69, 'mean': 0.8514, 'median': 0.5996, 'win': 0.188, 'sim200': 60.79, 'mean_wo_best': 0.7996} · tahan 5m {'n': 69, 'mean': 0.7807, 'median': 0.5981, 'win': 0.188, 'sim200': 39.14, 'mean_wo_best': 0.7507} · gaya savip (cut -6%, TP bertahap) {'n': 69, 'mean': 0.79, 'median': 0.6893, 'win': 0.116, 'sim200': 44.62, 'mean_wo_best': 0.7718}
+- Sinyal N3 wallet daftar: bot {'n': 38, 'mean': 0.7334, 'median': 0.5803, 'win': 0.105, 'sim200': 67.75, 'mean_wo_best': 0.6772} · tahan 5m {'n': 38, 'mean': 0.7476, 'median': 0.6108, 'win': 0.158, 'sim200': 72.7, 'mean_wo_best': 0.7095} · gaya savip (cut -6%, TP bertahap) {'n': 38, 'mean': 0.7799, 'median': 0.7099, 'win': 0.079, 'sim200': 84.31, 'mean_wo_best': 0.7463}
+- Sinyal N4 wallet daftar: bot {'n': 4, 'mean': 0.5481, 'median': 0.4283, 'win': 0.0, 'sim200': 166.07, 'mean_wo_best': 0.4283} · tahan 5m {'n': 4, 'mean': 0.6763, 'median': 0.9074, 'win': 0.0, 'sim200': 175.03, 'mean_wo_best': 0.5811} · gaya savip (cut -6%, TP bertahap) {'n': 4, 'mean': 0.7802, 'median': 0.855, 'win': 0.0, 'sim200': 182.94, 'mean_wo_best': 0.7378}
+- Kontrol N1: bot {'n': 985, 'mean': 0.6949, 'median': 0.5736, 'win': 0.115, 'sim200': 0.0, 'mean_wo_best': 0.6878} · tahan 5m {'n': 985, 'mean': 0.7027, 'median': 0.5639, 'win': 0.112, 'sim200': 0.0, 'mean_wo_best': 0.6935}
+- Kontrol N2: bot {'n': 105, 'mean': 0.6447, 'median': 0.4283, 'win': 0.114, 'sim200': 3.93, 'mean_wo_best': 0.6177} · tahan 5m {'n': 105, 'mean': 0.6394, 'median': 0.4544, 'win': 0.124, 'sim200': 3.54, 'mean_wo_best': 0.5983}
+- Kontrol N3: bot {'n': 10, 'mean': 0.4335, 'median': 0.4283, 'win': 0.0, 'sim200': 111.58, 'mean_wo_best': 0.4085} · tahan 5m {'n': 10, 'mean': 0.5001, 'median': 0.4605, 'win': 0.1, 'sim200': 119.38, 'mean_wo_best': 0.4383}
 
-Alasan dibuang: beli kecil (bukan whale) 5367, tidak konsisten 4428, sniper/bundler 4335, dev 1303, bot flip 803, hari aktif kurang 738, periode aktif kurang 436, lolos 186, PnL/ROI kurang 87, bot frekuensi 68
+Alasan dibuang: beli kecil (bukan whale) 5431, tidak konsisten 4474, sniper/bundler 4373, dev 1332, bot flip 806, hari aktif kurang 756, periode aktif kurang 444, lolos 190, PnL/ROI kurang 89, bot frekuensi 68
 
