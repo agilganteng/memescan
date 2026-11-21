@@ -3,6 +3,7 @@
 
 Hanya koin yang lulus SETELAH 18 Nov 2026 06:45 UTC (data yang belum ada saat aturan dipilih). Tidak ada penyetelan.
 Lulus: n >= 30, rata > 1, rata tanpa koin terbaik > 1. Kalau n < 30: belum bisa disimpulkan.
+# cek ulang 21 Nov 2026 (tanpa perubahan aturan)
 """
 import argparse
 import calendar
